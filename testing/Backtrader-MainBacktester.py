@@ -103,4 +103,3 @@ if __name__ == '__main__':
     cerebro.plot()  # and plot it with a single command
 
 
-
