@@ -11,6 +11,7 @@ from datetime import datetime
 import os.path
 import sys
 import backtrader as bt
+import backtrader.analyzers as btanalyzers
 #import matplotlib 
 
 
@@ -95,12 +96,18 @@ if __name__ == '__main__':
     print('Starting Portfolio Value: %.2f' %
           cerebro.broker.getvalue()
     )
-    cerebro.run()
+
+    # Analyzer
+    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='mysharpe')
+
+    thestrats = cerebro.run()
     print('Final Portfolio Value: %.2f' %
           cerebro.broker.getvalue()
     )
     cerebro.plot()
 
+    thestrat = thestrats[0]
+    print('Sharpe Ratio:', thestrat.analyzers.mysharpe.get_analysis())
     
 
-        
+     

@@ -27,13 +27,53 @@ class SmaCross(bt.Strategy):
         self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
 
     def next(self):
+        self.log('Close, %.2f' % self.dataclose[0])
         if not self.position:  # not in the market
             if self.crossover > 0:  # if fast crosses slow to the upside
                 self.buy()  # enter long
-
+                self.log('BUY CREATE, %.2f' % self.dataclose[0])
+                
         elif self.crossover < 0:  # in the market & cross to the downside
             self.close()  # close long position
 
+        if len(self.data) == self.data.buflen()-1:
+            self.close()
+
+    def log(self, txt, dt=None):
+        dt = dt or self.datas[0].datetime.date(0)
+        print('%s, %s' % (dt.isoformat(), txt))
+
+    def notify_order(self, order):
+        if order.status in [order.Submitted, order.Accepted]:
+            return
+        if order.status in [order.Completed]:
+            if order.isbuy():
+                self.log(
+                    'BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' % 
+                    (order.executed.price, order.executed.value, 
+                     order.executed.comm)
+                )
+            else: #sell
+                self.log(
+                    'SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f' % 
+                    (order.executed.price, order.executed.value, 
+                     order.executed.comm)
+                )
+            
+            self.bar_executed = len(self)
+        elif order.status in [order.Canceled, order.Margin, order.Rejected]:
+            self.log('Order Canceled/Margin/Rejected')
+            
+            #write down
+            self.order = None
+            
+    def notify_trade(self, trade):
+        if not trade.isclosed:
+            return
+        
+        self.log('OPERATION PROFIT, GROSS %.2f, NET %.2f' %
+                 (trade.pnl, trade.pnlcomm)
+        )
 
 cerebro = bt.Cerebro()  # create a "Cerebro" engine instance
 
