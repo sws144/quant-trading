@@ -1,4 +1,4 @@
-# https://www.backtrader.com/home/helloalgotrading/
+# orig file https://www.backtrader.com/home/helloalgotrading/
 
 # required packages
 # code to auto add packages
@@ -22,6 +22,7 @@ class SmaCross(bt.Strategy):
     )
 
     def __init__(self):
+        self.dataclose = self.datas[0].close
         sma1 = bt.ind.SMA(period=self.p.pfast)  # fast moving average
         sma2 = bt.ind.SMA(period=self.p.pslow)  # slow moving average
         self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
@@ -32,7 +33,7 @@ class SmaCross(bt.Strategy):
             if self.crossover > 0:  # if fast crosses slow to the upside
                 self.buy()  # enter long
                 self.log('BUY CREATE, %.2f' % self.dataclose[0])
-                
+
         elif self.crossover < 0:  # in the market & cross to the downside
             self.close()  # close long position
 
@@ -75,25 +76,31 @@ class SmaCross(bt.Strategy):
                  (trade.pnl, trade.pnlcomm)
         )
 
-cerebro = bt.Cerebro()  # create a "Cerebro" engine instance
+if __name__ == '__main__':
+    cerebro = bt.Cerebro()  # create a "Cerebro" engine instance
 
-# Create a data feed
-data = bt.feeds.YahooFinanceData(dataname='MSFT',
-                                 fromdate=datetime(2011, 1, 1),
-                                 todate=datetime(2012, 12, 31))
+    # Create a data feed
+    data = bt.feeds.YahooFinanceData(dataname='MSFT',
+                                    fromdate=datetime(2011, 1, 1),
+                                    todate=datetime(2011, 6, 30))
 
-cerebro.adddata(data)  # Add the data feed
-cerebro.addstrategy(SmaCross)  # Add the trading strategy
-# Analyzer
-cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='mysharpe')
+    cerebro.adddata(data)  # Add the data feed
+    cerebro.addstrategy(SmaCross)  # Add the trading strategy
+    # Analyzer
+    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='mysharpe')
 
-thestrats = cerebro.run()
-thestrat = thestrats[0]
+    cerebro.broker.setcash(10000.0)
+    print('Starting Portfolio Value: %.2f' %
+            cerebro.broker.getvalue()
+    )
+    thestrats = cerebro.run()
+    thestrat = thestrats[0]
+    print('Final Portfolio Value: %.2f' %
+        cerebro.broker.getvalue()
+    )
 
-print('Sharpe Ratio:', thestrat.analyzers.mysharpe.get_analysis())
-
-cerebro.run()  # run it all
-cerebro.plot()  # and plot it with a single command
+    print('Sharpe Ratio:', thestrat.analyzers.mysharpe.get_analysis())
+    cerebro.plot()  # and plot it with a single command
 
 
 
