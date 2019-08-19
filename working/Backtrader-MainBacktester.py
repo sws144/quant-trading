@@ -1,5 +1,6 @@
 # orig file https://www.backtrader.com/home/helloalgotrading/
 
+# %% package
 # required packages
 # code to auto add packages
 import subprocess
@@ -26,12 +27,12 @@ class SmaCross(bt.Strategy):
         sma1 = bt.ind.SMA(period=self.p.pfast)  # fast moving average
         sma2 = bt.ind.SMA(period=self.p.pslow)  # slow moving average
         self.crossover = bt.ind.CrossOver(sma1, sma2)  # crossover signal
-
+        
     def next(self):
         self.log('Close, %.2f' % self.dataclose[0])
         if not self.position:  # not in the market
             if self.crossover > 0:  # if fast crosses slow to the upside
-                self.buy()  # enter long
+                self.buy(size=100)  # enter long
                 self.log('BUY CREATE, %.2f' % self.dataclose[0])
 
         elif self.crossover < 0:  # in the market & cross to the downside
@@ -64,7 +65,6 @@ class SmaCross(bt.Strategy):
             self.bar_executed = len(self)
         elif order.status in [order.Canceled, order.Margin, order.Rejected]:
             self.log('Order Canceled/Margin/Rejected')
-            
             #write down
             self.order = None
             
@@ -76,30 +76,36 @@ class SmaCross(bt.Strategy):
                  (trade.pnl, trade.pnlcomm)
         )
 
+# %% Run main
 if __name__ == '__main__':
     cerebro = bt.Cerebro()  # create a "Cerebro" engine instance
 
     # Create a data feed
     data = bt.feeds.YahooFinanceData(dataname='MSFT',
                                     fromdate=datetime(2011, 1, 1),
-                                    todate=datetime(2011, 6, 30))
+                                    todate=datetime(2011, 12, 31))
 
     cerebro.adddata(data)  # Add the data feed
     cerebro.addstrategy(SmaCross)  # Add the trading strategy
-    # Analyzer
-    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='mysharpe')
 
+    
     cerebro.broker.setcash(10000.0)
     print('Starting Portfolio Value: %.2f' %
             cerebro.broker.getvalue()
     )
+    
+    # Analyzer
+    cerebro.addanalyzer(btanalyzers.SharpeRatio, _name='mysharpe',timeframe=bt.TimeFrame.Days)
+
+    # Run strategy    
     thestrats = cerebro.run()
     thestrat = thestrats[0]
+
     print('Final Portfolio Value: %.2f' %
         cerebro.broker.getvalue()
     )
 
-    print('Sharpe Ratio:', thestrat.analyzers.mysharpe.get_analysis())
+    print('Sharpe Ratio: %.4f' % thestrat.analyzers.mysharpe.get_analysis()['sharperatio'])
     cerebro.plot()  # and plot it with a single command
 
 
