@@ -16,6 +16,10 @@ register_matplotlib_converters()
 # more plotting
 import seaborn as sns
 
+# machine learning & numpy
+import numpy as np
+from sklearn import linear_model
+
 # file export
 import openpyxl
 
@@ -59,6 +63,8 @@ df['Targetprice1yrReturn'] = df['Targetprice1yr'] /df['Price']  -1
 df['Targetprice10yr']  = df['Earnings10yrAdj'] /(df['RateGS10']/100)
 df['Targetprice10yrReturn'] = (df['Targetprice10yr'] /df['Price'])**(.1)  -1 
 
+#trim file
+df = df.dropna()
 
 #check results
 print(df.head())
@@ -80,11 +86,21 @@ sns.lineplot(df['DateFraction'],df['RateGS10']/100, color = 'y')
 fig3.legend(labels=['Targetprice10yrReturn','SP500FwdYr10Returns',
                     'InflationTrailing5yrFactorAsRate', 'RateGS10' ])
 
+# export data
 df.to_excel('SP500_Index_Research_Results.xlsx', sheet_name = 'sheet1',)
 
 # check relationship with 
 
+# %% 5 fit model
 
-# todo p/e 
+X_train = df.loc[:,['PERatio',
+             'InflationTrailing5yrFactor', 'RateGS10']]
+
+Y_train = df.loc[:,'SP500FwdYr10Returns']
+
+clf = linear_model.RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1]).fit(X_train, Y_train)
+
+params = clf.get_params(deep=True)
+clf.coef_
 
 # consider adding corporate bonds?
