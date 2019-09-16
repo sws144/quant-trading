@@ -1,6 +1,9 @@
 """
+Index research based on shiller dat
+
 http://www.econ.yale.edu/~shisller/data.htm
 
+Req'd inputs:
 C:\Stuff\OneDrive\Data\FinancialMarketData.xlsx
 """
 
@@ -101,6 +104,11 @@ Y_train = df.loc[:,'SP500FwdYr10Returns']
 clf = linear_model.RidgeCV(alphas=[1e-3, 1e-2, 1e-1, 1]).fit(X_train, Y_train)
 
 params = clf.get_params(deep=True)
-clf.coef_
+
+print("default (R^2) score:" + np.array2string(clf.score(X_train,Y_train)))
+print("intercept: " + np.array2string(clf.intercept_))
+print("coefficients: " + np.array2string(clf.coef_))
+
+## TODO continuing fitting
 
 # consider adding corporate bonds?
