@@ -118,8 +118,8 @@ cerebro = bt.Cerebro(stdstats=False)
 
 #swapped in MSFT data
 data = bt.feeds.YahooFinanceData(dataname='MSFT',
-                                 fromdate=datetime(2011, 1, 1),
-                                 todate=datetime(2012, 12, 31))
+                                 fromdate=dt.datetime(2011, 1, 1),
+                                 todate=dt.datetime(2012, 12, 31))
 
 cerebro.adddata(data)    # Give the data to cerebro
  
@@ -132,3 +132,4 @@ cerebro.addsizer(PropSizer)
 cerebro.addanalyzer(AcctStats)
  
 cerebro.run()
+cerebro.plot()

@@ -71,11 +71,11 @@ class TestStrategy(bt.Strategy): #class that inherits bt.strategy
             return #do nothing if have outstanding order
         
         if not self.order:
-            if (self.rsi[0] < 30):
+            if (self.rsi[0] < 45):
                 self.log('BUY CREATE, %.2f' % self.dataclose[0])
                 self.order = self.buy(size = 1)
         else:
-            if (self.rsi[0] > 70):
+            if (self.rsi[0] > 55):
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
                 self.order = self.sell(size = 1)
                     
@@ -88,8 +88,8 @@ if __name__ == '__main__':
     cerebro.broker.setcommission(commission=0.001)
     
     data = bt.feeds.YahooFinanceData(dataname='MSFT',
-                                 fromdate=datetime(2011, 1, 1),
-                                 todate=datetime(2012, 12, 31))
+                                 fromdate=datetime(2014, 1, 1),
+                                 todate=datetime(2014, 12, 31))
         
     cerebro.adddata(data)
     cerebro.broker.setcash(10000.0)
