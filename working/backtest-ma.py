@@ -1,6 +1,6 @@
 # %% [markdown]
 # # Backtester - Moving Average Example
-# 1. Can run interactively
+# 1. Can run interactively (all graphs), or from terminal (last graph zoom)
 # 1. From https://www.backtrader.com/docu/quickstart/quickstart/#visual-inspection-plotting
 # 1. Run from folder that holds this file
 
@@ -24,13 +24,18 @@ import sys  # To find out the script name (in argv[0])
 # Import the backtrader platform
 import backtrader as bt
 
-#for plotting
+# For plotting
 import matplotlib
 # matplotlib.rcParams['backend'] = 'TkAgg' #to force this backend
 matplotlib.use("TkAgg")
 
+# For trade statistics
+import pandas as pd
+import quantstats as qs
+# import pyfolio as pf
+
 # %% 
-# Create a Stratey
+# Create a Strategy
 class TestStrategy(bt.Strategy):
     params = (
         ('maperiod', 15),
@@ -124,13 +129,23 @@ class TestStrategy(bt.Strategy):
 
         else:
 
-            if self.dataclose[0] < self.sma[0]:
+            if self.dataclose[0] < self.sma[0] :
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
 
+            # only for backtests
+            if len(self.data) == (self.data.buflen()-1):
+                # SELL, SELL, SELL!!! (with all possible default parameters)
+                self.log('SELL CREATE, %.2f' % self.dataclose[0])
+
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.sell()
+
+# %%
+# Run strategy
 
 if __name__ == '__main__':
     # Create a cerebro entity
@@ -173,13 +188,50 @@ if __name__ == '__main__':
     # add logging
     cerebro.addwriter(bt.WriterFile, csv = True, out='backtest-ma.csv')
 
-    # Run over everything
-    cerebro.run()
+    # add analyzer
+    cerebro.addanalyzer(bt.analyzers.PyFolio, _name='pyfolio')
+
+    # Run backtest
+    results = cerebro.run()
 
     # Print out the final result
     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
-    # Plot the result
+    # Pull trade statistics
+    strat = results[0]
+    pyfoliozer = strat.analyzers.getbyname('pyfolio')
+    returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
+
+    # Conversion for use in quantstats
+    returns.index = returns.index.astype('<M8[ns]')
+    positions.index = positions.index.astype('<M8[ns]')
+    transactions.index = transactions.index.astype('<M8[ns]')
+    
+    # extend pandas functionality with metrics, etc.
+    qs.extend_pandas()
+
+    # show sharpe ratio
+    qs.stats.sharpe(returns)
+
+    # or using extend_pandas() :)
+    returns.sharpe()
+
+    # backup from https://pypi.org/project/vectorbt/
+
+    # backup 2 from pyfolio
+    # pf.create_simple_tear_sheet(
+    #     returns,
+    #     positions=positions,
+    #     transactions=transactions)
+    # eventually want to try create_full_tear_sheet
+
+    # Write down detailed results
+    qs.plots.snapshot(returns, title='Strategy performance')
+    qs.reports.full(returns, "SPY")
+    
+    # Plot the final result (has large pop-up)
     cerebro.plot(iplot=False)
+    
 
 # %%
+
