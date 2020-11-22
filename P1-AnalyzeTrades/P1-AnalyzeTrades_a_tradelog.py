@@ -117,7 +117,7 @@ df_clean_attr.head()
 
 
 # %%
-# update data types for trades 
+# update data types for trades & fill nas
 
 df_trades['Date/Time'] = pd.to_datetime(df_trades['Date/Time'],errors='coerce') 
 numeric_cols = ['T. Price','Comm/Fee','Quantity']
@@ -125,6 +125,8 @@ for col in numeric_cols:
     df_trades[col] = (df_trades[col].astype(str).str.strip()
         .str.replace('$','').str.replace(',','').astype(float)
         )
+    
+df_trades['Comm/Fee'] = df_trades['Comm/Fee'].fillna(0) 
     
 # QA
 df_trades.dtypes  
@@ -149,7 +151,6 @@ df_trades['Action'] = np.where(df_trades['Quantity'] > 0, 'B', 'S')
 df_trades['Quantity'] = abs(df_trades['Quantity'])
 
 
-
 # %%
 # create completed trade list
 
@@ -165,56 +166,10 @@ df_complete_trades = pd.concat([x.to_df() for x in complete_trades]).reset_index
 
 tm.get_pnl()
 
+# %%
+# save output
+
+df_complete_trades.to_csv('output/a_completelog.csv')
+
 
 # %%
-# initialize pnl and portfolio
-
-# create final pnl df
-# trade_cols =             ['Date_Open', 'Quantity', 'Cost_Basis', 'Profit_Net', 'Date_Closed']
-# df_complete_trades = pd.DataFrame(columns = trade_cols)
-
-# # create initial portfolio with key: contract name, 
-# # item is nested dictionary of qty, cost, date (last updated)
-# portfolio_dict = {}
-# for i, row in df_port_init.iterrows():
-#     portfolio_dict[row['Symbol']] = pd.DataFrame(
-#         [[init_date, row['Quantity'],  row['Cost Basis']]], 
-#         columns = trade_cols[0:3]
-#         )
-    
-
-# %%
-# update pnl based on trades
-
-# for i, row in df_clean_attr.iterrows():
-#     if row['ACTION'].find('BOT'):        
-#         if row['CONTRACT'] in df_portfolio:
-#             # if positive position in portfolio, add to it
-#             # if df_portfolio[row['CONTRACT']] > 0:
-#             #     df_portfolio[row['CONTRACT']] = (row['PRICE'] * row['QTYCHG'] - row['COMMISSION']
-#             #                                     + row['CONTRACT']
-#             #                                     )
-#             # if negative position
-#             # else:
-#                 # pass
-#         # if not in portfolio, add to it
-#         else: 
-#             df_portfolio[row['CONTRACT']] = {
-#                 'cost': row['PRICE'] * row['QTYCHG'] - row['COMMISSION']
-#             }
-#     elif row['ACTION'].find('SLD') | row['ACTION'].find('END'):
-#         if row['CONTRACT'] in df_portfolio:
-#             # df_portfolio[row['CONTRACT']] = (row['CONTRACT'] - (
-#             #     row['PRICE'] * row['QTYCHG'] - row['COMMISSION'])
-#             #                                  )
-#         else: 
-#             # ignore errors for now
-#             pass
-    
-#     #QA
-#     # print(str(i) +  f'\n' + str(row))
-#     if i > 100:
-#         break
-    
-
-

@@ -43,11 +43,16 @@ class TradeManager():
             if trade.buying:
                 pnl *= -1
 
+            #commission 
+            pnl += trade.comm  # comm is negative number
+
             pnl = round(pnl, 2)
             self._pnl += pnl
 
             ct = ClosedTrade(d[0].time, trade.time, trade.symbol,
-                    quant_traded, pnl, d[0].buying, d[0].price, trade.price)
+                    quant_traded, pnl, d[0].buying, d[0].price, trade.price,
+                    d[0].comm + trade.comm
+                    )
 
             if self._print_trades:
                 print(ct)
@@ -82,7 +87,8 @@ class TradeManager():
             for i, tr in df.iterrows():
                 buying = tr["Action"] == 'B'
                 trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
-                        float(tr["T. Price"]), int(tr["Quantity"]))
+                        float(tr["T. Price"]), int(tr["Quantity"]), 
+                        float(tr['Comm/Fee']))
                 
                 self.process_trade(trade)
         
@@ -98,16 +104,17 @@ class TradeManager():
         return self._closed_trades[:]
 
 class Trade():
-    def __init__(self, time, symbol, buying, price, quantity):
+    def __init__(self, time, symbol, buying, price, quantity, comm):
         self.time = time
         self.symbol = symbol
         self.buying = buying
         self.price = price
         self.quantity = quantity
+        self.comm = comm
 
 class ClosedTrade():
     def __init__(self, open_t, close_t, symbol, quantity, pnl, bought_first,
-            open_p, close_p):
+            open_p, close_p, comm_tot):
         self.open_t = open_t
         self.close_t = close_t
         self.symbol = symbol
@@ -116,6 +123,7 @@ class ClosedTrade():
         self.bought_first = bought_first
         self.open_p = open_p
         self.close_p = close_p
+        self.comm_tot = comm_tot
 
     def __str__(self):
         s = "{},{},{},{},{:.2f},{},{},{:.2f},{:.2f}"
@@ -128,7 +136,8 @@ class ClosedTrade():
                 "B" if self.bought_first else "S",
                 "S" if self.bought_first else "B",
                 self.open_p,
-                self.close_p
+                self.close_p,
+                self.comm_tot
                 )
         return s
         
@@ -142,10 +151,11 @@ class ClosedTrade():
                 "B" if self.bought_first else "S",
                 "S" if self.bought_first else "B",
                 self.open_p,
-                self.close_p
+                self.close_p,
+                self.comm_tot
             ]], 
-            columns = ['Open_Date','Close_Date','Symbol','Quantity',
-                       'Pnl','OpenAct','CloseAct','Open_Price','Close_Price']
+            columns = ['Open_Date','Close_Date','Symbol','Quantity', 'Pnl',
+                       'OpenAct','CloseAct','Open_Price','Close_Price','Comm_Tot']
         )
         
         return df
