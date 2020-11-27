@@ -112,6 +112,11 @@ df_complete_trades = pd.concat([x.to_df() for x in complete_trades]).reset_index
 tm.get_pnl()
 
 # %%
+# understand data types
+
+df_complete_trades.dtypes
+
+# %%
 # save output
 
 df_complete_trades.to_csv('output/a_completelog.csv')

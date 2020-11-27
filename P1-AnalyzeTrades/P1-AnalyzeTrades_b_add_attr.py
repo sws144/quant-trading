@@ -7,17 +7,15 @@
 
 import pandas as pd
 import numpy as np # for np.nan
-import glob # for text matching
 import os # for path
-
-import tradehelper as th # local class
-
 
 # %%
 # read in raw data
 ### INPUT ###
 
 # formatted tradelog
+trades_filename = 'output/a_completelog.csv'
+df_complete_trades = pd.read_csv(trades_filename)
 
 # attributes 1 from own log
 attr_filename = 'data/PCM-Tracking - LogHist.csv'
@@ -28,6 +26,15 @@ df_raw_attr = df_raw_attr.append(df_raw_attr)
 # attributes 2 
 # TODO 
 
+
+# %%
+# ensure date time for open for complete trades
+df_complete_trades['Open_Date'] = pd.to_datetime(df_complete_trades['Open_Date'], errors='coerce')
+
+# %%
+# check complete trades
+
+df_complete_trades.dtypes
 
 
 # %%
@@ -52,15 +59,17 @@ df_clean_attr.columns = pd.Series(df_clean_attr.columns).map(col_dict_attr)    .
 df_clean_attr['ACTION'] = df_clean_attr['ACTION'].astype(str).str.strip()
 
 # pull out macro / non trades
-df_macro = df_clean_attr[~ df_clean_attr['ACTION'].astype(str).str.contains('BOT') & 
-                      ~ df_clean_attr['ACTION'].astype(str).str.contains('SLD') &
-                      ~ df_clean_attr['ACTION'].astype(str).str.contains('END')
-                      ]
+df_macro = df_clean_attr[
+    ~ df_clean_attr['ACTION'].astype(str).str.contains('BOT') & 
+    ~ df_clean_attr['ACTION'].astype(str).str.contains('SLD') &
+    ~ df_clean_attr['ACTION'].astype(str).str.contains('END')
+]
                     
-df_clean_attr = df_clean_attr[ df_clean_attr['ACTION'].astype(str).str.contains('BOT') | 
-                       df_clean_attr['ACTION'].astype(str).str.contains('SLD') |
-                       df_clean_attr['ACTION'].astype(str).str.contains('END')
-                        ]
+df_clean_attr = df_clean_attr[ 
+    df_clean_attr['ACTION'].astype(str).str.contains('BOT') | 
+    df_clean_attr['ACTION'].astype(str).str.contains('SLD') |
+    df_clean_attr['ACTION'].astype(str).str.contains('END')
+]
 
 df_clean_attr.head()
 
@@ -71,13 +80,21 @@ df_clean_attr.head()
 df_clean_attr['DATE'] = pd.to_datetime(df_clean_attr['DATE'],errors='coerce') 
 numeric_cols = ['PRICE','COMMISSION','QTYCHG']
 for col in numeric_cols:
-    df_clean_attr[col] = (df_clean_attr[col].astype(str).str.strip()
+    df_clean_attr[col] = (
+        df_clean_attr[col].astype(str).str.strip()
         .str.replace('$','').str.replace(',','').astype(float)
-        )
+    )
 
 # QA
 df_clean_attr.dtypes   
 
+# %% 
+# merge attr to completed trades
+
+df_comptrade_wattr = df_complete_trades.merge(
+    df_clean_attr, how = 'left', left_on = ['Open_Date','Symbol'],
+    right_on= ['DATE','CONTRACT'],suffixes=('','_a')       
+)
 
 # %%
 # save output
