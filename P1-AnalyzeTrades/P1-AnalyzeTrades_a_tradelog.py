@@ -1,5 +1,5 @@
 # %% [markdown]
-#  ## Convert trade log into pnl design matrix for modeling
+#  ## Convert trade log into basic pnl design matrix for modeling
 #  Design matrix is one record per row
 
 # %%
@@ -12,14 +12,12 @@ import os # for path
 
 import tradehelper as th # local class
 
-
 # %%
 # read in raw data
 ### INPUT ###
-attr_filename = 'data/PCM-Tracking - LogHist.csv'
 
-# trade + activity list, max 30 cols
-globbed_files = glob.glob('data/*U106*.csv')
+# activity file csv export from Interactive Brokers, max 30 cols
+globbed_files = glob.glob('data/*U106*.csv') 
 col_names_temp = list(range(30))
 df_raw = pd.DataFrame(columns = col_names_temp)
 
@@ -31,10 +29,6 @@ for csv in globbed_files:
     frame['filename'] = os.path.basename(csv)
     df_raw = df_raw.append(frame)
 
-# attributes from trading
-df_raw_attr = pd.read_csv(attr_filename)
-df_raw_attr['filename'] = os.path.basename(attr_filename)
-df_raw_attr = df_raw_attr.append(df_raw_attr)
 
 
 # %%
@@ -82,41 +76,6 @@ df_trades = pd.concat([df_port_init, df_trades])
 
 
 # %%
-# clean attribute columns
-
-col_dict_attr = {
-    'DATE' : 'DATE',
-    'CONTRACT' : 'CONTRACT',
-    'TIME':'TIME',
-    'ACTION':'ACTION',
-    'PRICE':'PRICE',
-    'QTYCHG':'QTYCHG',
-    'COMMISSION':'COMMISSION',
-    
-    'PCTRETURN': 'PCTRETURN',
-}
-
-df_clean_attr = df_raw_attr.copy(deep=True)
-df_clean_attr.columns = pd.Series(df_clean_attr.columns.astype(str).str.upper().str.strip())
-df_clean_attr.columns = pd.Series(df_clean_attr.columns).map(col_dict_attr)    .fillna(pd.Series(df_clean_attr.columns))
-
-df_clean_attr['ACTION'] = df_clean_attr['ACTION'].astype(str).str.strip()
-
-# pull out macro / non trades
-df_macro = df_clean_attr[~ df_clean_attr['ACTION'].astype(str).str.contains('BOT') & 
-                      ~ df_clean_attr['ACTION'].astype(str).str.contains('SLD') &
-                      ~ df_clean_attr['ACTION'].astype(str).str.contains('END')
-                      ]
-                    
-df_clean_attr = df_clean_attr[ df_clean_attr['ACTION'].astype(str).str.contains('BOT') | 
-                       df_clean_attr['ACTION'].astype(str).str.contains('SLD') |
-                       df_clean_attr['ACTION'].astype(str).str.contains('END')
-                        ]
-
-df_clean_attr.head()
-
-
-# %%
 # update data types for trades & fill nas
 
 df_trades['Date/Time'] = pd.to_datetime(df_trades['Date/Time'],errors='coerce') 
@@ -130,20 +89,6 @@ df_trades['Comm/Fee'] = df_trades['Comm/Fee'].fillna(0)
     
 # QA
 df_trades.dtypes  
- 
-
-# %%
-# update data types for attr
-
-df_clean_attr['DATE'] = pd.to_datetime(df_clean_attr['DATE'],errors='coerce') 
-numeric_cols = ['PRICE','COMMISSION','QTYCHG']
-for col in numeric_cols:
-    df_clean_attr[col] = (df_clean_attr[col].astype(str).str.strip()
-        .str.replace('$','').str.replace(',','').astype(float)
-        )
-
-# QA
-df_clean_attr.dtypes   
 
 # %%
 # create trades action col and normalize quantity
