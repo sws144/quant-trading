@@ -8,6 +8,7 @@ pandas = "*"
 numpy = "==1.19.3" # due to error in 1.19.4
 sklearn = "*"
 ipykernel = "*"
+yfinance = "*"
 
 [dev-packages]
 
