@@ -91,10 +91,17 @@ df_clean_attr.dtypes
 # %% 
 # merge attr to completed trades
 
-df_comptrade_wattr = df_complete_trades.merge(
-    df_clean_attr, how = 'left', left_on = ['Open_Date','Symbol'],
-    right_on= ['DATE','CONTRACT'],suffixes=('','_a')       
+df_complete_trades = df_complete_trades.sort_values(['Open_Date']) 
+df_clean_attr = df_clean_attr.sort_values(['DATE'])
+
+df_clean_attr = df_clean_attr.rename(columns={'CONTRACT':'Symbol'}) 
+
+# get closeset match
+df_comptrade_wattr = pd.merge_asof(
+    df_complete_trades, df_clean_attr, by = 'Symbol', left_on=['Open_Date'], 
+    right_on=['DATE'], suffixes=('','_a') 
 )
+
 
 # %%
 # save output

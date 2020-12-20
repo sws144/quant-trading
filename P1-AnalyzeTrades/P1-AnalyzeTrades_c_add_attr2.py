@@ -22,7 +22,7 @@ df_raw = pd.read_csv(trades_filename)
 # %% 
 # pull data from yahoo finance
 
-reload_data = True
+reload_data = False
 
 tickers = ['^VIX' , '^GSPC']
 if reload_data: 
@@ -31,6 +31,7 @@ if reload_data:
         start="2010-01-01", end="2020-12-01", 
         group_by='Tickers'
     )
+    # turn into tabular form
     df_data_formatted = df_data.stack(level=0).reset_index().rename(columns={'level_1':'Ticker'})
     df_data_formatted.to_csv('output/c_mktdata.csv')
 else:
