@@ -1,12 +1,11 @@
 # %% [markdown]
-#  ## explore data
+#  ## D: Feature Engineering
 
 # %%
 # imports
 
 import pandas as pd
 import numpy as np
-
 
 # for na pipeline
 import warnings
@@ -15,12 +14,14 @@ from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.base import TransformerMixin # for custom transformers
+
+from joblib import dump, load
 
 # %%
 # read in data
 
 df_XY = pd.read_csv('output/c_resulttradewattr.csv')
-
 
 # %%
 #  get_feature_names function 
@@ -50,7 +51,7 @@ def get_feature_names(column_transformer):
                     return column_transformer._df_columns[column]
             else:
                 indices = np.arange(column_transformer._n_features)
-                return ['x%d' % i for i in indices[column]]
+                return [i for i in indices[column]]
         if not hasattr(trans, 'get_feature_names'):
         # >>> Change: Return input column names if no method avaiable
             # Turn error into a warning
@@ -63,9 +64,9 @@ def get_feature_names(column_transformer):
             if column is None:
                 return []
             else:
-                return [name + "__" + f for f in column]
+                return [f for f in column]
 
-        return [name + "__" + f for f in trans.get_feature_names()]
+        return [f for f in trans.get_feature_names()]
     
     ### Start of processing
     feature_names = []
@@ -84,26 +85,50 @@ def get_feature_names(column_transformer):
             _names = get_feature_names(trans)
             # if pipeline has no transformer that returns names
             if len(_names)==0:
-                _names = [name + "__" + f for f in column]
+                _names = [f for f in column]
             feature_names.extend(_names)
         else:
             feature_names.extend(get_names(trans))
     
     return feature_names
 
+# %%
+# custom transformer
+class Numerizer(TransformerMixin):
+    import pandas as pd
+    
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        Y = X.apply(pd.to_numeric, errors='coerce')
+        return Y
 
 # %%
 # create na pipeline
 
 # start with numeric, utilizng explore data before
 numeric_features = df_XY.select_dtypes(include=np.number).columns.tolist()
-numeric_features
+numeric_features = numeric_features + [
+    '% TO STOP',
+    '% TO TARGET',
+    'GROWTH*0.5TO0.75',
+    'ROIC (BW ROA ROE)',
+    'IMPLIED P/E',
+    'YEARS TO NORMALIZATION',
+]
 
 numeric_transformer = Pipeline(
     steps=[
-        ('imputer', SimpleImputer(strategy='median')),
+        ('numerizer', Numerizer()),        
+        ('imputer', SimpleImputer(strategy='constant', fill_value = 0)),
     ]
 )
+
+# numerical
 
 # categorical_features = ['embarked', 'sex', 'pclass']
 # categorical_transformer = Pipeline(steps=[
@@ -117,17 +142,23 @@ preprocessor_na = ColumnTransformer(
     remainder = 'passthrough'
 )
 
-df_XY_imputed = preprocessor_na.fit_transform(df_XY)
+XY_imputed = preprocessor_na.fit_transform(df_XY)
 
 columns = get_feature_names(preprocessor_na)
 
+df_XY_imputed = pd.DataFrame(XY_imputed,columns=columns)
+
 print(columns)
 
-# %% 
-# create standardize pipeline
+# %%
+# save results
+
+df_XY_imputed.to_csv('output/e_resultcleaned.csv')
 
 
+# %%
+# save imputer
 
-
+dump(preprocessor_na,'output/e_preprocessor_na.joblib')
 
 # %%

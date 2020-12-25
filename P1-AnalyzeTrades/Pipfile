@@ -9,6 +9,7 @@ numpy = "==1.19.3" # due to error in 1.19.4
 sklearn = "*"
 ipykernel = "*"
 yfinance = "*"
+joblib = "*"
 
 [dev-packages]
 

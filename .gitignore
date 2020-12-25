@@ -1,2 +1,2 @@
-P1-AnalyzeTrades/data/*.csv
-P1-AnalyzeTrades/output/*.csv
+P1-AnalyzeTrades/data/*
+P1-AnalyzeTrades/output/*
