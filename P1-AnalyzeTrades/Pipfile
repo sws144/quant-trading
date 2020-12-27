@@ -4,12 +4,17 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pandas = "*"
-numpy = "==1.19.3" # due to error in 1.19.4
-sklearn = "*"
+## dtreeviz = "*"
 ipykernel = "*"
-yfinance = "*"
 joblib = "*"
+matplotlib = "*"
+numpy = "==1.19.3" # due to error in 1.19.4
+pandas = "*"
+patsy = "*"
+## pydotplus = "*"
+shap = "*"
+sklearn = "*"
+yfinance = "*"
 
 [dev-packages]
 

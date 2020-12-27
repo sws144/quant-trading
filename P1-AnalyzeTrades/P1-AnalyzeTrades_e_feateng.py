@@ -93,7 +93,7 @@ def get_feature_names(column_transformer):
     return feature_names
 
 # %%
-# custom transformer
+# custom transformers
 class Numerizer(TransformerMixin):
     import pandas as pd
     
@@ -110,20 +110,26 @@ class Numerizer(TransformerMixin):
 # %%
 # create na pipeline
 
+# update columns headers to clean up
+df_XY.columns = list(
+    pd.Series(df_XY.columns).astype(str).str.replace(' ','_')\
+        .str.upper().str.strip().str.replace('/','_').str.replace('*','_')
+)
+
 # start with numeric, utilizng explore data before
 numeric_features = df_XY.select_dtypes(include=np.number).columns.tolist()
 numeric_features = numeric_features + [
-    '% TO STOP',
-    '% TO TARGET',
-    'GROWTH*0.5TO0.75',
-    'ROIC (BW ROA ROE)',
-    'IMPLIED P/E',
-    'YEARS TO NORMALIZATION',
+    '%_TO_STOP',
+    '%_TO_TARGET',
+    'GROWTH_0.5TO0.75',
+    'ROIC_(BW_ROA_ROE)',
+    'IMPLIED_P_E',
+    'YEARS_TO_NORMALIZATION',
 ]
 
 numeric_transformer = Pipeline(
     steps=[
-        ('numerizer', Numerizer()),        
+        ('numerizer', Numerizer()),          
         ('imputer', SimpleImputer(strategy='constant', fill_value = 0)),
     ]
 )
@@ -137,18 +143,37 @@ numeric_transformer = Pipeline(
 
 preprocessor_na = ColumnTransformer(
     transformers=[
-        ('num', numeric_transformer, numeric_features)
+        ('num', numeric_transformer, numeric_features)  
     ], 
     remainder = 'passthrough'
 )
 
 XY_imputed = preprocessor_na.fit_transform(df_XY)
 
-columns = get_feature_names(preprocessor_na)
+columns =get_feature_names(preprocessor_na)
 
 df_XY_imputed = pd.DataFrame(XY_imputed,columns=columns)
 
-print(columns)
+
+# %% 
+# create target 
+
+df_XY_imputed['PCT_RET_FINAL'] = (
+    df_XY_imputed['PNL'] / ( df_XY_imputed['OPEN_PRICE'] *  df_XY_imputed['QUANTITY']) 
+)
+
+# %% 
+# Final columns
+
+print(df_XY_imputed.columns)
+
+# %%
+# check no na's left in numerical
+
+try: 
+    assert df_XY_imputed[numeric_features].isna().sum().sum() == 0 , 'NAs remain in numerical'
+except:
+    print('NAs remain in numerical')
 
 # %%
 # save results
