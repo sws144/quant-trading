@@ -10,6 +10,15 @@ from patsy import dmatrices
 
 from sklearn.model_selection import train_test_split
 
+import mlflow
+
+# %% 
+# start logging
+
+mlflow.set_experiment("P1-AnalyzeTrades_f_core")
+
+mlflow.sklearn.autolog()
+
 # %%
 # read in data
 
@@ -28,7 +37,7 @@ formula =  f""" PCT_RET_FINAL ~ 1
 y , X = dmatrices(formula, df_XY, return_type='dataframe')
 
 # TODO save model formula, use this and na transformer
-
+mlflow.log_params({"formula":formula})
 
 # %% 
 # train test data
@@ -48,8 +57,10 @@ reg.fit(X_train, y_train)
 # %%
 # validate model
 
-reg.score(X_test, y_test)
+test_score_r2 = reg.score(X_test, y_test)
 
+mlflow.log_metric("test_r2", test_score_r2)
+print(test_score_r2)
 
 # %%
 # visualize a single tree
@@ -79,6 +90,17 @@ shap_values = explainer.shap_values(X_train)
 # Make plot. Index of [1] is explained in text below.
 shap.summary_plot(shap_values, X_train)
 
+import matplotlib.pyplot as plt; 
+f = plt.gcf()
+
+# Make plot. Index of [1] is explained in text below.
+shap.summary_plot(shap_values, X_train,show=False,)
+plt.tight_layout()
+plt.savefig('summary_plot.png',bbox_inches = "tight")
+plt.show()
+
+mlflow.log_artifact('summary_plot.png')
+
 # %%
 # check highest 
 
@@ -91,6 +113,11 @@ top_trades.head()
 
 # make plot
 shap.dependence_plot("Q('CLOSE_^VIX')", shap_values, X_train)
+
+# %%
+# end mlflow
+
+mlflow.set_terminated()
 
 # %%
 # scratch

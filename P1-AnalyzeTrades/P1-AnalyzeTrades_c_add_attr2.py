@@ -11,6 +11,10 @@ import os # for path
 
 import yfinance as yf
 
+import json
+
+from pandas_datareader.quandl import QuandlReader #data side
+
 # %%
 # read in raw data
 ### INPUT ###
@@ -39,12 +43,6 @@ else:
 
 df_data_formatted.head()
 
-# %%
-# pull data from Quandl 
-
-# TODO AAII Sentiment
-
-
 
 # %%
 # pivoted
@@ -55,6 +53,8 @@ df_data_pivot = df_data_formatted.pivot(
 df_data_pivot.columns = ['_'.join(col).strip() for col in df_data_pivot.columns.values]
 df_data_pivot['Date_'] = pd.to_datetime(df_data_pivot['Date_'],errors='coerce')
 df_data_pivot.head()
+
+
 
 # %% 
 # merge
@@ -72,6 +72,29 @@ df_result = pd.merge_asof(
     df_source, df_data_pivot,left_on=['Open_Date'],right_on=['Date_']
 )
 
+
+# %%
+# pull data from Quandl 
+
+if reload_data:
+    
+    with open('data/vars.json', 'r') as json_file:
+        var_dict = json.load(json_file)
+
+    quandl_key = var_dict['QUANDL_API']
+
+    QR = QuandlReader("AAII/AAII_SENTIMENT",api_key=quandl_key)
+
+    QR_df = QR.read().reset_index()
+
+    QR_df.columns = ['AAII_Sent_' + str(col)  for col in QR_df.columns]
+    QR_df.to_csv('output/c_mktdata_aaii.csv')
+else: 
+    QR_df = pd.read_csv('output/c_mktdata_aaii.csv')
+
+
+# %%
+# TODO merge
 
 # %%
 # save output

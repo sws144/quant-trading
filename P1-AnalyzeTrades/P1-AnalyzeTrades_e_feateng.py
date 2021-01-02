@@ -163,6 +163,11 @@ df_XY_imputed['PCT_RET_FINAL'] = (
 )
 
 # %% 
+# TODO create moving avg
+
+
+
+# %% 
 # Final columns
 
 print(df_XY_imputed.columns)
