@@ -1,5 +1,5 @@
 # %% [markdown]
-#  ## add attributes 2 to trade log
+#  ## C add attributes 2 to trade log
 #  Design matrix is one record per row
 
 # %%
@@ -94,7 +94,16 @@ else:
 
 
 # %%
-# TODO merge
+# merge Quandl
+QR_df_sorted = QR_df.sort_values(['AAII_Sent_Date'])
+QR_df_sorted['AAII_Sent_Date'] = pd.to_datetime(QR_df['AAII_Sent_Date'], errors='coerce')
+
+
+df_result = pd.merge_asof(
+    df_result, QR_df_sorted,left_on=['Open_Date'],right_on=['AAII_Sent_Date'],
+    direction='forward',
+)
+
 
 # %%
 # save output
