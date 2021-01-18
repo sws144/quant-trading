@@ -1,5 +1,5 @@
 # %% [markdown]
-#  ## explore data
+#  ## d explore data
 # 
 
 # %%

@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 ## dtreeviz = "*"
+hyperopt ="*"
 ipykernel = "*"
 joblib = "*"
 matplotlib = "*"
