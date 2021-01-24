@@ -7,6 +7,9 @@
 import pandas as pd
 import numpy as np
 import mlflow
+from patsy import dmatrices # for formula parsing
+
+import json # for reading signature
 
 from functools import partial
 
@@ -24,6 +27,8 @@ from sklearn.preprocessing import StandardScaler, KBinsDiscretizer
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, auc
 
+import pickle
+
 # %% 
 # ### INPUT ###
 
@@ -31,24 +36,53 @@ runid = 'f71fb9cb2001496ba5cde6ce7a553bd3'
 
 mlflow.set_experiment("P1-AnalyzeTrades_f_core")
 
-mlflow.start_run(run_id = runid )
-
-
 # %%
 # assist functions
-# https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html
 
+# looks reasonable
+# https://www.kaggle.com/jpopham91/gini-scoring-simple-and-efficient
+def gini_normalized(y_true, y_pred, sample_weight=None):
+    # check and get number of samples
+    assert (np.array(y_true).shape == np.array(y_pred).shape, 
+            'y_true and y_pred need to have same shape')
+    n_samples = np.array(y_true).shape[0]
+    
+    # sort rows on prediction column 
+    # (from largest to smallest)
+    arr = np.array([y_true, y_pred, sample_weight]).transpose()
+    true_order = arr[arr[:,0].argsort()][::-1,0]  # true col sorted by true
+    pred_order = arr[arr[:,1].argsort()][::-1,0]  # true col sorted by pred
+    
+    true_order_wgts = arr[arr[:,0].argsort()][::-1,2] 
+    pred_order_wgts = arr[arr[:,0].argsort()][::-1,2] 
+    
+    # get Lorenz curves
+    L_true = (np.cumsum(np.multiply(true_order,true_order_wgts)) / 
+        np.sum(np.dot(true_order,true_order_wgts)))
+    L_pred = (np.cumsum(np.multiply(pred_order,pred_order_wgts)) / 
+        np.sum(np.multiply(pred_order,pred_order_wgts)))
+    L_ones = np.multiply(np.linspace(1/n_samples, 1, n_samples),pred_order_wgts)
+    
+    # get Gini coefficients (area between curves)
+    G_true = np.sum(L_ones - L_true)
+    G_pred = np.sum(L_ones - L_pred)
+    
+    # normalize to true Gini coefficient
+    return G_pred/G_true
 
 def score_estimator(
     estimator, X_train, X_test, df_train, df_test, target, weights,
     tweedie_powers=None,
 ):
-    """Evaluate an estimator on train and test sets with different metrics"""
+    """
+    Evaluate an estimator on train and test sets with different metrics
+    """
 
     metrics = [
-        ("D² explained", None),   # Use default scorer if it exists
+        ("default score", None),   # Use default scorer if it exists
         ("mean abs. error", mean_absolute_error),
         ("mean squared error", mean_squared_error),
+        ("gini", gini_normalized)
     ]
     if tweedie_powers:
         metrics += [(
@@ -92,88 +126,105 @@ def score_estimator(
     return res
 
 # %%
-# visualize a single tree
+# pull information
 
-from sklearn import tree
-
-# Get a tree 
-sub_tree_1 = reg.estimators_[1, 0]
-
-tree.plot_tree(sub_tree_1,
-           feature_names = list(X_train.columns),
-           filled = True)
-
-# to verify, going down left side means split is true
-
-
-# %% 
-# summarize overall results
-
-import shap  # package used to calculate Shap values
-
-# Create object that can calculate shap values
-explainer = shap.TreeExplainer(reg)
-
-# calculate shap values. This is what we will plot.
-# Calculate shap_values for all of val_X rather than a single row, to have more data for plot.
-shap_values = explainer.shap_values(X_train)
-
-# Make plot. Index of [1] is explained in text below.
-shap.summary_plot(shap_values, X_train)
-
-import matplotlib.pyplot as plt; 
-f = plt.gcf()
-
-# Make plot. Index of [1] is explained in text below.
-shap.summary_plot(shap_values, X_train,show=False,)
-plt.tight_layout()
-plt.savefig('summary_plot.png',bbox_inches = "tight")
-plt.show()
-
-mlflow.log_artifact('summary_plot.png')
+XY_df = pd.read_csv('output/e_resultcleaned.csv')
+XY_df['weight'] = 1
 
 # %%
-# check highest 
+# pull model from local
 
-top_trades = df_XY[df_XY['PCT_RET_FINAL']>1]
-top_trades.head()
-
+mdl = pickle.load(open(f'mlruns/1/{runid}/artifacts/model/model.pkl','rb'))
 
 # %%
-# check top variable(s)
+# pull information from mlflow
 
-# make plot
-shap.dependence_plot("Q('CLOSE_^VIX')", shap_values, X_train)
+mlflow.start_run(run_id = runid )
 
+def parse_mlflow_info(run_info):
+    metrics = run_info.data.metrics
+    params = run_info.data.params
+    tags = run_info.data.tags
+    return metrics, params, tags
 
+metrics , params, tags = parse_mlflow_info(mlflow.get_run(runid))
+
+mlflow.end_run()
+
+formula_clean = params['formula'].replace('\n','')
 
 # %%
-# scratch
+# parse data 
 
-# fig.savefig('imagename.png')
+mlflow.start_run(run_id = runid )
 
-# from sklearn.tree import export_graphviz
+y , X = dmatrices(formula_clean, XY_df, return_type='dataframe')
 
+# add columns if necessary, can only add, not remove extra cols
+cols_required = list(pd.DataFrame(
+    json.loads(json.loads(tags['mlflow.log-model.history'])[0]['signature']['inputs'])
+)['name'])
 
-# # Visualization. Install graphviz in your system
-# # from pydotplus import graph_from_dot_data
-# # from IPython.display import Image
-# # dot_data = export_graphviz(
-# #     sub_tree_1,
-# #     out_file=None, filled=True, rounded=True,
-# #     special_characters=True,
-# #     proportion=False, impurity=False, # enable them if you want
-# # )
-# # graph = graph_from_dot_data(dot_data)
-# # Image(graph.create_png())
+add_cols = list(set(cols_required) - set(list(X.columns)))
+X[add_cols] = 0
 
-# from dtreeviz.trees import *
-# viz = dtreeviz(sub_tree_1,
-#                X_train,
-#                y_train.values,
-#                target_name='PCT_RET_FINAL',
-#                feature_names=list(X.columns))
-              
-# viz.view()    
+mlflow.end_run()
+
 # %%
+# train test, repeat from earlier 
 
+X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
+    X, y, XY_df, test_size=0.33, random_state=42)
+
+# %%
+# score estimator
+
+score_estimator(mdl,X_train, X_test, XY_train, XY_test, formula_clean.split('~')[0].strip(),weights='weight')
+
+# %%
+# backup functions
+
+# https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html
+# def gini(actual, pred, sample_weight = None):
+#     #ignores weights
+#     assert (len(actual) == len(pred))
+#     allv = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=np.float)
+#     allv = allv[np.lexsort((allv[:, 2], -1 * allv[:, 1]))]
+#     totalLosses = allv[:, 0].sum()
+#     giniSum = allv[:, 0].cumsum().sum() / totalLosses
+
+#     giniSum -= (len(actual) + 1) / 2.
+#     return giniSum / len(actual)
+
+# def gini_normalized(truth, predictions, sample_weight=None):
+#     return gini(truth, predictions) / gini(truth, truth)
+
+# https://stackoverflow.com/questions/48999542/more-efficient-weighted-gini-coefficient-in-python
+# def gini(x, sample_weight=None):
+#     # The rest of the code requires numpy arrays.
+#     x = np.asarray(x)
+#     if sample_weight is not None:
+#         w = np.asarray(sample_weight)
+#         sorted_indices = np.argsort(x)
+#         sorted_x = x[sorted_indices]
+#         sorted_w = w[sorted_indices]
+#         # Force float dtype to avoid overflows
+#         cumw = np.cumsum(sorted_w, dtype=float)
+#         cumxw = np.cumsum(sorted_x * sorted_w, dtype=float)
+#         return (np.sum(cumxw[1:] * cumw[:-1] - cumxw[:-1] * cumw[1:]) / 
+#                 (cumxw[-1] * cumw[-1]))
+#     else:
+#         sorted_x = np.sort(x)
+#         n = len(x)
+#         cumx = np.cumsum(sorted_x, dtype=float)
+#         # The above formula, with all weights equal to 1 simplifies to:
+#         return (n + 1 - 2 * np.sum(cumx) / cumx[-1]) / n
+
+# def gini_normalized(y_actual, y_pred, sample_weight=None):
+#     """
+#     Gini coefficient based on two lists and optional weight list, all of same shape
+#     """
+#     ans = (gini(y_pred , sample_weight=sample_weight)
+#            / gini(y_actual , sample_weight=sample_weight)
+#     )
+#     return ans

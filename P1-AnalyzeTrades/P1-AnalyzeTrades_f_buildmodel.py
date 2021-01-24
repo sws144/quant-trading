@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt;
 
 # %%
 # ### INPUTS ###
-retune = False
+retune = False #hyperparameter tuning
 
 # %% 
 # start logging
@@ -208,8 +208,8 @@ if retune:
 
     # need to match estimator
     space = {
-        'n_estimators': hp.quniform('n_estimators', 450, 500, 5),  # low # high # number of choices
-        'max_depth': hp.quniform('max_depth', 9, 10, 2) 
+        'n_estimators': hp.quniform('n_estimators', 10, 100, 5),  # low # high # number of choices
+        'max_depth': hp.quniform('max_depth', 2, 10, 2) 
     }
 
     best_params = fmin(fn=objective_gbr,
