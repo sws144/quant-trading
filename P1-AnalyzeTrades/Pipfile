@@ -8,6 +8,7 @@ name = "pypi"
 hyperopt ="*"
 ipykernel = "*"
 joblib = "*"
+gunicorn ="*"
 matplotlib = "*"
 mlflow = "*"
 numpy = "==1.19.3" # due to error in 1.19.4

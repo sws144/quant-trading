@@ -15,3 +15,11 @@ see _Project-Tracking.xlsx file
 1. Terminal ```pipenv sync``` to create environment, ```pipenv shell``` to enter environment
 1. ```mlflow ui``` to enter environment
 1. To shut down, type "ctrl + c" in terminal
+
+
+## Build App
+1. Start docker desktop app
+1. Let's build our image: ```docker build -t analyze:latest . ```
+1. and run: ```docker run -p 8004:8003 analyze:latest``` ,  host port : container port :
+1. ```curl localhost:8003``` -> Hello world!
+1. To turn off, ctrl+c in terminal
