@@ -18,6 +18,7 @@ patsy = "*"
 ## pydotplus = "*"
 shap = "*"
 sklearn = "*"
+statsmodels = "*"
 yfinance = "*"
 
 [dev-packages]
