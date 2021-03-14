@@ -72,8 +72,7 @@ def gini_normalized(y_true, y_pred, sample_weight=None):
 
 def score_estimator(
     estimator, X_train, X_test, df_train, df_test, target, weights,
-    tweedie_powers=None,
-):
+    tweedie_powers=None,):
     """
     Evaluate an estimator on train and test sets with different metrics
     """
@@ -167,6 +166,8 @@ cols_required = list(pd.DataFrame(
 
 add_cols = list(set(cols_required) - set(list(X.columns)))
 X[add_cols] = 0
+
+X = X[cols_required] # ensure X is in correct order and complete for model
 
 mlflow.end_run()
 
