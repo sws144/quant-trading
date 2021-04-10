@@ -1,3 +1,3 @@
 P1-AnalyzeTrades/data/*
 P1-AnalyzeTrades/output/*.csv
-P1-AnalyzeTrades/mlruns/*
+# P1-AnalyzeTrades/mlruns/*

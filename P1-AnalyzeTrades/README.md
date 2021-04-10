@@ -6,7 +6,7 @@ see _Project-Tracking.xlsx file
 
 ## Backend Overview
 
-1. read in portfolio and trades from IB activity file (tradelog..py)
+1. read in portfolio and trades from IB activity statemetn (tradelog..py)
 1. append own charactierstics
 1. append market data
 1. build models
@@ -17,16 +17,16 @@ see _Project-Tracking.xlsx file
 
 ### MLFlow
 
-1. Terminal ```pipenv sync``` to create environment, ```pipenv shell``` to enter environment
-1. ```mlflow ui``` to enter environment
+1. Terminal `pipenv sync` to create environment, `pipenv shell` to enter environment
+1. `mlflow ui` to enter environment
 1. To shut down, type "ctrl + c" in terminal
 
 ## Frontend Build App
 
 1. Start docker desktop app
-1. Let's build our image: ```docker build -t analyze:latest . ```
-1. and run: ```docker run -p 8004:8003 analyze:latest``` ,  host port : container port :
-1. ```curl localhost:8004``` -> Hello world!
+1. Let's build our image: `docker build -t analyze:latest .`
+1. and run: `docker run -p 8004:8003 analyze:latest` ,  host port : container port :
+1. `curl localhost:8004` -> Hello world!
 1. To turn off, ctrl+c in terminal
 
 ## Frontend Overview

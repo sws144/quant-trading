@@ -112,7 +112,7 @@ class Numerizer(TransformerMixin):
 
 # update columns headers to clean up
 df_XY.columns = list(
-    pd.Series(df_XY.columns).astype(str).str.replace(' ','_')\
+    pd.Series(df_XY.columns).astype(str).str.replace(' ','_', regex=True)\
         .str.upper().str.strip().str.replace('/','_').str.replace('*','_')
 )
 

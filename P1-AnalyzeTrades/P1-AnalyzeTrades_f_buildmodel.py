@@ -33,7 +33,7 @@ retune = False #hyperparameter tuning
 # start logging
 
 # one time run to create
-# mlflow.create_experiement()
+# mlflow.create_experiment('P1-AnalyzeTrades_f_core)
 
 mlflow.set_experiment("P1-AnalyzeTrades_f_core")
 
@@ -305,7 +305,7 @@ shap.summary_plot(shap_values, X_train)
 f = plt.gcf()
 
 # Make plot. Index of [1] is explained in text below.
-shap.summary_plot(shap_values, X_train,show=False,)
+# shap.summary_plot(shap_values, X_train,show=False,)
 plt.tight_layout()
 plt.savefig('summary_plot.png',bbox_inches = "tight")
 plt.show()
