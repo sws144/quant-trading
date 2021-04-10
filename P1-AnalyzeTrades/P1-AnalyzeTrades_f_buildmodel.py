@@ -304,8 +304,8 @@ shap.summary_plot(shap_values, X_train)
 
 f = plt.gcf()
 
-# Make plot. Index of [1] is explained in text below.
-# shap.summary_plot(shap_values, X_train,show=False,)
+# Make plot to save
+shap.summary_plot(shap_values, X_train,show=False,)
 plt.tight_layout()
 plt.savefig('summary_plot.png',bbox_inches = "tight")
 plt.show()
@@ -323,8 +323,11 @@ top_trades.head()
 # %%
 # check top variable(s)
 
-# make plot
-shap.dependence_plot("Q('CLOSE_^VIX')", shap_values, X_train)
+# make plots
+
+plot_vars = ["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')"]
+for var in plot_vars:
+    shap.dependence_plot(var, shap_values, X_train)
 
 # %%
 # end mlflow
