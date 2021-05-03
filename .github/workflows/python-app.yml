@@ -21,12 +21,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pipenv
-        pipenv install --system --deploy
+        pipenv sync
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       working-directory: ./P1-AnalyzeTrades/
       run: |
-        python -m pytest
+        pipenv shell
+        pytest
         - name: Lint with flake8
     #   run: |
     #     # stop the build if there are Python syntax errors or undefined names
