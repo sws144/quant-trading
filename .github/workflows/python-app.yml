@@ -25,7 +25,7 @@ jobs:
       working-directory: ./P1-AnalyzeTrades/
       run: |
           pipenv install --dev
-          pipenv run pytest test --junit-xml pytest.xml
+          pipenv run pytest --junit-xml pytest.xml
     - name: Upload Unit Test Results
       if: always()
       uses: actions/upload-artifact@v2
