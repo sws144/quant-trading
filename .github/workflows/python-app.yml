@@ -49,4 +49,4 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         with:
-          files: ./P1-AnalyzeTrades/test-results/**/*.xml
+          files: artifacts/*.xml
