@@ -6,9 +6,12 @@ name: Python application
 on: [push, pull_request]
 
 jobs:
-  build:
+  build_p1:
 
     runs-on: ubuntu-latest
+
+    env: 
+      working-directory: ./P1-AnalyzeTrades
 
     steps:
     - uses: actions/checkout@v2
@@ -19,8 +22,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pipenv
+        pipenv sync
+        # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
         pytest
