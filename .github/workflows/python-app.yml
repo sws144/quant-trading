@@ -6,7 +6,7 @@ name: P1 Analyze Trades Test
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-and-test:
 
     runs-on: ubuntu-latest
 
