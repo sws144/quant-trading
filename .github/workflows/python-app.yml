@@ -31,7 +31,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Unit Test Results
-        path: pytest.xml
+        path: ./P1-AnalyzeTrades/pytest.xml
 
   publish-test-results:
     name: "Publish Unit Tests Results"
