@@ -21,7 +21,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pipenv
-        pipenv sync
+        # pipenv sync
         # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       working-directory: ./P1-AnalyzeTrades/
@@ -29,6 +29,11 @@ jobs:
           pipenv install --dev
           pipenv run pytest
         # - name: Lint with flake8
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        files: ./P1-AnalyzeTrades/test-results/**/*.xml
     #   run: |
     #     # stop the build if there are Python syntax errors or undefined names
     #     flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
