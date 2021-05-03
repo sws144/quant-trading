@@ -1,17 +1,14 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python application
+name: P1 Analyze Trades Test
 
 on: [push, pull_request]
 
 jobs:
-  build_p1:
+  build:
 
     runs-on: ubuntu-latest
-
-    env: 
-      working-directory: ./P1-AnalyzeTrades/
 
     steps:
     - uses: actions/checkout@v2
@@ -20,6 +17,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Install dependencies
+      working-directory: ./P1-AnalyzeTrades/
       run: |
         python -m pip install --upgrade pip
         pip install pipenv
