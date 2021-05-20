@@ -2,7 +2,8 @@
 
 ## Project Tracking
 
-see _Project-Tracking.xlsx file
+See [Azure DevOps](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
+Backup: see _Project-Tracking.xlsx file
 
 ## Backend Overview
 
