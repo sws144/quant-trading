@@ -84,13 +84,18 @@ class TradeManager():
     
     # NEED TO UPDATE FOR SPECIFIC FILES
     def process_df(self, df):
-            for i, tr in df.iterrows():
-                buying = tr["Action"] == 'B'
-                trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
-                        float(tr["T. Price"]), int(tr["Quantity"]), 
-                        float(tr['Comm/Fee']))
-                
-                self.process_trade(trade)
+        """process dataframe of trades and save to object
+
+        Args:
+            df ([pd.DataFrame]): [description]
+        """
+        for i, tr in df.iterrows():
+            buying = tr["Action"] == 'B'
+            trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
+                    float(tr["T. Price"]), int(tr["Quantity"]), 
+                    float(tr['Comm/Fee']))
+            
+            self.process_trade(trade)
         
     def print_closed_trades(self):
         for ct in self._closed_trades:
