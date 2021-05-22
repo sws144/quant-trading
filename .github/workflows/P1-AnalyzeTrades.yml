@@ -3,7 +3,11 @@
 
 name: P1 Analyze Trades Test
 
-on: [push, pull_request]
+on: 
+  push: 
+    paths: 
+      - './P1-AnalyzeTrades/*'
+  pull_request:
 
 jobs:
   build-and-test:
