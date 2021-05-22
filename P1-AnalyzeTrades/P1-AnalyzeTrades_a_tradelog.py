@@ -12,6 +12,10 @@ import os # for path
 
 import tradehelper as th # local class
 
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 150)
+
 # %%
 # read in raw data
 ### INPUT ###
