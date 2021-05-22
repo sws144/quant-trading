@@ -32,7 +32,7 @@ import pickle
 # %% 
 # ### INPUT ###
 
-runid = 'f71fb9cb2001496ba5cde6ce7a553bd3'
+runid = '870dc41593e7459da68839f3bebb2b86'
 
 mlflow.set_experiment("P1-AnalyzeTrades_f_core")
 
@@ -133,7 +133,8 @@ XY_df['weight'] = 1
 # %%
 # pull model from local
 
-mdl = pickle.load(open(f'mlruns/1/{runid}/artifacts/model/model.pkl','rb'))
+# TODO use actual function, otherwise need to update link
+mdl = pickle.load(open(f'mlruns/0/{runid}/artifacts/model/model.pkl','rb'))
 
 # %%
 # pull information from mlflow

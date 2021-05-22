@@ -4,6 +4,7 @@
 # %%
 # imports
 
+import importlib  # for importing other packages
 import pandas as pd
 import numpy as np
 from patsy import dmatrices
@@ -27,13 +28,13 @@ import matplotlib.pyplot as plt;
 
 # %%
 # ### INPUTS ###
-retune = False #hyperparameter tuning
+retune = True #hyperparameter tuning
 
 # %% 
 # start logging
 
 # one time run to create
-# mlflow.create_experiement()
+# mlflow.create_experiment('P1-AnalyzeTrades_f_core)
 
 mlflow.set_experiment("P1-AnalyzeTrades_f_core")
 
@@ -119,8 +120,7 @@ mlflow.log_params({"formula":formula})
 # train test data
 
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.33, random_state=42)
-
+    X, y.to_numpy().ravel(), test_size=0.33, random_state=42)
 
 # %%
 # tune & run model using hyperopt
@@ -168,30 +168,9 @@ if retune:
     #     Gini = [l - r for l, r in zip(Lorentz, random)] # slice of diff from Lorenz and random                          
     #     return np.sum(Gini)                                                         
 
-    def gini(actual, pred):
-        assert (len(actual) == len(pred))
-        allv = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=np.float)
-        allv = allv[np.lexsort((allv[:, 2], -1 * allv[:, 1]))]
-        totalLosses = allv[:, 0].sum()
-        giniSum = allv[:, 0].cumsum().sum() / totalLosses
+    func_f = importlib.import_module( "P1-AnalyzeTrades_f_buildmodel_func")
 
-        giniSum -= (len(actual) + 1) / 2.
-        return giniSum / len(actual)
-
-    # can swap in
-    def gini_xgb(predictions, truth):
-        truth = truth.get_label()
-        return 'gini', -1.0 * gini(truth, predictions) / gini(truth, truth)
-
-    # can swap in
-    def gini_lgb(truth, predictions):
-        score = gini(truth, predictions) / gini(truth, truth)
-        return 'gini', score, True
-
-    def gini_sklearn(truth, predictions):
-        return gini(truth, predictions) / gini(truth, truth)
-
-    gini_scorer = make_scorer(gini_sklearn, greater_is_better=True)
+    gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
 
     # use hyperopt package with to better search 
     # https://github.com/hyperopt/hyperopt/wiki/FMin
@@ -304,7 +283,7 @@ shap.summary_plot(shap_values, X_train)
 
 f = plt.gcf()
 
-# Make plot. Index of [1] is explained in text below.
+# Make plot to save
 shap.summary_plot(shap_values, X_train,show=False,)
 plt.tight_layout()
 plt.savefig('summary_plot.png',bbox_inches = "tight")
@@ -323,8 +302,11 @@ top_trades.head()
 # %%
 # check top variable(s)
 
-# make plot
-shap.dependence_plot("Q('CLOSE_^VIX')", shap_values, X_train)
+# make plots
+
+plot_vars = ["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')"]
+for var in plot_vars:
+    shap.dependence_plot(var, shap_values, X_train)
 
 # %%
 # end mlflow
