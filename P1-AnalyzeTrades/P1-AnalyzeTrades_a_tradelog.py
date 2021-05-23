@@ -73,7 +73,7 @@ df_port_init = df_port_init[df_port_init['filename'] == os.path.basename(globbed
 df_port_init.head()
 
 # add to trades
-df_port_init['Date/Time'] = '2015-06-30'
+df_port_init['Date/Time'] = init_date
 df_port_init['T. Price'] = df_port_init['Cost Price']
 
 df_trades = pd.concat([df_port_init, df_trades])
@@ -98,6 +98,10 @@ df_trades.dtypes
 # create trades action col and normalize quantity
 df_trades['Action'] = np.where(df_trades['Quantity'] > 0, 'B', 'S')
 df_trades['Quantity'] = abs(df_trades['Quantity'])
+
+# %%
+# TODO add in splits with date to df_trades
+# sort by time
 
 
 # %%
