@@ -17,4 +17,5 @@ def test_trademanager_1():
     # pushed to dataframe
     df_complete_trades = pd.concat([x.to_df() for x in complete_trades]).reset_index(drop=True)
 
-    assert df_complete_trades.shape[0] > 1 
+    assert df_complete_trades['Pnl'].sum().round(2) == -713.48
+ 
