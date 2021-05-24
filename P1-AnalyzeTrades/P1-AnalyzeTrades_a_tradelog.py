@@ -12,7 +12,7 @@ import os # for path
 
 import tradehelper as th # local class
 
-pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_rows', 20)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 150)
 
@@ -85,8 +85,9 @@ df_trades = pd.concat([df_port_init, df_trades])
 df_trades['Date/Time'] = pd.to_datetime(df_trades['Date/Time'],errors='coerce') 
 numeric_cols = ['T. Price','Comm/Fee','Quantity']
 for col in numeric_cols:
-    df_trades[col] = (df_trades[col].astype(str).str.strip()
-        .str.replace('$','').str.replace(',','').astype(float)
+    df_trades[col] = (
+        df_trades[col].astype(str).str.strip()
+        .str.replace('$','', regex=False).str.replace(',','',regex=False).astype(float)
         )
     
 df_trades['Comm/Fee'] = df_trades['Comm/Fee'].fillna(0) 
@@ -100,8 +101,29 @@ df_trades['Action'] = np.where(df_trades['Quantity'] > 0, 'B', 'S')
 df_trades['Quantity'] = abs(df_trades['Quantity'])
 
 # %%
-# TODO add in splits with date to df_trades
+# consider corporate actions
+
+# pull corp actions
+df_corpact = df_raw[df_raw[0]=='Corporate Actions']
+df_corpact.columns  = df_corpact.iloc[0,:] # col name is at top of block
+df_corpact = df_corpact[df_corpact['Header'] == 'Data']
+df_corpact.columns = [*df_corpact.columns[:-1], 'filename']
+cols = df_corpact.columns[~df_corpact.columns.isin([np.nan])]
+df_corpact = df_corpact[cols]
+
+df_corpact = df_corpact[~df_corpact['Description'].isna()] # remove na's
+
+# add cols to match trades
+df_corpact['Symbol'] = (
+    df_corpact['Description']
+    .str.split('(',expand=True)[0]
+    .str.split('.', expand=True)[0]
+)
+df_corpact['Action'] = 'CA'
+df_corpact['Date/Time'] = pd.to_datetime(df_corpact['Date/Time'], errors='coerce')
+
 # sort by time
+df_trades = pd.concat([df_trades,df_corpact]).sort_values('Date/Time', ascending=True)
 
 
 # %%

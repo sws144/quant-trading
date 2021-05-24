@@ -23,11 +23,17 @@ class TradeManager():
     def process_trade(self, trade):
         d = self._open_trades[trade.symbol]
 
+        # check corporate action
+        if trade.corpact:
+            # TODO implement
+            self._pnl += 0
+            return
+
         # if no inventory, just add it
         if len(d) == 0:
             d.append(trade)
             return
-
+        
         # if inventory exists, all trades must be same way (buy or sell)
         # if new trade is same way, again just add it
         if d[0].buying == trade.buying:
@@ -91,9 +97,12 @@ class TradeManager():
         """
         for i, tr in df.iterrows():
             buying = tr["Action"] == 'B'
+            CA = False
+            if tr['Action'] == 'CA':
+                CA = True
             trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
                     float(tr["T. Price"]), int(tr["Quantity"]), 
-                    float(tr['Comm/Fee']))
+                    float(tr['Comm/Fee']), CA)
             
             self.process_trade(trade)
         
@@ -109,13 +118,25 @@ class TradeManager():
         return self._closed_trades[:]
 
 class Trade():
-    def __init__(self, time, symbol, buying, price, quantity, comm):
+    def __init__(self, time, symbol, buying:bool, price, quantity, comm, corpact : bool = False):
+        """[summary]
+
+        Args:
+            time ([type]): [description]
+            symbol ([type]): [description]
+            buying (bool): [description]
+            price ([type]): [description]
+            quantity ([type]): [description]
+            comm ([type]): [description]
+            corpact (bool, optional): [description]. Defaults to False.
+        """
         self.time = time
         self.symbol = symbol
         self.buying = buying
         self.price = price
         self.quantity = quantity
         self.comm = comm
+        self.corpact = corpact
 
 class ClosedTrade():
     def __init__(self, open_t, close_t, symbol, quantity, pnl, bought_first,
