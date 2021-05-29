@@ -1,8 +1,12 @@
 # P1-Analyze Trades Architecture
 
-Purpose: apply data science and analytics to a user's trading history into order to drive value
+## Purpose: 
 
-Architecture: C4 style approach, see README puml files and pngs
+Apply data science and analytics to a user's trading history into order to drive value
+
+## Architecture: 
+
+C4 style approach, see README puml files and pngs
 
 ## Project Tracking
 

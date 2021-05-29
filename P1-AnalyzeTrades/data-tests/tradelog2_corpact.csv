@@ -1,0 +1,4 @@
+Test,Corporate Actions,Header,Asset Category,Currency,Report Date,Date/Time,Description,Quantity,Proceeds,Value,Realized P/L,Code,filename,T. Price,Symbol,Action,Comm/Fee,ActionType,RatioNewOld
+1,Corporate Actions,Data,Stocks,USD,3/2/2015,2/27/2015 20:25,"SFBS(US81768T1088) Split 2 for 1 (SFBS, SERVIS",500,0,28945,0,,F1056881_U1060261_20150102_20151231_AS_Fv2_6ea238f0f74eaaae4661b976cb061784.csv,1000,MYL,B,-1,,1
+2,Corporate Actions,Data,Stocks,USD,3/2/2015,2/27/2015 20:25,"SFBS(US81768T1088) Split 2 for 1 (SFBS, SERVIS",500,0,-28662.5,1216.91236,,F1056881_U1060261_20150102_20151231_AS_Fv2_6ea238f0f74eaaae4661b976cb061784.csv,,MYL,CA,,Split,2
+3,Corporate Actions,Data,Stocks,USD,3/2/2015,2/27/2015 20:25,"SFBS(US81768T1088) Split 2 for 1 (SFBS, SERVIS",-1000,0,28945,0,,F1056881_U1060261_20150102_20151231_AS_Fv2_6ea238f0f74eaaae4661b976cb061784.csv,500,MYL,S,-1,,1

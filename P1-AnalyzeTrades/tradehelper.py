@@ -25,7 +25,16 @@ class TradeManager():
 
         # check corporate action
         if trade.corpact:
-            # TODO implement
+        
+            new_d = deque()
+            while len(d) > 0:
+                new_d.append(Trade(d[0].time, d[0].symbol, d[0].buying, 
+                    d[0].price / trade.ratio, d[0].quantity * trade.ratio, 
+                    d[0].comm,  d[0].corpact, d[0].ratio)) 
+                d.popleft()
+
+            self._open_trades[trade.symbol] = new_d # replace w/ new deque
+                
             self._pnl += 0
             return
 
@@ -95,6 +104,10 @@ class TradeManager():
         Args:
             df ([pd.DataFrame]): [description]
         """
+        
+        if 'RatioNewOld' not in df.columns:
+            df['RatioNewOld'] = 1
+        
         for i, tr in df.iterrows():
             buying = tr["Action"] == 'B'
             CA = False
@@ -102,7 +115,7 @@ class TradeManager():
                 CA = True
             trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
                     float(tr["T. Price"]), int(tr["Quantity"]), 
-                    float(tr['Comm/Fee']), CA)
+                    float(tr['Comm/Fee']), CA, float(tr["RatioNewOld"]))
             
             self.process_trade(trade)
         
@@ -118,7 +131,8 @@ class TradeManager():
         return self._closed_trades[:]
 
 class Trade():
-    def __init__(self, time, symbol, buying:bool, price, quantity, comm, corpact : bool = False):
+    def __init__(self, time, symbol, buying:bool, price, quantity, comm, 
+                 corpact : bool = False, ratio: float = 1):
         """[summary]
 
         Args:
@@ -129,7 +143,11 @@ class Trade():
             quantity ([type]): [description]
             comm ([type]): [description]
             corpact (bool, optional): [description]. Defaults to False.
+            ratio (float, optional): [description]. Defaults to 1.
         """
+    
+        import math
+        
         self.time = time
         self.symbol = symbol
         self.buying = buying
@@ -137,6 +155,7 @@ class Trade():
         self.quantity = quantity
         self.comm = comm
         self.corpact = corpact
+        self.ratio = ratio
 
 class ClosedTrade():
     def __init__(self, open_t, close_t, symbol, quantity, pnl, bought_first,

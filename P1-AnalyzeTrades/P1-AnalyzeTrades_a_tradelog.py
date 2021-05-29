@@ -96,9 +96,10 @@ df_trades['Comm/Fee'] = df_trades['Comm/Fee'].fillna(0)
 df_trades.dtypes  
 
 # %%
-# create trades action col and normalize quantity
+# create trades action col and normalize quantity and add ratio for later
 df_trades['Action'] = np.where(df_trades['Quantity'] > 0, 'B', 'S')
 df_trades['Quantity'] = abs(df_trades['Quantity'])
+df_trades['RatioNewOld'] = 1
 
 # %%
 # consider corporate actions
@@ -121,13 +122,40 @@ df_corpact['Symbol'] = (
 )
 df_corpact['Action'] = 'CA'
 df_corpact['Date/Time'] = pd.to_datetime(df_corpact['Date/Time'], errors='coerce')
+condlist = [
+    df_corpact['Description'].str.contains('Split'),
+    True
+]
+choicelist = [
+    'Split',
+    ''
+]
+df_corpact['ActionType'] = np.select(condlist, choicelist)
+
+df_splits = df_corpact.loc[df_corpact['ActionType']=='Split',:]
+
+df_splits['RatioNewOld'] = 1
+df_splits.loc[:,'RatioNewOld'] = (
+    df_splits['Description'].str.split(' for ',expand=True)[0]
+    .str.split(' FOR ', expand=True)[0]
+    .str[-1].str[0:2].astype(int)
+    /
+    df_splits['Description'].str.split(' for ',expand=True).iloc[:,-1]
+    .str.split(' FOR ', expand=True)
+    .iloc[:,-1].str[0:2].astype(int)        
+)
 
 # sort by time
-df_trades = pd.concat([df_trades,df_corpact]).sort_values('Date/Time', ascending=True)
+df_trades = pd.concat([df_trades,df_splits]).sort_values('Date/Time', ascending=True)
 
+# ratio
+df_trades['RatioNewOld'] = df_trades['RatioNewOld'].fillna(1)
 
 # %%
 # create completed trade list
+
+# QA
+df_trades = pd.read_csv('data-tests/tradelog2_corpact.csv')
 
 tm = th.TradeManager(store_trades=True, print_trades=False)
 
