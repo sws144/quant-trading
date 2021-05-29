@@ -153,7 +153,7 @@ df_trades['RatioNewOld'] = df_trades['RatioNewOld'].fillna(1)
 # create completed trade list
 
 # QA
-df_trades = pd.read_csv('data-tests/tradelog2_corpact.csv')
+# df_trades = pd.read_csv('data-tests/tradelog2_corpact.csv')
 
 tm = th.TradeManager(store_trades=True, print_trades=False)
 
