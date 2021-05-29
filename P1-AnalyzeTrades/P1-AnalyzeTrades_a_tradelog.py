@@ -12,6 +12,10 @@ import os # for path
 
 import tradehelper as th # local class
 
+pd.set_option('display.max_rows', 20)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 150)
+
 # %%
 # read in raw data
 ### INPUT ###
@@ -41,8 +45,6 @@ df_raw.head()
 df_raw[0].value_counts()[:10]
 
 
-
-
 # %%
 # Create trading list, after first activity file
 df_trades = df_raw[df_raw[0]=='Trades']
@@ -69,7 +71,7 @@ df_port_init = df_port_init[df_port_init['filename'] == os.path.basename(globbed
 df_port_init.head()
 
 # add to trades
-df_port_init['Date/Time'] = '2015-06-30'
+df_port_init['Date/Time'] = init_date
 df_port_init['T. Price'] = df_port_init['Cost Price']
 
 df_trades = pd.concat([df_port_init, df_trades])
@@ -79,10 +81,11 @@ df_trades = pd.concat([df_port_init, df_trades])
 # update data types for trades & fill nas
 
 df_trades['Date/Time'] = pd.to_datetime(df_trades['Date/Time'],errors='coerce') 
-numeric_cols = ['T. Price','Comm/Fee','Quantity']
+numeric_cols = ['T. Price','Comm/Fee','Quantity'] # T. Price for opening trade includes comm
 for col in numeric_cols:
-    df_trades[col] = (df_trades[col].astype(str).str.strip()
-        .str.replace('$','').str.replace(',','').astype(float)
+    df_trades[col] = (
+        df_trades[col].astype(str).str.strip()
+        .str.replace('$','', regex=False).str.replace(',','',regex=False).astype(float)
         )
     
 df_trades['Comm/Fee'] = df_trades['Comm/Fee'].fillna(0) 
@@ -91,13 +94,66 @@ df_trades['Comm/Fee'] = df_trades['Comm/Fee'].fillna(0)
 df_trades.dtypes  
 
 # %%
-# create trades action col and normalize quantity
+# create trades action col and normalize quantity and add ratio for later
 df_trades['Action'] = np.where(df_trades['Quantity'] > 0, 'B', 'S')
 df_trades['Quantity'] = abs(df_trades['Quantity'])
+df_trades['RatioNewOld'] = 1
 
+# %%
+# consider corporate actions
+
+# pull corp actions
+df_corpact = df_raw[df_raw[0]=='Corporate Actions']
+df_corpact.columns  = df_corpact.iloc[0,:] # col name is at top of block
+df_corpact = df_corpact[df_corpact['Header'] == 'Data']
+df_corpact.columns = [*df_corpact.columns[:-1], 'filename']
+cols = df_corpact.columns[~df_corpact.columns.isin([np.nan])]
+df_corpact = df_corpact[cols]
+
+df_corpact = df_corpact[~df_corpact['Description'].isna()] # remove na's
+
+# add cols to match trades
+df_corpact['Symbol'] = (
+    df_corpact['Description']
+    .str.split('(',expand=True)[0]
+    .str.split('.', expand=True)[0]
+)
+df_corpact['Action'] = 'CA'
+df_corpact['Date/Time'] = pd.to_datetime(df_corpact['Date/Time'], errors='coerce')
+condlist = [
+    df_corpact['Description'].str.contains('Split'),
+    True
+]
+choicelist = [
+    'Split',
+    ''
+]
+df_corpact['ActionType'] = np.select(condlist, choicelist)
+
+df_splits = df_corpact.loc[df_corpact['ActionType']=='Split',:]
+
+df_splits['RatioNewOld'] = 1
+df_splits.loc[:,'RatioNewOld'] = (
+    df_splits['Description'].str.split(' for ',expand=True)[0]
+    .str.split(' FOR ', expand=True)[0]
+    .str[-1].str[0:2].astype(int)
+    /
+    df_splits['Description'].str.split(' for ',expand=True).iloc[:,-1]
+    .str.split(' FOR ', expand=True)
+    .iloc[:,-1].str[0:2].astype(int)        
+)
+
+# sort by time
+df_trades = pd.concat([df_trades,df_splits]).sort_values('Date/Time', ascending=True)
+
+# ratio
+df_trades['RatioNewOld'] = df_trades['RatioNewOld'].fillna(1)
 
 # %%
 # create completed trade list
+
+# QA
+# df_trades = pd.read_csv('data-tests/tradelog2_corpact.csv')
 
 tm = th.TradeManager(store_trades=True, print_trades=False)
 

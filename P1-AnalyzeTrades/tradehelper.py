@@ -23,11 +23,26 @@ class TradeManager():
     def process_trade(self, trade):
         d = self._open_trades[trade.symbol]
 
+        # check corporate action
+        if trade.corpact:
+        
+            new_d = deque()
+            while len(d) > 0:
+                new_d.append(Trade(d[0].time, d[0].symbol, d[0].buying, 
+                    d[0].price / trade.ratio, d[0].quantity * trade.ratio, 
+                    d[0].comm,  d[0].corpact, d[0].ratio)) 
+                d.popleft()
+
+            self._open_trades[trade.symbol] = new_d # replace w/ new deque
+                
+            self._pnl += 0
+            return
+
         # if no inventory, just add it
         if len(d) == 0:
             d.append(trade)
             return
-
+        
         # if inventory exists, all trades must be same way (buy or sell)
         # if new trade is same way, again just add it
         if d[0].buying == trade.buying:
@@ -44,7 +59,7 @@ class TradeManager():
                 pnl *= -1
 
             #commission 
-            pnl += trade.comm  # comm is negative number
+            pnl += trade.comm # comm is negative number, assume opening price has comm already factored in
 
             pnl = round(pnl, 2)
             self._pnl += pnl
@@ -84,13 +99,25 @@ class TradeManager():
     
     # NEED TO UPDATE FOR SPECIFIC FILES
     def process_df(self, df):
-            for i, tr in df.iterrows():
-                buying = tr["Action"] == 'B'
-                trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
-                        float(tr["T. Price"]), int(tr["Quantity"]), 
-                        float(tr['Comm/Fee']))
-                
-                self.process_trade(trade)
+        """process dataframe of trades and save to object
+
+        Args:
+            df ([pd.DataFrame]): [description]
+        """
+        
+        if 'RatioNewOld' not in df.columns:
+            df['RatioNewOld'] = 1
+        
+        for i, tr in df.iterrows():
+            buying = tr["Action"] == 'B'
+            CA = False
+            if tr['Action'] == 'CA':
+                CA = True
+            trade = Trade(tr["Date/Time"], tr["Symbol"], buying, 
+                    float(tr["T. Price"]), int(tr["Quantity"]), 
+                    float(tr['Comm/Fee']), CA, float(tr["RatioNewOld"]))
+            
+            self.process_trade(trade)
         
     def print_closed_trades(self):
         for ct in self._closed_trades:
@@ -104,13 +131,31 @@ class TradeManager():
         return self._closed_trades[:]
 
 class Trade():
-    def __init__(self, time, symbol, buying, price, quantity, comm):
+    def __init__(self, time, symbol, buying:bool, price, quantity, comm, 
+                 corpact : bool = False, ratio: float = 1):
+        """[summary]
+
+        Args:
+            time ([type]): [description]
+            symbol ([type]): [description]
+            buying (bool): [description]
+            price ([type]): [description]
+            quantity ([type]): [description]
+            comm ([type]): [description]
+            corpact (bool, optional): [description]. Defaults to False.
+            ratio (float, optional): [description]. Defaults to 1.
+        """
+    
+        import math
+        
         self.time = time
         self.symbol = symbol
         self.buying = buying
         self.price = price
         self.quantity = quantity
         self.comm = comm
+        self.corpact = corpact
+        self.ratio = ratio
 
 class ClosedTrade():
     def __init__(self, open_t, close_t, symbol, quantity, pnl, bought_first,

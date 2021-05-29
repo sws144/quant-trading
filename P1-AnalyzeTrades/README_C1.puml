@@ -1,0 +1,19 @@
+'https://github.com/plantuml-stdlib/C4-PlantUML for refs
+'https://c4model.com/
+'alt+d to preview
+'need PlantUML extension to preview
+'Export to workspace, then save here when updating
+
+@startuml README_C1_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(admin, "Power User")
+Person(user1, "Regular User")
+System(P1_AnalyzeTrades, "P1_AnalyzeTrades")
+
+Rel(admin, P1_AnalyzeTrades, "Runs scripts", "using IDE, trade log")
+Rel(P1_AnalyzeTrades, admin, "Estimated return, fitted/selected models")
+
+Rel(user1, P1_AnalyzeTrades, "Send inputs", "website")
+Rel(P1_AnalyzeTrades, user1, "Estimated return", "website")
+@enduml
