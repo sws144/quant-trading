@@ -59,7 +59,7 @@ class TradeManager():
                 pnl *= -1
 
             #commission 
-            pnl += trade.comm  # comm is negative number
+            pnl += trade.comm # comm is negative number, assume opening price has comm already factored in
 
             pnl = round(pnl, 2)
             self._pnl += pnl

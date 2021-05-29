@@ -45,8 +45,6 @@ df_raw.head()
 df_raw[0].value_counts()[:10]
 
 
-
-
 # %%
 # Create trading list, after first activity file
 df_trades = df_raw[df_raw[0]=='Trades']
@@ -83,7 +81,7 @@ df_trades = pd.concat([df_port_init, df_trades])
 # update data types for trades & fill nas
 
 df_trades['Date/Time'] = pd.to_datetime(df_trades['Date/Time'],errors='coerce') 
-numeric_cols = ['T. Price','Comm/Fee','Quantity']
+numeric_cols = ['T. Price','Comm/Fee','Quantity'] # T. Price for opening trade includes comm
 for col in numeric_cols:
     df_trades[col] = (
         df_trades[col].astype(str).str.strip()

@@ -37,5 +37,5 @@ def test_2_corpact():
     # pushed to dataframe
     df_complete_trades = pd.concat([x.to_df() for x in complete_trades]).reset_index(drop=True)
 
-    assert df_complete_trades['Pnl'].sum().round(2) == -2 # calc'ed manualy in Excel
+    assert df_complete_trades['Pnl'].sum().round(2) == -1 # calc'ed manualy in Excel
  
