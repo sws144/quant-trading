@@ -2,6 +2,10 @@
 #  ## E: Build & Tune Models
 
 # %%
+# ### INPUTS ###
+retune = True #hyperparameter tuning
+
+# %%
 # imports
 
 import importlib  # for importing other packages
@@ -26,28 +30,25 @@ from sklearn import tree
 import shap  # package used to calculate Shap values
 import matplotlib.pyplot as plt; 
 
-# %%
-# ### INPUTS ###
-retune = True #hyperparameter tuning
 
 # %% 
 # start logging
 
-# one time run to create
-# mlflow.create_experiment('P1-AnalyzeTrades_f_core)
+# set location for mlruns
+mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 
-mlflow.set_experiment("P1-AnalyzeTrades_f_core")
+# set experiment
+try:
+    mlflow.set_experiment("P1-AnalyzeTrades_f_core") 
+except:
+    mlflow.create_experiment('P1-AnalyzeTrades_f_core')
 
 mlflow.sklearn.autolog()
-mlflow.start_run()
-
-mlflow.set_tag('run_id', mlflow.active_run().info.run_id)
 
 # %%
 # read in data
 
 df_XY = pd.read_csv('output/e_resultcleaned.csv')
-
 
 # %%
 # variables
@@ -113,9 +114,6 @@ formula =  f""" {target} ~ 1 + {varstring}"""
         
 y , X = dmatrices(formula, df_XY, return_type='dataframe')
 
-# TODO save model formula, use this and na transformer
-mlflow.log_params({"formula":formula})
-
 # %% 
 # train test data
 
@@ -155,19 +153,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 # tune & run model
 
 if retune:
-    # https://www.kaggle.com/eikedehling/tune-and-compare-xgb-lightgbm-rf-with-hyperopt
-
-    # def gini(solution, submission):  # actual, expected
-    #     """expects 2 lists"""                                       
-    #     df = sorted(zip(solution, submission),    
-    #             key=lambda x: x[1], reverse=True) # still a list, sorted by y_pred
-    #     random = [float(i+1)/float(len(df)) for i in range(len(df))] # uniform percentiles             
-    #     totalPos = np.sum([x[0] for x in df]) # sum of actual results                                      
-    #     cumPosFound = np.cumsum([x[0] for x in df]) # list of cumulative actual                               
-    #     Lorentz = [float(x)/totalPos for x in cumPosFound] # curve                        
-    #     Gini = [l - r for l, r in zip(Lorentz, random)] # slice of diff from Lorenz and random                          
-    #     return np.sum(Gini)                                                         
-
+                                                      
     func_f = importlib.import_module( "P1-AnalyzeTrades_f_buildmodel_func")
 
     gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
@@ -177,41 +163,79 @@ if retune:
     # use userdefined Gini, as it measures differentiation more
     def objective_gbr(params):
         "objective_gbr function for hyper opt, params is dict of params for mdl"
+        mlflow.start_run(nested=True)
         parameters = {}
         for k in params:
             parameters[k] = int(params[k])
         mdl = GradientBoostingRegressor(random_state=0, **parameters)
         score = cross_val_score(mdl, X_train, y_train, scoring=gini_scorer, cv=5).mean()
         print("Gini {:.3f} params {}".format(score, parameters))
+        mlflow.end_run()
         return score
 
     # need to match estimator
     space = {
         'n_estimators': hp.quniform('n_estimators', 10, 100, 5),  # low # high # number of choices
-        'max_depth': hp.quniform('max_depth', 2, 10, 2) 
+        'max_depth': hp.quniform('max_depth', 2, 4, 2) 
     }
 
     best_params = fmin(fn=objective_gbr,
                 space=space,
                 algo=tpe.suggest,
                 max_evals=5)
+    
+    for key in best_params.keys():
+        if int(best_params[key]) == best_params[key]:
+           best_params[key] = int(best_params[key])
 
     print("Hyperopt estimated optimum {}".format(best_params))
+        
 else:
     best_params = {
         'n_estimators': 500, 
         'max_depth': 10
     }
+    
+# %%
+# validate & log function
+
+def log_w_validate(y_true, y_pred, formula:str = ''):
+    """validates reg model and log metrics to active mlflow run.
+    Requires active mlflow run to wrun
+
+    Args: \n
+        y_true (array): [actual results] \n
+        y_pred (array): [predicted results] \n
+    """
+    
+    from sklearn import metrics
+    
+    mlflow.set_tag('run_id', mlflow.active_run().info.run_id)
+    mlflow.log_params({"formula":formula})
+    
+    test_score_r2 = metrics.r2_score(y_true, y_pred)
+
+    mlflow.log_metric("test_r2", test_score_r2)
+    print(f'r2 score {test_score_r2}')
+    return 
 
 # %%
 # fit model_1 boosting
 
-reg = GradientBoostingRegressor(random_state=0, **best_params)
-reg.fit(X_train,y_train)
+mlflow.end_run()
+mlflow.start_run(run_name='sklearn_gbm')
 
+reg = GradientBoostingRegressor(random_state=0, **best_params)
+# reg = GradientBoostingRegressor(random_state=0)
+reg.fit(X_train,y_train)
+y_pred = reg.predict(X_test)
+
+log_w_validate(y_test, y_pred, formula)
+
+mlflow.end_run()
 
 # %%
-# fit model_2 statsmodel
+# fit model_2 statsmodel TODO not working at moment
 
 from sklearn.base import BaseEstimator, RegressorMixin
 class SMWrapper(BaseEstimator, RegressorMixin):
@@ -240,14 +264,6 @@ class SMWrapper(BaseEstimator, RegressorMixin):
 
 # print(cross_val_score(SMWrapper(sm.OLS), X, y, scoring='r2'))
 
-
-# %%
-# validate model
-
-test_score_r2 = reg.score(X_test, y_test) # for GBM is r2
-
-mlflow.log_metric("test_r2", test_score_r2)
-print(test_score_r2)
 
 # %%
 # visualize a single tree
@@ -279,7 +295,7 @@ ev = explainer.expected_value[0]
 shap_values = explainer.shap_values(X_train)
 
 # Make plot. Index of [1] is explained in text below.
-shap.summary_plot(shap_values, X_train)
+# shap.summary_plot(shap_values, X_train)
 
 f = plt.gcf()
 
