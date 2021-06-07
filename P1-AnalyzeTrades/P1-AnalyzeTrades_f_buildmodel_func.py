@@ -3,7 +3,7 @@ import numpy as np
 
 def gini(actual, pred):
     assert (len(actual) == len(pred))
-    allv = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=np.float)
+    allv = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=float)
     allv = allv[np.lexsort((allv[:, 2], -1 * allv[:, 1]))]
     totalLosses = allv[:, 0].sum()
     giniSum = allv[:, 0].cumsum().sum() / totalLosses

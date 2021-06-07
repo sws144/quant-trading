@@ -11,21 +11,18 @@ from patsy import dmatrices # for formula parsing
 
 import json # for reading signature
 
-from functools import partial
-
 import matplotlib.pyplot as plt
 
 from sklearn.datasets import fetch_openml
 from sklearn.compose import ColumnTransformer
 from sklearn.linear_model import PoissonRegressor, GammaRegressor
 from sklearn.linear_model import TweedieRegressor
-from sklearn.metrics import mean_tweedie_deviance
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder
 from sklearn.preprocessing import StandardScaler, KBinsDiscretizer
 
-from sklearn.metrics import mean_absolute_error, mean_squared_error, auc
+import shap
 
 import pickle
 
@@ -35,94 +32,6 @@ import pickle
 runid = '870dc41593e7459da68839f3bebb2b86'
 
 mlflow.set_experiment("P1-AnalyzeTrades_f_core")
-
-# %%
-# assist functions
-
-# looks reasonable
-# https://www.kaggle.com/jpopham91/gini-scoring-simple-and-efficient
-def gini_normalized(y_true, y_pred, sample_weight=None):
-    # check and get number of samples
-    assert (np.array(y_true).shape == np.array(y_pred).shape, 
-            'y_true and y_pred need to have same shape')
-    n_samples = np.array(y_true).shape[0]
-    
-    # sort rows on prediction column 
-    # (from largest to smallest)
-    arr = np.array([y_true, y_pred, sample_weight]).transpose()
-    true_order = arr[arr[:,0].argsort()][::-1,0]  # true col sorted by true
-    pred_order = arr[arr[:,1].argsort()][::-1,0]  # true col sorted by pred
-    
-    true_order_wgts = arr[arr[:,0].argsort()][::-1,2] 
-    pred_order_wgts = arr[arr[:,0].argsort()][::-1,2] 
-    
-    # get Lorenz curves
-    L_true = (np.cumsum(np.multiply(true_order,true_order_wgts)) / 
-        np.sum(np.dot(true_order,true_order_wgts)))
-    L_pred = (np.cumsum(np.multiply(pred_order,pred_order_wgts)) / 
-        np.sum(np.multiply(pred_order,pred_order_wgts)))
-    L_ones = np.multiply(np.linspace(1/n_samples, 1, n_samples),pred_order_wgts)
-    
-    # get Gini coefficients (area between curves)
-    G_true = np.sum(L_ones - L_true)
-    G_pred = np.sum(L_ones - L_pred)
-    
-    # normalize to true Gini coefficient
-    return G_pred/G_true
-
-def score_estimator(
-    estimator, X_train, X_test, df_train, df_test, target, weights,
-    tweedie_powers=None,):
-    """
-    Evaluate an estimator on train and test sets with different metrics
-    """
-
-    metrics = [
-        ("default score", None),   # Use default scorer if it exists
-        ("mean abs. error", mean_absolute_error),
-        ("mean squared error", mean_squared_error),
-        ("gini", gini_normalized)
-    ]
-    if tweedie_powers:
-        metrics += [(
-            "mean Tweedie dev p={:.4f}".format(power),
-            partial(mean_tweedie_deviance, power=power)
-        ) for power in tweedie_powers]
-
-    res = []
-    for subset_label, X, df in [
-        ("train", X_train, df_train),
-        ("test", X_test, df_test),
-    ]:
-        y, _weights = df[target], df[weights]
-        for score_label, metric in metrics:
-            if isinstance(estimator, tuple) and len(estimator) == 2:
-                # Score the model consisting of the product of frequency and
-                # severity models.
-                est_freq, est_sev = estimator
-                y_pred = est_freq.predict(X) * est_sev.predict(X)
-            else:
-                y_pred = estimator.predict(X)
-
-            if metric is None:
-                if not hasattr(estimator, "score"):
-                    continue
-                score = estimator.score(X, y, sample_weight=_weights)
-            else:
-                score = metric(y, y_pred, sample_weight=_weights)
-
-            res.append(
-                {"subset": subset_label, "metric": score_label, "score": score}
-            )
-
-    res = (
-        pd.DataFrame(res)
-        .set_index(["metric", "subset"])
-        .score.unstack(-1)
-        .round(4)
-        .loc[:, ['train', 'test']]
-    )
-    return res
 
 # %%
 # pull information
@@ -178,10 +87,53 @@ mlflow.end_run()
 X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
     X, y, XY_df, test_size=0.33, random_state=42)
 
-# %%
-# score estimator
 
-score_estimator(mdl,X_train, X_test, XY_train, XY_test, formula_clean.split('~')[0].strip(),weights='weight')
+
+# %% 
+# summarize overall results
+
+# Create object that can calculate shap values
+explainer = shap.TreeExplainer(reg)
+
+# save expected value
+ev = explainer.expected_value[0]
+
+# calculate shap values. This is what we will plot.
+# Calculate shap_values for all of val_X rather than a single row, to have more data for plot.
+shap_values = explainer.shap_values(X_train)
+
+# Make plot. Index of [1] is explained in text below.
+# shap.summary_plot(shap_values, X_train)
+
+f = plt.gcf()
+
+# Make plot to save
+shap.summary_plot(shap_values, X_train,show=False,)
+plt.tight_layout()
+plt.savefig('summary_plot.png',bbox_inches = "tight")
+plt.show()
+
+mlflow.log_metric('expected_val', ev)
+mlflow.log_artifact('summary_plot.png')
+
+# %%
+# check highest 
+
+top_trades = XY_df[XY_df['PCT_RET_FINAL']>1]
+top_trades.head()
+
+
+# %%
+# check top variable(s)
+
+# make plots
+
+plot_vars = ["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')"]
+for var in plot_vars:
+    shap.dependence_plot(var, shap_values, X_train)
+
+# %%
+# end mlflow
 
 # %%
 # backup functions
