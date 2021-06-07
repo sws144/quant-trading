@@ -126,6 +126,7 @@ numeric_features = numeric_features + [
     'IMPLIED_P_E',
     'YEARS_TO_NORMALIZATION',
 ]
+numeric_features = list(set(numeric_features))
 
 numeric_transformer = Pipeline(
     steps=[

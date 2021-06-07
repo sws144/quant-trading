@@ -1,10 +1,10 @@
 # P1-Analyze Trades Architecture
 
-## Purpose: 
+## Purpose
 
 Apply data science and analytics to a user's trading history into order to drive value
 
-## Architecture: 
+## Architecture
 
 C4 style approach, see README puml files and pngs
 
@@ -29,7 +29,7 @@ Can run as standalone scripts
 ### MLFlow
 
 1. Terminal `pipenv sync` to create environment, `pipenv shell` to enter environment
-1. `mlflow ui` to enter environment
+1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
 1. To shut down, type "ctrl + c" in terminal
 
 ## Frontend Build App
