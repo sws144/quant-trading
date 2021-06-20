@@ -25,7 +25,7 @@ from sklearn.metrics import make_scorer
 from hyperopt import hp, tpe
 from hyperopt.fmin import fmin
 
-# H2O
+# H2O , needs java installed & on path / environment variable (java --version to test)
 import h2o
 from h2o.estimators import *
 from h2o.grid import *

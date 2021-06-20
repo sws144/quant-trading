@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Apply data science and analytics to a user's trading history into order to drive value
+Apply data science and analytics to a user's trading history to help user make better decisions
 
 ## Architecture
 
@@ -13,9 +13,13 @@ C4 style approach, see README puml files and pngs
 See [Azure DevOps](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
 Backup: see _Project-Tracking.xlsx file
 
-## Backend Overview
+## C2 Backend Overview
 
-Can run as standalone scripts
+1. Run standalone scripts a to e (just before building model)
+1. Pull in `data\_pnl_review.xlsx`
+1. Paste in results tab, making sure lookups at right are not broken
+
+Outline:
 
 1. read in portfolio and trades from IB activity statemetn (tradelog..py)
 1. append own charactierstics
@@ -32,15 +36,15 @@ Can run as standalone scripts
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
 1. To shut down, type "ctrl + c" in terminal
 
-## Frontend Build App
+## C2 Frontend Overview
+
+### Build App
 
 1. Start docker desktop app
 1. Let's build our image: `docker build -t analyze:latest .`
 1. and run: `docker run -p 8004:8003 analyze:latest` ,  host port : container port
 1. `curl localhost:8004` -> Hello world!
 1. To turn off, ctrl+c in terminal
-
-## Frontend Overview
 
 ### single prediction
 
