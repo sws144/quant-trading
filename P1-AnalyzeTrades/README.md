@@ -15,6 +15,7 @@ Backup: see _Project-Tracking.xlsx file
 
 ## C2 Backend Overview
 
+1. Update raw data `data` with account statement with `U1060261` in file name and `pcm-tracking` details
 1. Run standalone scripts a to e (just before building model)
 1. Pull in `data\_pnl_review.xlsx`
 1. Paste in results tab, making sure lookups at right are not broken
