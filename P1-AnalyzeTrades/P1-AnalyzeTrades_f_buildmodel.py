@@ -29,6 +29,7 @@ from hyperopt.fmin import fmin
 import h2o
 from h2o.estimators import *
 from h2o.grid import *
+from mlflow.models.signature import infer_signature
 
 #evaluation 
 from sklearn import tree
@@ -486,6 +487,10 @@ mojo_destination = gbm.save_mojo(path = path, force=True)
 imported_model = h2o.import_mojo(mojo_destination)
 
 mlflow.log_artifact(mojo_destination)
+
+model_sig = infer_signature(X_train, y_train)
+
+mlflow.h2o.log_model(gbm,path,signature=model_sig)
 
 h2o.cluster().shutdown(prompt=False) 
 

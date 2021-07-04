@@ -21,7 +21,7 @@ Backup: see _Project-Tracking.xlsx file
 
 Outline:
 
-1. read in portfolio and trades from IB activity statemetn (tradelog..py)
+1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own charactierstics
 1. append market data
 1. build models
@@ -32,7 +32,8 @@ Outline:
 
 ### MLFlow
 
-1. Terminal `pipenv sync` to create environment, `pipenv shell` to enter environment
+1. First time build: Terminal `pipenv sync` to create environment,
+1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
 1. To shut down, type "ctrl + c" in terminal
 

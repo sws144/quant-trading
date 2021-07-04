@@ -22,6 +22,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer, OneHotEncoder
 from sklearn.preprocessing import StandardScaler, KBinsDiscretizer
 
+import h2o
+
 import shap
 
 import pickle
@@ -29,9 +31,12 @@ import pickle
 # %% 
 # ### INPUT ###
 
-runid = '870dc41593e7459da68839f3bebb2b86'
+runid = 'c023131e750f427bb07a99e73f3a506b'
+mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
+experiment_name = 'P1-AnalyzeTrades_f_core'
 
-mlflow.set_experiment("P1-AnalyzeTrades_f_core")
+mlflow.set_experiment(experiment_name)
+experiment_details = mlflow.get_experiment_by_name(experiment_name)
 
 # %%
 # pull information
@@ -40,14 +45,27 @@ XY_df = pd.read_csv('output/e_resultcleaned.csv')
 XY_df['weight'] = 1
 
 # %%
-# pull model from local
+# pull model from tracking uri
 
-# TODO use actual function, otherwise need to update link
-mdl = pickle.load(open(f'mlruns/0/{runid}/artifacts/model/model.pkl','rb'))
+# tracking_uri = mlflow.get_tracking_uri()
+
+artifact_loc = str(experiment_details.artifact_location).replace('file:','')
+
+# try pickle first, otherwise try H2O
+try:
+    mdl = pickle.load(open(f'{artifact_loc}/{runid}/artifacts/model/model.pkl','rb'))
+except:
+    # for h2o models
+    h2o.init()
+    imported_model = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
+# 
 
 # %%
 # pull information from mlflow
 
+# TODO H2O signature missing
+
+mlflow.end_run()
 mlflow.start_run(run_id = runid )
 
 def parse_mlflow_info(run_info):
@@ -65,6 +83,7 @@ formula_clean = params['formula'].replace('\n','')
 # %%
 # parse data 
 
+mlflow.end_run()
 mlflow.start_run(run_id = runid )
 
 y , X = dmatrices(formula_clean, XY_df, return_type='dataframe')
