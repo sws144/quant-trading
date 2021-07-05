@@ -20,10 +20,10 @@ Backup: see _Project-Tracking.xlsx file
 1. Pull in `data\_pnl_review.xlsx`
 1. Paste in results tab, making sure lookups at right are not broken
 
-Outline:
+### C3 Backend Outline
 
 1. read in portfolio and trades from IB activity statement (tradelog..py)
-1. append own charactierstics
+1. append own characteristics
 1. append market data
 1. build models
 1. decide best model
