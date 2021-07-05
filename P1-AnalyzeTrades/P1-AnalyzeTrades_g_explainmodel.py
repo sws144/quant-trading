@@ -31,7 +31,7 @@ import pickle
 # %% 
 # ### INPUT ###
 
-runid = 'c023131e750f427bb07a99e73f3a506b'
+runid = 'c67c2772966d4409b4d45e931f05dc3a'
 mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
@@ -57,7 +57,7 @@ try:
 except:
     # for h2o models
     h2o.init()
-    imported_model = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
+    mdl = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
 # 
 
 # %%
@@ -103,13 +103,23 @@ mlflow.end_run()
 # %%
 # train test, repeat from earlier 
 
-X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
-    X, y, XY_df, test_size=0.33, random_state=42)
+# X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
+#     X, y, XY_df, test_size=0.33, random_state=42)
 
 
+# %%
+# predict full dataset
+
+if 'h2o' in str(type(mdl)) :
+    X_hf = h2o.H2OFrame(X)
+    y_pred = mdl.predict(X_hf)
+else:
+    y_pred = mdl.predict(X)
+
+h2o.cluster().shutdown(prompt=False) 
 
 # %% 
-# summarize overall results
+# TODO not working, summarize overall results
 
 # Create object that can calculate shap values
 explainer = shap.TreeExplainer(reg)
