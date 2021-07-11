@@ -37,6 +37,7 @@ Backup: see _Project-Tracking.xlsx file
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
 1. To shut down, type "ctrl + c" in terminal
+1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
 ## C2 Frontend Overview
 
