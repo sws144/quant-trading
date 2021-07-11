@@ -1,11 +1,19 @@
 @startuml C2_Containers
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-Person(personAlias, "Label", "Optional Description")
-Container(backend, "backend", "Technology", "Optional Description")
-Container(frontend, "frontend", "Technology", "Optional Description")
-System(systemAlias, "Label", "Optional Description")
+Person(admin, "Power User")
+Person(user1, "Regular User")
 
-Rel(personAlias, containerAlias, "Label", "Optional Technology")
+System_Boundary(c1, "P1_AnalyzeTrades") {
+    Container(backend, "Backend Local Scripts", "Python", "...a-g.py")
+    Container(frontend, "Frontend Online App", "Python", "my-app folder")
+    Container(models, "Model Database", "MLFlow/Python")
+}
+Rel(admin, backend, "Runs scripts", "using IDE, trade log")
+Rel(backend, admin, "Estimated return, fitted/selected models")
+Rel(backend, models, "Saves model to MLFlow")
 
+Rel(user1, frontend, "Send inputs", "website")
+Rel(frontend, user1, "Estimated return", "website")
+Rel(models,frontend , "Pulls Model from MLFlow")
 @enduml
