@@ -25,13 +25,15 @@ from sklearn.preprocessing import StandardScaler, KBinsDiscretizer
 import h2o
 
 import shap
+from datetime import datetime 
+import os 
 
 import pickle
 
 # %% 
 # ### INPUT ###
 
-runid = 'c67c2772966d4409b4d45e931f05dc3a'
+runid = 'ede7c6edb05041aa860d0c721a8b69ff'
 mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
@@ -116,20 +118,45 @@ if 'h2o' in str(type(mdl)) :
 else:
     y_pred = mdl.predict(X)
 
-h2o.cluster().shutdown(prompt=False) 
+# h2o.cluster().shutdown(prompt=False)  # if want to end earlier
+
+
+# %% class 
+
+class H2ORegWrapper:
+    def __init__(self, h2o_model, feature_names):
+        self.h2o_model = h2o_model
+        self.feature_names = feature_names
+    def predict(self, X):
+            if isinstance(X, pd.Series):
+                X = X.values.reshape(1,-1)
+            self.dataframe= pd.DataFrame(X, columns=self.feature_names)
+            self.predictions = self.h2o_model.predict(h2o.H2OFrame(self.dataframe)).as_data_frame().values
+            return self.predictions.astype('float64')
+
 
 # %% 
-# TODO not working, summarize overall results
+# summarize overall results
+
+mlflow.end_run()
+mlflow.start_run(run_id = runid )
 
 # Create object that can calculate shap values
-explainer = shap.TreeExplainer(reg)
+if 'H2O' in str(type(mdl)):
+    h2o_wrapper = H2ORegWrapper(mdl,X.columns)
+    explainer = shap.SamplingExplainer(h2o_wrapper.predict,X[0:100])
+else:
+    # assume sklearn etc.
+    explainer = shap.Explainer(mdl)
 
 # save expected value
 ev = explainer.expected_value[0]
 
 # calculate shap values. This is what we will plot.
 # Calculate shap_values for all of val_X rather than a single row, to have more data for plot.
-shap_values = explainer.shap_values(X_train)
+# shap_values = explainer.shap_values(X[-200:-1]) #gets only values  # TODO get rid of sample
+# TODO get rid of sample below
+shap_values = explainer(X) # gets full shap_value descriptions 
 
 # Make plot. Index of [1] is explained in text below.
 # shap.summary_plot(shap_values, X_train)
@@ -137,13 +164,24 @@ shap_values = explainer.shap_values(X_train)
 f = plt.gcf()
 
 # Make plot to save
-shap.summary_plot(shap_values, X_train,show=False,)
+# shap.summary_plot(shap_values, X,show=False,) # not as informative as beeswarm
+
+# datetime object containing current date and time
+now = datetime.now()
+dt_string = now.strftime("%d%m%Y_%H%M%S")
+print("date and time =", dt_string)	
+
+shap.plots.beeswarm(shap_values, show=False)
 plt.tight_layout()
-plt.savefig('summary_plot.png',bbox_inches = "tight")
+plt.savefig(f'summary_plot_{dt_string}.png',bbox_inches = "tight")
 plt.show()
 
 mlflow.log_metric('expected_val', ev)
-mlflow.log_artifact('summary_plot.png')
+mlflow.log_artifact(f'summary_plot_{dt_string}.png')
+
+os.remove(f'summary_plot_{dt_string}.png')
+
+mlflow.end_run()
 
 # %%
 # check highest 
@@ -159,10 +197,18 @@ top_trades.head()
 
 plot_vars = ["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')"]
 for var in plot_vars:
-    shap.dependence_plot(var, shap_values, X_train)
+    shap.dependence_plot(var, shap_values.values, X)
 
 # %%
-# end mlflow
+# end mlflow and h2o
+
+mlflow.end_run()
+try:
+    h2o.cluster().shutdown(prompt=False)  # if want to end earlier
+except:
+    pass
+
+
 
 # %%
 # backup functions
