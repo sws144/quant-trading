@@ -98,6 +98,9 @@ cols_required = list(pd.DataFrame(
 add_cols = list(set(cols_required) - set(list(X.columns)))
 X[add_cols] = 0
 
+# extra columns in dataset
+print('extra columns in expanded dataset: '+  str(list(set(list(X.columns)) - set(cols_required))))
+
 X = X[cols_required] # ensure X is in correct order and complete for model
 
 mlflow.end_run()
@@ -154,7 +157,6 @@ ev = explainer.expected_value[0]
 
 # calculate shap values. This is what we will plot.
 # Calculate shap_values for all of val_X rather than a single row, to have more data for plot.
-# shap_values = explainer.shap_values(X[-200:-1]) #gets only values  # TODO get rid of sample
 # TODO get rid of sample below
 shap_values = explainer(X) # gets full shap_value descriptions 
 
@@ -195,9 +197,28 @@ top_trades.head()
 
 # make plots
 
-plot_vars = ["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')"]
-for var in plot_vars:
-    shap.dependence_plot(var, shap_values.values, X)
+mlflow.end_run()
+mlflow.start_run(run_id = runid )
+
+# datetime object containing current date and time
+now = datetime.now()
+dt_string = now.strftime("%Y%m%d_%H%M%S")
+print("date and time =", dt_string)	
+
+for var in cols_required:
+    # fig, ax = plt.subplots()
+    
+    shap.dependence_plot(var, shap_values.values, X, show=False)
+    f = plt.gcf()
+    
+    plt.tight_layout()
+    plt.savefig(f'shappdp_{var}_{dt_string}.png',bbox_inches = "tight")
+    plt.show()
+    
+    mlflow.log_artifact(f'shappdp_{var}_{dt_string}.png')
+    
+    os.remove(f'shappdp_{var}_{dt_string}.png')
+mlflow.end_run()
 
 # %%
 # end mlflow and h2o
