@@ -7,7 +7,7 @@ Person(user1, "Regular User")
 System_Boundary(c1, "P1_AnalyzeTrades") {
     Container(backend, "Backend Local Scripts", "Python", "...a-g.py")
     Container(frontend, "Frontend Online App", "Python", "my-app folder")
-    Container(models, "Model Database", "MLFlow/Python")
+    Container(models, "Model Folder/Database", "MLFlow/Python")
 }
 Rel(admin, backend, "Runs scripts", "using IDE, trade log")
 Rel(backend, admin, "Estimated return, fitted/selected models")

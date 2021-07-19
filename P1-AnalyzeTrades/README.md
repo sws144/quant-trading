@@ -10,8 +10,8 @@ C4 style approach, see README puml files and pngs
 
 ## Project Tracking
 
-See [Azure DevOps](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
-Backup: see _Project-Tracking.xlsx file
+1. See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
+1. Backup: see _Project-Tracking.xlsx file
 
 ## C2 Backend Overview
 
