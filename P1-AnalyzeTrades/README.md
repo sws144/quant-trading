@@ -10,19 +10,20 @@ C4 style approach, see README puml files and pngs
 
 ## Project Tracking
 
-See [Azure DevOps](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
-Backup: see _Project-Tracking.xlsx file
+1. See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
+1. Backup: see _Project-Tracking.xlsx file
 
 ## C2 Backend Overview
 
+1. Update raw data `data` with account statement with `U1060261` in file name and `pcm-tracking` details
 1. Run standalone scripts a to e (just before building model)
 1. Pull in `data\_pnl_review.xlsx`
 1. Paste in results tab, making sure lookups at right are not broken
 
-Outline:
+### C3 Backend Outline
 
 1. read in portfolio and trades from IB activity statement (tradelog..py)
-1. append own charactierstics
+1. append own characteristics
 1. append market data
 1. build models
 1. decide best model
@@ -36,6 +37,7 @@ Outline:
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
 1. To shut down, type "ctrl + c" in terminal
+1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
 ## C2 Frontend Overview
 

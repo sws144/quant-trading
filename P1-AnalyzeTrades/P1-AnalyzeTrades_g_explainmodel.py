@@ -25,13 +25,15 @@ from sklearn.preprocessing import StandardScaler, KBinsDiscretizer
 import h2o
 
 import shap
+from datetime import datetime 
+import os 
 
 import pickle
 
 # %% 
 # ### INPUT ###
 
-runid = 'c023131e750f427bb07a99e73f3a506b'
+runid = 'ede7c6edb05041aa860d0c721a8b69ff'
 mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
@@ -57,7 +59,7 @@ try:
 except:
     # for h2o models
     h2o.init()
-    imported_model = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
+    mdl = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
 # 
 
 # %%
@@ -96,6 +98,9 @@ cols_required = list(pd.DataFrame(
 add_cols = list(set(cols_required) - set(list(X.columns)))
 X[add_cols] = 0
 
+# extra columns in dataset
+print('extra columns in expanded dataset: '+  str(list(set(list(X.columns)) - set(cols_required))))
+
 X = X[cols_required] # ensure X is in correct order and complete for model
 
 mlflow.end_run()
@@ -103,23 +108,57 @@ mlflow.end_run()
 # %%
 # train test, repeat from earlier 
 
-X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
-    X, y, XY_df, test_size=0.33, random_state=42)
+# X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
+#     X, y, XY_df, test_size=0.33, random_state=42)
 
+
+# %%
+# predict full dataset
+
+if 'h2o' in str(type(mdl)) :
+    X_hf = h2o.H2OFrame(X)
+    y_pred = mdl.predict(X_hf)
+else:
+    y_pred = mdl.predict(X)
+
+# h2o.cluster().shutdown(prompt=False)  # if want to end earlier
+
+
+# %% class 
+
+class H2ORegWrapper:
+    def __init__(self, h2o_model, feature_names):
+        self.h2o_model = h2o_model
+        self.feature_names = feature_names
+    def predict(self, X):
+            if isinstance(X, pd.Series):
+                X = X.values.reshape(1,-1)
+            self.dataframe= pd.DataFrame(X, columns=self.feature_names)
+            self.predictions = self.h2o_model.predict(h2o.H2OFrame(self.dataframe)).as_data_frame().values
+            return self.predictions.astype('float64')
 
 
 # %% 
 # summarize overall results
 
+mlflow.end_run()
+mlflow.start_run(run_id = runid )
+
 # Create object that can calculate shap values
-explainer = shap.TreeExplainer(reg)
+if 'H2O' in str(type(mdl)):
+    h2o_wrapper = H2ORegWrapper(mdl,X.columns)
+    explainer = shap.SamplingExplainer(h2o_wrapper.predict,X[0:100])
+else:
+    # assume sklearn etc.
+    explainer = shap.Explainer(mdl)
 
 # save expected value
 ev = explainer.expected_value[0]
 
 # calculate shap values. This is what we will plot.
 # Calculate shap_values for all of val_X rather than a single row, to have more data for plot.
-shap_values = explainer.shap_values(X_train)
+# TODO get rid of sample below
+shap_values = explainer(X) # gets full shap_value descriptions 
 
 # Make plot. Index of [1] is explained in text below.
 # shap.summary_plot(shap_values, X_train)
@@ -127,13 +166,24 @@ shap_values = explainer.shap_values(X_train)
 f = plt.gcf()
 
 # Make plot to save
-shap.summary_plot(shap_values, X_train,show=False,)
+# shap.summary_plot(shap_values, X,show=False,) # not as informative as beeswarm
+
+# datetime object containing current date and time
+now = datetime.now()
+dt_string = now.strftime("%d%m%Y_%H%M%S")
+print("date and time =", dt_string)	
+
+shap.plots.beeswarm(shap_values, show=False)
 plt.tight_layout()
-plt.savefig('summary_plot.png',bbox_inches = "tight")
+plt.savefig(f'summary_plot_{dt_string}.png',bbox_inches = "tight")
 plt.show()
 
 mlflow.log_metric('expected_val', ev)
-mlflow.log_artifact('summary_plot.png')
+mlflow.log_artifact(f'summary_plot_{dt_string}.png')
+
+os.remove(f'summary_plot_{dt_string}.png')
+
+mlflow.end_run()
 
 # %%
 # check highest 
@@ -147,12 +197,39 @@ top_trades.head()
 
 # make plots
 
-plot_vars = ["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')"]
-for var in plot_vars:
-    shap.dependence_plot(var, shap_values, X_train)
+mlflow.end_run()
+mlflow.start_run(run_id = runid )
+
+# datetime object containing current date and time
+now = datetime.now()
+dt_string = now.strftime("%Y%m%d_%H%M%S")
+print("date and time =", dt_string)	
+
+for var in cols_required:
+    # fig, ax = plt.subplots()
+    
+    shap.dependence_plot(var, shap_values.values, X, show=False)
+    f = plt.gcf()
+    
+    plt.tight_layout()
+    plt.savefig(f'shappdp_{var}_{dt_string}.png',bbox_inches = "tight")
+    plt.show()
+    
+    mlflow.log_artifact(f'shappdp_{var}_{dt_string}.png')
+    
+    os.remove(f'shappdp_{var}_{dt_string}.png')
+mlflow.end_run()
 
 # %%
-# end mlflow
+# end mlflow and h2o
+
+mlflow.end_run()
+try:
+    h2o.cluster().shutdown(prompt=False)  # if want to end earlier
+except:
+    pass
+
+
 
 # %%
 # backup functions

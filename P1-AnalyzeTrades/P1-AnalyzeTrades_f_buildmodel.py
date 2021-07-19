@@ -125,7 +125,9 @@ y , X = dmatrices(formula, df_XY, return_type='dataframe')
 # train test data
 
 X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
-    X, y.to_numpy().ravel(), df_XY, test_size=0.33, random_state=42)
+    X, y, df_XY, test_size=0.33, random_state=42)
+
+# y..to_numpy().ravel()
 
 # %%
 # tune & run model using hyperopt
@@ -235,7 +237,7 @@ def score_estimator(
             est_freq, est_sev = estimator
             y_pred = est_freq.predict(X) * est_sev.predict(X)
         elif 'h2o' in str(type(estimator)):
-            y_pred = estimator.predict(h2o.H2OFrame(df)).as_data_frame().to_numpy().ravel() #ensure 1D array
+            y_pred = estimator.predict(h2o.H2OFrame(X)).as_data_frame().to_numpy().ravel() #ensure 1D array
         else:
             y_pred = estimator.predict(X)
 
@@ -296,7 +298,7 @@ if retune:
         for k in params:
             parameters[k] = int(params[k])
         mdl = GradientBoostingRegressor(random_state=0, **parameters)
-        score = cross_val_score(mdl, X_train, y_train, scoring=gini_scorer, cv=5).mean()
+        score = cross_val_score(mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5).mean()
         print("Gini {:.3f} params {}".format(score, parameters))
         mlflow.end_run()
         return score
@@ -326,7 +328,7 @@ else:
 
 reg = GradientBoostingRegressor(random_state=0, **best_params)
 # reg = GradientBoostingRegressor(random_state=0)
-reg.fit(X_train,y_train)
+reg.fit(X_train,y_train.to_numpy().ravel())
 
 # log with validation
 # log_w_validate(y_test, y_pred, formula)
@@ -382,6 +384,9 @@ class SMWrapper(BaseEstimator, RegressorMixin):
 # %%
 # Model 3 H2O GLM
 
+mlflow.end_run()
+mlflow.start_run(run_name='H2O_glm')
+
 h2o.init()
 #  h2o server default http://localhost:54321
 
@@ -390,12 +395,35 @@ h2o.init()
 # )
 
 glm = H2OGeneralizedLinearEstimator(family ='tweedie', seed = 42, model_id = 'H2O_model')
-train = h2o.H2OFrame(XY_train) # use original full dataset
-%time glm.train(x = variables, y = target, training_frame= train ) # column lists , then frame
+train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
+test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
+%time glm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
 
 glm.summary()
 
-# TODO save model to mlflow with metrics
+default_gbm_perf = glm.model_performance(test_hf)
+
+res = score_estimator(glm,X_train, X_test, XY_train, XY_test, target, formula)
+
+mlflow.log_metrics(res)
+
+# QA
+# complete = h2o.H2OFrame(df_XY[variables+[target]])
+# gbm.explain(complete)
+
+path = "output/"
+mojo_destination = glm.save_mojo(path = path, force=True)
+imported_model = h2o.import_mojo(mojo_destination)
+
+mlflow.log_artifact(mojo_destination)
+
+model_sig = infer_signature(X_train, y_train)
+
+mlflow.h2o.log_model(glm,'model',signature=model_sig)
+
+h2o.cluster().shutdown(prompt=False) 
+
+mlflow.end_run()
 
 # test= h2o.H2OFrame(XY_test)
 
@@ -404,9 +432,6 @@ glm.summary()
 # QA
 # complete = h2o.H2OFrame(df_XY)
 # glm.explain(complete)
-
-h2o.cluster().shutdown(prompt=False) 
-
 
 # TODO SHAP not working
 
@@ -463,16 +488,15 @@ h2o.init()
 # )
 
 gbm = H2OGradientBoostingEstimator(seed = 42, model_id = 'H2O_model')
-train = h2o.H2OFrame(XY_train) # use original full dataset
-%time gbm.train(x = variables, y = target, training_frame= train ) # column lists , then frame
+train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
+test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
+%time gbm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
 
 
 gbm.summary() 
 # gbm._model_json['output']['names'] # coefs
 
-test= h2o.H2OFrame(XY_test)
-
-default_gbm_perf = gbm.model_performance(test)
+default_gbm_perf = gbm.model_performance(test_hf)
 
 res = score_estimator(gbm,X_train, X_test, XY_train, XY_test, target, formula)
 
@@ -490,12 +514,11 @@ mlflow.log_artifact(mojo_destination)
 
 model_sig = infer_signature(X_train, y_train)
 
-mlflow.h2o.log_model(gbm,path,signature=model_sig)
+mlflow.h2o.log_model(gbm,'model',signature=model_sig)
 
 h2o.cluster().shutdown(prompt=False) 
 
 mlflow.end_run()
-
 
 # %%
 # other validation functions
