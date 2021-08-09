@@ -49,7 +49,7 @@ C4 style approach, see README puml files and pngs
 1. `curl localhost:8004` -> Hello world!
 1. To turn off, ctrl+c in terminal
 
-### single prediction
+### Single prediction
 
 1. allow individual inputs
     1. later: append chars
@@ -57,7 +57,7 @@ C4 style approach, see README puml files and pngs
 1. run shap summary
 1. show force plot
 
-### batch version
+### Batch version
 
 1. read in csv file w own characteristics
 1. use existing model
