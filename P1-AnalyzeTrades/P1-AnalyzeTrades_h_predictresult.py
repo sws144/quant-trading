@@ -44,15 +44,23 @@ def predict_return(
         .replace('file:','')\
         .replace('///','')
 
+    metrics , params, tags = parse_mlflow_info(mlflow.get_run(run_id))
+
     # try pickle first, otherwise try H2O
-    try:
-        mdl = pickle.load(open(f'{artifact_loc}/{run_id}/artifacts/model/model.pkl','rb'))
-    except:
+    # try absolute, then relative location
+    
+    if 'sklearn' in tags['estimator_class']:
+        try:
+            mdl = pickle.load(open(f'{artifact_loc}/{run_id}/artifacts/model/model.pkl','rb'))
+        except: # for testing
+            mdl = pickle.load(open(f'mlruns/0/{run_id}/artifacts/model/model.pkl','rb'))
+    else:
         # for h2o models
         h2o.init()
-        mdl = h2o.import_mojo(f'{artifact_loc}/{run_id}/artifacts/')
-
-    metrics , params, tags = parse_mlflow_info(mlflow.get_run(run_id))
+        try:
+            mdl = h2o.import_mojo(f'{artifact_loc}/{run_id}/artifacts/')
+        except:
+            mdl = h2o.import_mojo(f'mlruns/0/{run_id}/artifacts/')
 
     # add columns if necessary, can only add, not remove extra cols
     cols_required = list(pd.DataFrame(
