@@ -19,11 +19,11 @@ def predict_return(
     """Predict the return of model in decimal form
 
     Args:
-        mlflow_tracking_uri (str): [description]
+        mlflow_tracking_uri (str): where mlflow runs sit
         
-        experiment_name (str): [description]
+        experiment_name (str): runs are organized into experimetns
         
-        run_id (str): [description]
+        run_id (str): specific run
         
         inputs (pd.DataFrame): raw dataframe (can be multiple rows)
 

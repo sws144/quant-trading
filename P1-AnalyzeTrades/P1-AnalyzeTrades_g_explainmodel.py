@@ -5,6 +5,8 @@
 # imports
 
 import pandas as pd
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
 import numpy as np
 import mlflow
 from patsy import dmatrices # for formula parsing
@@ -33,8 +35,10 @@ import pickle
 # %% 
 # ### INPUT ###
 
-runid = 'ede7c6edb05041aa860d0c721a8b69ff'
-mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
+runid = '1b6b96ef3cb14b93b60af5f2a84eeb94' 
+# runid = 'ede7c6edb05041aa860d0c721a8b69ff'
+mlflow.set_tracking_uri('')
+# mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
 mlflow.set_experiment(experiment_name)
@@ -51,7 +55,9 @@ XY_df['weight'] = 1
 
 # tracking_uri = mlflow.get_tracking_uri()
 
-artifact_loc = str(experiment_details.artifact_location).replace('file:','')
+artifact_loc = str(experiment_details.artifact_location).replace('file:','')\
+        .replace('file:','')\
+        .replace('///','')
 
 # try pickle first, otherwise try H2O
 try:
@@ -182,6 +188,22 @@ mlflow.log_metric('expected_val', ev)
 mlflow.log_artifact(f'summary_plot_{dt_string}.png')
 
 os.remove(f'summary_plot_{dt_string}.png')
+
+mlflow.end_run()
+
+
+# %%
+# save explainer
+
+mlflow.end_run()
+mlflow.start_run(run_id = runid )
+
+with open(f'explainer.pkl', 'wb') as handle:
+    pickle.dump(explainer, handle)
+
+mlflow.log_artifact(f'explainer.pkl')
+
+os.remove(f'explainer.pkl')
 
 mlflow.end_run()
 
