@@ -64,7 +64,7 @@ def predict_return(
     inputs_copy[add_cols] = 0
 
     # extra columns in dataset
-    print('extra columns in expanded dataset: '+  str(list(set(list(inputs_copy.columns)) - set(cols_required))))
+    # print('extra columns in expanded dataset: '+  str(list(set(list(inputs_copy.columns)) - set(cols_required))))
 
     inputs_copy = inputs_copy[cols_required] # ensure X is in correct order and complete for model
 
