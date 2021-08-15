@@ -1,4 +1,4 @@
 P1-AnalyzeTrades/data/*
 P1-AnalyzeTrades/output/*
-P1-AnalyzeTrades/mlruns/*
+# P1-AnalyzeTrades/mlruns/*
 P1-AnalyzeTrades/.env
