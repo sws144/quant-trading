@@ -120,7 +120,6 @@ def predict_return(
         f.savefig('output/current_force.png')
         plt.show()
         
-        
         return pct_return_df, shap_obj, shap_df, f
     
     else:
