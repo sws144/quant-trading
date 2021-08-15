@@ -2,8 +2,11 @@
 import pandas as pd
 import mlflow
 import h2o
+import matplotlib.pyplot as plt
 import pickle
 import json
+import shap
+shap.initjs() # for plots
 
 def parse_mlflow_info(run_info):
     metrics = run_info.data.metrics
@@ -15,7 +18,8 @@ def predict_return(
     mlflow_tracking_uri: str, 
     experiment_name: str, 
     run_id: str , 
-    inputs: pd.DataFrame) -> pd.DataFrame:
+    inputs: pd.DataFrame, 
+    explain: bool = False):
     """Predict the return of model in decimal form
 
     Args:
@@ -26,9 +30,16 @@ def predict_return(
         run_id (str): specific run
         
         inputs (pd.DataFrame): raw dataframe (can be multiple rows)
+        
+        explain (bool = False): explain results using shap
 
     Returns:
         pct_return: dataframe of results 
+        
+        (if explain == True, show force plot of explained results and return below)
+        shap_obj: a shap values object multiple attributes (including .values)
+        shap_df: a df of shap values
+        f: figure
     """    
     
     mlflow.set_tracking_uri(mlflow_tracking_uri)
@@ -85,9 +96,37 @@ def predict_return(
     
     pct_return_df = pd.DataFrame(pct_return, columns=['predicted_ret'])
 
-    return pct_return_df
+    # Explain Return
+    if explain == True:
+        try:
+            explainer = pickle.load(open(f'{artifact_loc}/{run_id}/artifacts/explainer.pkl','rb'))
+        except: # for testing
+            explainer = pickle.load(open(f'mlruns/0/{run_id}/artifacts/explainer.pkl','rb'))
 
+        # create explained object
+        shap_obj = explainer(inputs_copy)
+        
+        # shap values df with column
+        shap_df = pd.DataFrame(shap_obj.values,columns=inputs_copy.columns)
+        
+        shap.plots.force(shap_obj.base_values[0][0], 
+                            shap_values = shap_obj.values, 
+                            features = inputs_copy.columns, 
+                            matplotlib = True,
+                            show = False)
+        
+        f = plt.gcf()
+        f.tight_layout()
+        f.savefig('output/current_force.png')
+        plt.show()
+        
+        
+        return pct_return_df, shap_obj, shap_df, f
+    
+    else:
+        return pct_return_df
 
+    
 
 
 
