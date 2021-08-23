@@ -2,19 +2,22 @@
 # type "flask run" in app.py's directory to run
 
 import pandas as pd
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, url_for
 import pickle
+import importlib
+analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
 ### INPUT ###
-runid = 'f71fb9cb2001496ba5cde6ce7a553bd3'
+runid = '1b6b96ef3cb14b93b60af5f2a84eeb94'
 ### ####
 
 #load model
-model = pickle.load(open(f'mlruns/1/{runid}/artifacts/model/model.pkl','rb'))
+# model = pickle.load(open(f'mlruns/0/{runid}/artifacts/model/model.pkl','rb'))
 # scaler = pickle.load(open('scaler.pkl','rb'))
 
 # app
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__, template_folder='templates', static_url_path='', 
+            static_folder='output')
 
 # routes
 @app.route('/',methods=['GET','POST'])
@@ -22,36 +25,36 @@ def main():
     if request.method == 'GET':
         return(render_template('main.html'))
     if request.method == 'POST':
-        # should match from the main.html form
-        pclass = request.form['Pclass']
-        age = request.form['Age']
-        sibSp = request.form['SibSp']
-        fare = request.form['Fare']        
-        sex = request.form['Sex']
+        # should match main.html form
+        CLOSE_VIX = request.form["Q('CLOSE_^VIX')"]
+        AAII_SENT_BULLBEARSPREAD = request.form["Q('AAII_SENT_BULLBEARSPREAD')"]
+        YEARS_TO_NORMALIZATION = request.form["Q('YEARS_TO_NORMALIZATION')"]
+        IMPLIED_P_E = request.form["Q('IMPLIED_P_E')"]        
         
-        if (sex == 'F'):
-            sex1 = 0 
-            sex0 = 1
-        else :
-            sex1 = 1 # 1 is male
-            sex0 = 0
+        inputs = pd.DataFrame(
+            [[CLOSE_VIX, AAII_SENT_BULLBEARSPREAD, YEARS_TO_NORMALIZATION, IMPLIED_P_E]],
+            columns=["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')",
+                     "Q('YEARS_TO_NORMALIZATION')","Q('IMPLIED_P_E')"],
+            dtype=int)        
+
+        res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
+            mlflow_tracking_uri = '', 
+            experiment_name =  'P1-AnalyzeTrades_f_core', 
+            run_id =  runid, 
+            inputs = inputs, 
+            explain = True,
+            show_plot = False
+        )
         
-        
-        input_variables = pd.DataFrame([[pclass, age, sibSp, fare, sex0, sex1]],
-                columns=['Pclass', 'Age', 'SibSp','Fare', 'Sex-0','Sex-1'],
-                dtype=int)        
-        
-        # input_variables = scaler.transform(input_variables) 
-        
-        prediction = model.predict(input_variables)[0]        
+        prediction = res_df.iloc[0,0]       
         
         return render_template('main.html',
-                original_input={'Pclass': pclass,
-                                'Age':age,
-                                'Sibsp':sibSp,
-                                'Fare': fare ,
-                                'Sex:': sex},
-                result=str(prediction)
+                original_input={'CLOSE_VIX': CLOSE_VIX,
+                                'AAII_SENT_BULLBEARSPREAD':AAII_SENT_BULLBEARSPREAD,
+                                'YEARS_TO_NORMALIZATION':YEARS_TO_NORMALIZATION,
+                                'IMPLIED_P_E': IMPLIED_P_E,
+                },
+                result=str(prediction),
         )
 
 @app.route('/doc',methods=['GET'])

@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import pickle
 import json
 import shap
+from shap.plots._waterfall import waterfall_legacy
 shap.initjs() # for plots
 
 def parse_mlflow_info(run_info):
@@ -19,7 +20,8 @@ def predict_return(
     experiment_name: str, 
     run_id: str , 
     inputs: pd.DataFrame, 
-    explain: bool = False):
+    explain: bool = False, 
+    show_plot: bool = False):
     """Predict the return of model in decimal form
 
     Args:
@@ -96,7 +98,7 @@ def predict_return(
     
     pct_return_df = pd.DataFrame(pct_return, columns=['predicted_ret'])
 
-    # Explain Return
+    # Explain Return for first
     if explain == True:
         try:
             explainer = pickle.load(open(f'{artifact_loc}/{run_id}/artifacts/explainer.pkl','rb'))
@@ -106,19 +108,28 @@ def predict_return(
         # create explained object
         shap_obj = explainer(inputs_copy)
         
+        # correct for error
+        shap_obj.base_values = shap_obj.base_values
+        
         # shap values df with column
         shap_df = pd.DataFrame(shap_obj.values,columns=inputs_copy.columns)
         
-        shap.plots.force(shap_obj.base_values[0][0], 
-                            shap_values = shap_obj.values, 
-                            features = inputs_copy.columns, 
-                            matplotlib = True,
-                            show = False)
+        # shap.plots.force(shap_obj.base_values[0][0], 
+        #                     shap_values = shap_obj.values, 
+        #                     features = inputs_copy.columns, 
+        #                     matplotlib = True,
+        #                     show = False)
+        
+        waterfall_legacy(shap_obj.base_values[0][0], 
+                                shap_values = shap_obj.values.ravel(), 
+                                feature_names = inputs_copy.columns, 
+                                show = False)
         
         f = plt.gcf()
         f.tight_layout()
         f.savefig('output/current_force.png')
-        plt.show()
+        if show_plot:
+            plt.show()
         
         return pct_return_df, shap_obj, shap_df, f
     
