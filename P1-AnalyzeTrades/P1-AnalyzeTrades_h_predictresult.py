@@ -2,6 +2,8 @@
 import pandas as pd
 import mlflow
 import h2o
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pickle
 import json
@@ -43,6 +45,8 @@ def predict_return(
         shap_df: a df of shap values
         f: figure
     """    
+    
+    plt.clf() # clear current figure
     
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     mlflow.set_experiment(experiment_name)
