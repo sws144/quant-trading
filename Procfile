@@ -1,0 +1,1 @@
+web: gunicorn P1-AnalyzeTrades/app:app
