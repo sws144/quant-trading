@@ -1,1 +1,1 @@
-web: gunicorn app:app
+web: gunicorn --chdir P1-AnalyzeTrades app:app
