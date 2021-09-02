@@ -22,6 +22,8 @@ def test_predict_1_basic():
     assert type(res_df['predicted_ret'][0]) == np.float64   , 'first cell of predicted_ret not 0' 
     
 def test_explain_1_basic():
+    """sklearn test
+    """
     inputs = pd.DataFrame({
         "Q('CLOSE_^VIX')": [40],
     })
