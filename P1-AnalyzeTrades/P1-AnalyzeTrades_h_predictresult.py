@@ -66,7 +66,20 @@ def predict_return(
     # try pickle first, otherwise try H2O
     # try absolute, then relative location
     
-    if 'sklearn' in tags['estimator_class']:
+    if 'estimator_class' in tags.keys():
+        if 'sklearn' in tags['estimator_class'].lower():
+            model_type = 'sklearn'
+        else:
+            model_type = 'h2o'
+    elif 'mlflow.runName' in tags.keys():
+        if 'h2o' in tags['mlflow.runName'].lower():
+            model_type  = 'h2o'
+        else:
+            model_type  = 'h2o'
+    else:
+        model_type  = 'h2o'
+        
+    if model_type == 'sklearn':
         try:
             mdl = pickle.load(open(f'{artifact_loc}/{run_id}/artifacts/model/model.pkl','rb'))
         except: # for testing
@@ -98,9 +111,13 @@ def predict_return(
     #consider later
     # formula_clean = params['formula'].replace('\n','')
 
-    pct_return = mdl.predict(inputs_copy)
-    
-    pct_return_df = pd.DataFrame(pct_return, columns=['predicted_ret'])
+    if model_type == 'sklearn':
+        pct_return = mdl.predict(inputs_copy)
+        pct_return_df = pd.DataFrame(pct_return, columns=['predicted_ret'])
+    else:
+        # assume H2O
+        pct_return = mdl.predict(h2o.H2OFrame(inputs_copy))
+        pct_return_df = pd.DataFrame(pct_return.as_data_frame(), columns=['predicted_ret'])
 
     # Explain Return for first
     if explain == True:

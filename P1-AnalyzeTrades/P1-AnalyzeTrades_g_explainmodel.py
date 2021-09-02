@@ -35,10 +35,13 @@ import pickle
 # %% 
 # ### INPUT ###
 
-runid = '1b6b96ef3cb14b93b60af5f2a84eeb94' 
-# runid = 'ede7c6edb05041aa860d0c721a8b69ff'
-mlflow.set_tracking_uri('')
-# mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
+# runid = '1b6b96ef3cb14b93b60af5f2a84eeb94' 
+# mlflow.set_tracking_uri('')
+
+# Research tracking
+runid = 'd2979c94d7744439ae18aac9a6d6bc09'
+mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
+
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
 mlflow.set_experiment(experiment_name)
@@ -130,7 +133,8 @@ else:
 # h2o.cluster().shutdown(prompt=False)  # if want to end earlier
 
 
-# %% class 
+# %% 
+# class 
 
 class H2ORegWrapper:
     def __init__(self, h2o_model, feature_names):
@@ -139,10 +143,31 @@ class H2ORegWrapper:
     def predict(self, X):
             if isinstance(X, pd.Series):
                 X = X.values.reshape(1,-1)
-            self.dataframe= pd.DataFrame(X, columns=self.feature_names)
-            self.predictions = self.h2o_model.predict(h2o.H2OFrame(self.dataframe)).as_data_frame().values
+            # self.dataframe= pd.DataFrame(X, columns=self.feature_names)
+            self.predictions = self.h2o_model.predict(X).as_data_frame().values
             return self.predictions.astype('float64')
 
+# %%
+# lightgbm pipeline
+
+def sub_gbm(X_hf, y_pred):
+    """creates explainer based on H2O X & y frames
+    """
+    import lightgbm as lgb
+    import shap
+    import h2o
+
+    X2_df = X_hf.as_data_frame()
+    y2_pred_df = y_pred.as_data_frame()
+    
+    # TODO create categorical pipeline
+
+    gbm_mdl = lgb.LGBMRegressor(n_jobs=-1)
+    gbm_mdl.fit(X2_df, y2_pred_df)
+
+    explainer = shap.Explainer(gbm_mdl.booster_)
+
+    return explainer
 
 # %% 
 # summarize overall results
@@ -152,8 +177,14 @@ mlflow.start_run(run_id = runid )
 
 # Create object that can calculate shap values
 if 'H2O' in str(type(mdl)):
-    h2o_wrapper = H2ORegWrapper(mdl,X.columns)
-    explainer = shap.SamplingExplainer(h2o_wrapper.predict,X[0:100])
+    # print('h2o explanation')
+    # h2o_wrapper = H2ORegWrapper(mdl,X.columns)
+    # explainer = shap.SamplingExplainer(h2o_wrapper.predict,h2o.H2OFrame(X[0:100]))
+
+    # TODO use lightgbm with astype('category') to create train model
+    
+    explainer = sub_gbm(X_hf, y_pred)
+
 else:
     # assume sklearn etc.
     explainer = shap.Explainer(mdl)

@@ -35,6 +35,21 @@ def test_explain_1_basic():
     assert type(shap_df) == pd.DataFrame  , 'result not dataframe' 
     
     assert shap_df.shape[1] > 1, 'missing shap values' 
-
+  
+def test_explain_2_h2omodel():
+    inputs = pd.DataFrame({
+        "Q('CLOSE_^VIX')": [40],
+    })
+    
+    res_df, shap_obj, shap_df, f = main_file.predict_return(
+        mlflow_tracking_uri = '', 
+        experiment_name =  'P1-AnalyzeTrades_f_core', 
+        run_id =  'd2979c94d7744439ae18aac9a6d6bc09', 
+        inputs = inputs, 
+        explain = True)
+    
+    assert type(shap_df) == pd.DataFrame  , 'result not dataframe' 
+    
+    assert shap_df.shape[1] > 1, 'missing shap values' 
     
     
