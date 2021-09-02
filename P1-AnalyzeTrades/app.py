@@ -5,15 +5,20 @@ import pandas as pd
 from flask import Flask, jsonify, request, render_template, url_for
 import pickle
 import importlib
+import numpy as np
 analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
-### INPUT ###
-runid = '1b6b96ef3cb14b93b60af5f2a84eeb94'
-### ####
+### SELECTED MODEL ###
+runid = '1140c5a2c378445ba06b77647d969345'
+######################
 
-#load model
-# model = pickle.load(open(f'mlruns/0/{runid}/artifacts/model/model.pkl','rb'))
-# scaler = pickle.load(open('scaler.pkl','rb'))
+### load model
+mdl = analyze_pred.preload_model(
+    mlflow_tracking_uri = '', 
+    experiment_name =  'P1-AnalyzeTrades_f_core', 
+    run_id =  runid , 
+)
+
 
 # app
 app = Flask(__name__, template_folder='templates', static_url_path='', 
@@ -43,7 +48,8 @@ def main():
             run_id =  runid, 
             inputs = inputs, 
             explain = True,
-            show_plot = False
+            show_plot = False,
+            preloaded_model = mdl
         )
         
         prediction = res_df.iloc[0,0]       
@@ -54,7 +60,7 @@ def main():
                                 'YEARS_TO_NORMALIZATION':YEARS_TO_NORMALIZATION,
                                 'IMPLIED_P_E': IMPLIED_P_E,
                 },
-                result=str(prediction),
+                result=str(np.round(prediction,4)),
         )
 
 @app.route('/doc',methods=['GET'])
