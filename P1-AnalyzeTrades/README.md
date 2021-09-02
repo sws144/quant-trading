@@ -29,7 +29,8 @@ C4 style approach, see README puml files and pngs
 1. pickle file & show inputs via mlflow
 1. validation exhibits
 1. test estimated predicted return for single record
-1. **decide best model** by copying run from local mlflow to repo mlflow and update **app.py**
+1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
+1. **update requirements in P1- folder** by running `pipenv lock -r > requirements.txt` and copying to P1-... folder
 
 ### MLFlow
 
