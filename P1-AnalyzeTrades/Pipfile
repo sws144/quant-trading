@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+dill = "0.3.4"
 ## dtreeviz = "*"
 hyperopt ="*"
 ipykernel = "*"
@@ -20,7 +21,7 @@ patsy = "*"
 ## pydotplus = "*"
 pytest = "*"
 shap = "*"
-sklearn = "*"
+scikit-learn = "0.24.2"
 statsmodels = "*"
 yfinance = "*"
 

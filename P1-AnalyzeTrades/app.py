@@ -7,9 +7,9 @@ import pickle
 import importlib
 analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
-### INPUT ###
-runid = '1b6b96ef3cb14b93b60af5f2a84eeb94'
-### ####
+### SELECTED MODEL ###
+runid = '0928f3d8912f4a49b71eb62795cb9e0b'
+######################
 
 #load model
 # model = pickle.load(open(f'mlruns/0/{runid}/artifacts/model/model.pkl','rb'))

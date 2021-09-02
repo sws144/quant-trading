@@ -31,6 +31,7 @@ from datetime import datetime
 import os 
 
 import pickle
+import dill
 
 # %% 
 # ### INPUT ###
@@ -39,7 +40,7 @@ import pickle
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = 'd2979c94d7744439ae18aac9a6d6bc09'
+runid = '1140c5a2c378445ba06b77647d969345'
 mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 
 experiment_name = 'P1-AnalyzeTrades_f_core'
@@ -230,7 +231,7 @@ mlflow.end_run()
 mlflow.start_run(run_id = runid )
 
 with open(f'explainer.pkl', 'wb') as handle:
-    pickle.dump(explainer, handle)
+    dill.dump(explainer, handle, recurse=True)
 
 mlflow.log_artifact(f'explainer.pkl')
 
