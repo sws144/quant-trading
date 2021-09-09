@@ -1,8 +1,8 @@
-# Getting Started with Create React App
+# SAMPLE PROJECT Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Setup 
+## Setup for a blank project 
 
 1. Install [nodejs](https://nodejs.org/en/) 
 1. Terminal: `npx create-react-app my-app`

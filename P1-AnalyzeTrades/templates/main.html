@@ -13,17 +13,17 @@ form {
     border: 1px solid #ccc;
 }
 </style><head>
-    <title>Titanic Model Example</title>
+    <title>Analyze Trades App</title>
 </head>
 <center>
 <br>
-This is a sample model to to predict the survival of a person on the Titanic
+This is a sample model to to predict the return of an individual trade given starting characteristics
 <br>
-Version 1.06 - Stanley W
+Version 0.01 - Stanley W
 <br>
 Uses gradient boosting from sklearn
 <br>
-<a href="https://github.com/sws144/titanic-model-app">GitHub Link</a>  
+<a href="https://github.com/sws144/quant-trading/tree/master/P1-AnalyzeTrades">GitHub Link</a>  
 <br>
 <a href="https://titanic-model-app.herokuapp.com/doc">Documentation Link</a>  
 <br>
@@ -31,21 +31,17 @@ Uses gradient boosting from sklearn
 <form action="{{ url_for('main') }}" method="POST">
     <fieldset>
         <legend>Input values:</legend>
-        Ticket Class (1, 2, 3):
-        <input name="Pclass" type="number" required>
+        <br> CLOSE_VIX:
+        <input name="Q('CLOSE_^VIX')" type="number" required>
         <br>
-        <br> Age:
-        <input name="Age" type="number" required>
+        <br> AAII_SENT_BULLBEARSPREAD:
+        <input name="Q('AAII_SENT_BULLBEARSPREAD')" type="number" required>
         <br>
-        <br> Number of Siblings aboard:
-        <input name="SibSp" type="number" required>
+        <br> YEARS_TO_NORMALIZATION:
+        <input name="Q('YEARS_TO_NORMALIZATION')" type="number" required>
         <br>
-        <br> Fare (price of ticket, a number):
-        <input name="Fare" type="number" required>
-        <br>
-        <br>
-        <br> Sex (M or F, defaults to M):
-        <input name="Sex" type="text" required>
+        <br> IMPLIED_P_E:
+        <input name="Q('IMPLIED_P_E')" type="number" required>
         <br>
         <br>
         <input type="submit">
@@ -55,10 +51,18 @@ Uses gradient boosting from sklearn
 <div class="result" align="center">
     {% if result %}
         {% for variable, value in original_input.items() %}
-            <b>{{ variable }}</b> : {{ value }}
+            <b>{{ variable }}</b> : {{ value }} 
+            <br>
         {% endfor %}
         <br>
-        <br> Predicted Survival (1)  or Not (0):
+        <br> Predicted Return (e.g. 0.01 = 1%):
            <p style="font-size:50px">{{ result }}</p>
+        <br>
+        <img 
+            src="current_force.png"
+            alt = 'image missing'
+            style="max-height: 500px; max-width: 500px;"
+        >      
     {% endif %}
+  
 </div></html>

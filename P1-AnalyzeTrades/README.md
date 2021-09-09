@@ -41,12 +41,16 @@ C4 style approach, see README puml files and pngs
 
 ## C2 Frontend Overview
 
-### Build App
+### Build App Basic (Flask)
 
-1. Start docker desktop app
+1. In pipenv virtual environment, `flask run`
+
+### Build App Full Version
+
+1. Start docker desktop app (outside any virtual environment)
 1. Let's build our image: `docker build -t analyze:latest .`
 1. and run: `docker run -p 8004:8003 analyze:latest` ,  host port : container port
-1. `curl localhost:8004` -> Hello world!
+1. `curl localhost:8004` -> website (does not match 127.0.0.0 diff from 0.0.0.0)
 1. To turn off, ctrl+c in terminal
 
 ### Single prediction
