@@ -60,7 +60,7 @@ def main():
                                 'YEARS_TO_NORMALIZATION':YEARS_TO_NORMALIZATION,
                                 'IMPLIED_P_E': IMPLIED_P_E,
                 },
-                result=str(np.round(prediction,4)),
+                result=str(np.round(prediction,3)),
         )
 
 @app.route('/doc',methods=['GET'])

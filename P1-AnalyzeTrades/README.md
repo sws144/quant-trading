@@ -22,6 +22,8 @@ C4 style approach, see README puml files and pngs
 
 ### C3 Backend Outline
 
+1. enter virtual environment for P-1...
+    1. if in vs-code can select environment from jupyter/python dropdown
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
 1. append market data
@@ -30,12 +32,13 @@ C4 style approach, see README puml files and pngs
 1. validation exhibits
 1. test estimated predicted return for single record
 1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
-1. **update requirements in P1- folder** by running `pipenv lock -r > requirements.txt` and copying to P1-... folder
-1. **run tests** including `pytest` and `docker build...` below
+1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > requirements.txt` outside virtual env and copying to P1-... folder
+    1. faster, if available: pull requirements.txt directly from mlflow run
+1. **run tests** including `pytest` and `flask run` and `docker build...` below
 
 ### MLFlow
 
-1. First time build: Terminal `pipenv sync` to create environment,
+1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or update and install environment
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
 1. To shut down, type "ctrl + c" in terminal
