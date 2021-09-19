@@ -40,7 +40,7 @@ def main():
             [[CLOSE_VIX, AAII_SENT_BULLBEARSPREAD, YEARS_TO_NORMALIZATION, IMPLIED_P_E]],
             columns=["Q('CLOSE_^VIX')", "Q('AAII_SENT_BULLBEARSPREAD')",
                      "Q('YEARS_TO_NORMALIZATION')","Q('IMPLIED_P_E')"],
-            dtype=int)        
+            dtype=float)        
 
         res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
             mlflow_tracking_uri = '', 
@@ -60,13 +60,13 @@ def main():
                                 'YEARS_TO_NORMALIZATION':YEARS_TO_NORMALIZATION,
                                 'IMPLIED_P_E': IMPLIED_P_E,
                 },
-                result=str(np.round(prediction,4)),
+                result=str(np.round(prediction,3)),
         )
 
 @app.route('/doc',methods=['GET'])
 def doc():
     if request.method == 'GET':
-        return(render_template('titanic-logistic.html')) # need to update this with every version update
+        return(render_template('doc.html')) # need to update this with every version update
 
 # def predict():
 #     # get data
