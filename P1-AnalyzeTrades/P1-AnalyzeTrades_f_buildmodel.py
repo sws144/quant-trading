@@ -352,7 +352,7 @@ plt.show()
 mlflow.log_artifact('tree_plot1.png')
 
 os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
-mlflow.log_artifact('output/srequirements.txt')
+mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
 
@@ -429,7 +429,7 @@ mlflow.h2o.log_model(glm,'model',signature=model_sig)
 h2o.cluster().shutdown(prompt=False) 
 
 os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
-mlflow.log_artifact('output/srequirements.txt')
+mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
 
@@ -527,7 +527,7 @@ mlflow.h2o.log_model(gbm,'model',signature=model_sig)
 h2o.cluster().shutdown(prompt=False) 
 
 os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
-mlflow.log_artifact('output/srequirements.txt')
+mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
 
