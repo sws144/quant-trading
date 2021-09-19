@@ -9,6 +9,7 @@ retune = True #hyperparameter tuning
 # imports
 
 import importlib  # for importing other packages
+import os
 import pandas as pd
 import numpy as np
 from patsy import dmatrices
@@ -341,13 +342,17 @@ sub_tree_1 = reg.estimators_[0, 0]  # pull first 1 estimator, actual regressor v
 
 tree.plot_tree(sub_tree_1,
            feature_names = list(X_train.columns),
-           filled = True)
+           filled = True,
+            fontsize=7)
 
 plt.tight_layout()
 plt.savefig('tree_plot1.png',bbox_inches = "tight")
 plt.show()
 
 mlflow.log_artifact('tree_plot1.png')
+
+os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
 
@@ -422,6 +427,9 @@ model_sig = infer_signature(X_train, y_train)
 mlflow.h2o.log_model(glm,'model',signature=model_sig)
 
 h2o.cluster().shutdown(prompt=False) 
+
+os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
 
@@ -517,6 +525,9 @@ model_sig = infer_signature(X_train, y_train)
 mlflow.h2o.log_model(gbm,'model',signature=model_sig)
 
 h2o.cluster().shutdown(prompt=False) 
+
+os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
 
