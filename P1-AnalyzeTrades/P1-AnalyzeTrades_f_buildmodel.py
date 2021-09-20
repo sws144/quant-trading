@@ -1,12 +1,12 @@
 # %% [markdown]
-#  ## E: Build & Tune Models
+##  ## E: Build & Tune Models
 
 # %%
-# ### INPUTS ###
+## ### INPUTS ###
 retune = True #hyperparameter tuning
 
 # %%
-# imports
+## imports
 
 import importlib  # for importing other packages
 import os
@@ -53,12 +53,12 @@ except:
 mlflow.sklearn.autolog()
 
 # %%
-# read in data
+## read in data
 
 df_XY = pd.read_csv('output/e_resultcleaned.csv')
 
 # %%
-# variables
+## variables
 
 target = 'PCT_RET_FINAL'
 variables = [
@@ -116,7 +116,7 @@ varstring = ''.join(varlist)
 
 
 # %%
-# Create formula for model
+## Create formula for model
 
 formula =  f""" {target} ~ 1 + {varstring}"""
         
@@ -131,7 +131,7 @@ X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 # y..to_numpy().ravel()
 
 # %%
-# tune & run model using hyperopt
+## tune & run model using hyperopt
 
 
 # from sklearn.model_selection import train_test_split
@@ -161,7 +161,7 @@ X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 
     
 # %%
-# validate & log function
+## validate & log function
 
 # looks reasonable
 # https://www.kaggle.com/jpopham91/gini-scoring-simple-and-efficient
@@ -277,7 +277,7 @@ def score_estimator(
 #     return 
 
 # %%
-# fit model_1 boosting
+## fit model_1 boosting
 
 mlflow.end_run()
 mlflow.start_run(run_name='sklearn_gbm')
@@ -335,6 +335,8 @@ reg.fit(X_train,y_train.to_numpy().ravel())
 # log_w_validate(y_test, y_pred, formula)
 res = score_estimator(reg,X_train, X_test, XY_train, XY_test, target, formula)
 
+mlflow.log_metrics(res)
+
 # addition artifacts 
 # visualize a single tree
 # Get a tree 
@@ -357,7 +359,7 @@ mlflow.log_artifact('output/requirements.txt')
 mlflow.end_run()
 
 # %%
-# fit model_2 statsmodel TODO not working at moment
+## fit model_2 statsmodel TODO not working at moment
 
 from sklearn.base import BaseEstimator, RegressorMixin
 class SMWrapper(BaseEstimator, RegressorMixin):
@@ -387,7 +389,7 @@ class SMWrapper(BaseEstimator, RegressorMixin):
 # print(cross_val_score(SMWrapper(sm.OLS), X, y, scoring='r2'))
 
 # %%
-# Model 3 H2O GLM
+## Model 3 H2O GLM
 
 mlflow.end_run()
 mlflow.start_run(run_name='H2O_glm')
@@ -483,7 +485,7 @@ mlflow.end_run()
 # predictions_pd = predictions['predict'].as_data_frame() #h2o frame to pandas
 
 # %%
-# Model 4 H2O GBM , tree-based
+## Model 4 H2O GBM , tree-based
 
 mlflow.end_run()
 mlflow.start_run(run_name='H2O_gbm')
@@ -532,7 +534,7 @@ mlflow.log_artifact('output/requirements.txt')
 mlflow.end_run()
 
 # %%
-# other validation functions
+## other validation functions
 
 # https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html
 # https://scikit-learn.org/stable/auto_examples/linear_model/plot_poisson_regression_non_normal_loss.html
@@ -662,4 +664,4 @@ mlflow.end_run()
 
 
 # %%
-# placeholder
+## placeholder

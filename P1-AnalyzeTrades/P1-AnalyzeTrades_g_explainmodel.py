@@ -1,8 +1,8 @@
 # %% [markdown]
-# ## G: Explain Models
+## ## G: Explain Models
 
 # %%
-# imports
+## imports
 
 import pandas as pd
 pd.set_option('display.max_rows', 500)
@@ -40,7 +40,7 @@ import dill
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = '1140c5a2c378445ba06b77647d969345'
+runid = '5f1d00b19461460f88fd9ae42d214cce'
 mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
 
 experiment_name = 'P1-AnalyzeTrades_f_core'
@@ -49,13 +49,13 @@ mlflow.set_experiment(experiment_name)
 experiment_details = mlflow.get_experiment_by_name(experiment_name)
 
 # %%
-# pull information
+## pull information
 
 XY_df = pd.read_csv('output/e_resultcleaned.csv')
 XY_df['weight'] = 1
 
 # %%
-# pull model from tracking uri
+## pull model from tracking uri
 
 # tracking_uri = mlflow.get_tracking_uri()
 
@@ -73,7 +73,7 @@ except:
 # 
 
 # %%
-# pull information from mlflow
+## pull information from mlflow
 
 # TODO H2O signature missing
 
@@ -93,7 +93,7 @@ mlflow.end_run()
 formula_clean = params['formula'].replace('\n','')
 
 # %%
-# parse data 
+## parse data 
 
 mlflow.end_run()
 mlflow.start_run(run_id = runid )
@@ -116,14 +116,14 @@ X = X[cols_required] # ensure X is in correct order and complete for model
 mlflow.end_run()
 
 # %%
-# train test, repeat from earlier 
+## train test, repeat from earlier 
 
 # X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 #     X, y, XY_df, test_size=0.33, random_state=42)
 
 
 # %%
-# predict full dataset
+## predict full dataset
 
 if 'h2o' in str(type(mdl)) :
     X_hf = h2o.H2OFrame(X)
@@ -149,7 +149,7 @@ class H2ORegWrapper:
             return self.predictions.astype('float64')
 
 # %%
-# lightgbm pipeline
+## lightgbm pipeline
 
 def sub_gbm(X_hf, y_pred):
     """creates explainer based on H2O X & y frames
@@ -171,7 +171,7 @@ def sub_gbm(X_hf, y_pred):
     return explainer
 
 # %% 
-# summarize overall results
+## summarize overall results
 
 mlflow.end_run()
 mlflow.start_run(run_id = runid )
@@ -225,7 +225,7 @@ mlflow.end_run()
 
 
 # %%
-# save explainer
+## save explainer
 
 mlflow.end_run()
 mlflow.start_run(run_id = runid )
@@ -240,14 +240,14 @@ os.remove(f'explainer.pkl')
 mlflow.end_run()
 
 # %%
-# check highest 
+## check highest 
 
 top_trades = XY_df[XY_df['PCT_RET_FINAL']>1]
 top_trades.head()
 
 
 # %%
-# check top variable(s)
+## check top variable(s)
 
 # make plots
 
@@ -263,6 +263,8 @@ for var in cols_required:
     # fig, ax = plt.subplots()
     
     shap.dependence_plot(var, shap_values.values, X, show=False)
+    # TODO add
+    # shap.plots.partial_dependence(var, mdl.predict, X,  model_expected_value=True)
     f = plt.gcf()
     
     plt.tight_layout()
@@ -275,7 +277,7 @@ for var in cols_required:
 mlflow.end_run()
 
 # %%
-# end mlflow and h2o
+## end mlflow and h2o
 
 mlflow.end_run()
 try:
@@ -286,7 +288,7 @@ except:
 
 
 # %%
-# backup functions
+## backup functions
 
 # https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html
 # def gini(actual, pred, sample_weight = None):
