@@ -42,7 +42,7 @@ C4 style approach, see README puml files and pngs
 
 1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or update and install environment
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
-1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
+1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
 1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 

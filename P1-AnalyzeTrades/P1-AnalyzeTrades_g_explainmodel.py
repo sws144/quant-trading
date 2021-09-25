@@ -135,7 +135,7 @@ else:
 
 
 # %% 
-# class 
+## class 
 
 class H2ORegWrapper:
     def __init__(self, h2o_model, feature_names):
@@ -247,7 +247,7 @@ top_trades.head()
 
 
 # %%
-## check top variable(s)
+## plot partial dependence for vars
 
 # make plots
 
@@ -260,12 +260,24 @@ dt_string = now.strftime("%Y%m%d_%H%M%S")
 print("date and time =", dt_string)	
 
 for var in cols_required:
-    # fig, ax = plt.subplots()
+    fig, ax = plt.subplots()
     
-    shap.dependence_plot(var, shap_values.values, X, show=False)
+    shap.dependence_plot(var, shap_values.values, X, ax=ax, show=False)
+    
+    int_labels , col_bins = pd.cut(X[var],bins=10, retbins=True, labels=False)
+    
+    shap_col_df = pd.DataFrame({
+    var : col_bins[int_labels],
+    'expected_value_shap' : shap_values.values[:,X.columns.get_loc(var)]
+    })
+    
+    shap_col_grp_df = shap_col_df.groupby(var).mean()
+    
+    shap_col_grp_df.plot(ax=ax)
+    
     # TODO add
     # shap.plots.partial_dependence(var, mdl.predict, X,  model_expected_value=True)
-    f = plt.gcf()
+    # f = plt.gcf()
     
     plt.tight_layout()
     plt.savefig(f'shappdp_{var}_{dt_string}.png',bbox_inches = "tight")
