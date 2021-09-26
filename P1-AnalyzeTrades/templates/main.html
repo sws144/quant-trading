@@ -51,13 +51,12 @@ Uses gradient boosting from sklearn
 <div class="result" align="center">
     {% if result %}
         {% for variable, value in original_input.items() %}
-            <b>{{ variable }}</b> : {{ value }} 
+            {{ variable }} : {{ value }} 
             <br>
         {% endfor %}
-        <br>
-        <br> Predicted Return (e.g. 0.01 = 1%):
-           <p style="font-size:50px">{{ result }}</p>
-        <br>
+        <br> Predicted Return (e.g. 0.01 = 1%): <b>{{ result }}</b>
+        <br> 
+           <!-- <p style="font-size:50px"></p> -->
         <img 
             src="current_force.png"
             alt = 'image missing'

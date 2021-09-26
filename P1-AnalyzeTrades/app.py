@@ -1,4 +1,4 @@
-# flask app file
+## flask app file
 # type "flask run" in app.py's directory to run
 
 import pandas as pd
@@ -9,8 +9,7 @@ import numpy as np
 analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
 ### SELECTED MODEL ###
-runid = '1140c5a2c378445ba06b77647d969345'
-######################
+runid = '993aac766d164995bad3e1225fa78ef7'
 
 ### load model
 mdl = analyze_pred.preload_model(
@@ -20,11 +19,11 @@ mdl = analyze_pred.preload_model(
 )
 
 
-# app
+## app start
 app = Flask(__name__, template_folder='templates', static_url_path='', 
             static_folder='output')
 
-# routes
+## routes
 @app.route('/',methods=['GET','POST'])
 def main():
     if request.method == 'GET':
