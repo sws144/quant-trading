@@ -19,13 +19,13 @@ form {
 <br>
 This is a sample model to to predict the return of an individual trade given starting characteristics
 <br>
-Version 0.01 - Stanley W
+Version 0.02 - Stanley W
 <br>
 Uses gradient boosting from sklearn
 <br>
 <a href="https://github.com/sws144/quant-trading/tree/master/P1-AnalyzeTrades">GitHub Link</a>  
 <br>
-<a href="https://titanic-model-app.herokuapp.com/doc">Documentation Link</a>  
+<a href="https://analyze-trades-prod.herokuapp.com/doc">Documentation Link</a>  
 <br>
 </center>
 <form action="{{ url_for('main') }}" method="POST">
@@ -51,13 +51,12 @@ Uses gradient boosting from sklearn
 <div class="result" align="center">
     {% if result %}
         {% for variable, value in original_input.items() %}
-            <b>{{ variable }}</b> : {{ value }} 
+            {{ variable }} : {{ value }} 
             <br>
         {% endfor %}
-        <br>
-        <br> Predicted Return (e.g. 0.01 = 1%):
-           <p style="font-size:50px">{{ result }}</p>
-        <br>
+        <br> Predicted Return (e.g. 0.01 = 1%): <b>{{ result }}</b>
+        <br> 
+           <!-- <p style="font-size:50px"></p> -->
         <img 
             src="current_force.png"
             alt = 'image missing'

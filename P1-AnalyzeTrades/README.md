@@ -37,12 +37,16 @@ C4 style approach, see README puml files and pngs
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > output/requirements.txt` outside virtual env and copying to P1-... folder
     1. faster, if available: pull requirements.txt directly from mlflow run artifacts
 1. **run tests** including `pytest` and `flask run` and `docker build...` below
+1. **save work as ipynb and html** by
+    1. Saving jupyter interactive to original mlflow
+    1. Copying run to repo
+    1. and then use Anaconda -> JupyterLab -> save as HTML
 
 ### MLFlow
 
 1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or update and install environment
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
-1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment
+1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
 1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
