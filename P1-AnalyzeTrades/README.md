@@ -5,6 +5,7 @@
 Apply data science and analytics to a user's trading history to help user make better decisions
 https://analyze-trades-staging.herokuapp.com/
 https://analyze-trades-prod.herokuapp.com/
+See ...Important\Startup\P1-AnalyzeTrades
 
 ## Architecture
 
