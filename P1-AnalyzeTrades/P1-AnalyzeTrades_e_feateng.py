@@ -2,7 +2,7 @@
 #  ## E: Feature Engineering
 
 # %%
-# imports
+## imports
 
 import pandas as pd
 import numpy as np
@@ -19,12 +19,12 @@ from sklearn.base import TransformerMixin # for custom transformers
 from joblib import dump, load
 
 # %%
-# read in data
+## read in data
 
 df_XY = pd.read_csv('output/c_resulttradewattr.csv')
 
 # %%
-#  get_feature_names function 
+##  get_feature_names function 
 # https://johaupt.github.io/scikit-learn/tutorial/python/data%20processing/ml%20pipeline/model%20interpretation/columnTransformer_feature_names.html
 def get_feature_names(column_transformer):
     """Get feature names from all transformers.
@@ -93,7 +93,7 @@ def get_feature_names(column_transformer):
     return feature_names
 
 # %%
-# custom transformers
+## custom transformers
 class Numerizer(TransformerMixin):
     import pandas as pd
     
@@ -108,7 +108,7 @@ class Numerizer(TransformerMixin):
         return Y
 
 # %%
-# create na pipeline
+## create na pipeline
 
 # update columns headers to clean up
 df_XY.columns = list(
@@ -174,7 +174,7 @@ df_XY_imputed['PCT_RET_FINAL'] = (
 print(df_XY_imputed.columns)
 
 # %%
-# check no na's left in numerical
+## check no na's left in numerical
 
 try: 
     assert df_XY_imputed[numeric_features].isna().sum().sum() == 0 , 'NAs remain in numerical'
@@ -182,13 +182,30 @@ except:
     print('NAs remain in numerical')
 
 # %%
-# save results
+## test against spec
+
+import yaml
+from yaml import Loader
+
+with open("data-tests/_apispecs.yaml") as f:
+    data = yaml.load(f, Loader=Loader)
+
+# %%
+## save api spec to html
+
+import os
+
+os.system('python swagger_yaml_to_html.py < data-tests/_apispecs.yaml > templates/api.html')
+
+
+# %%
+## save results
 
 df_XY_imputed.to_csv('output/e_resultcleaned.csv')
 
 
 # %%
-# save imputer
+## save imputer
 
 dump(preprocessor_na,'output/e_preprocessor_na.joblib')
 
