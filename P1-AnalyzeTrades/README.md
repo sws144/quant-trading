@@ -16,14 +16,16 @@ C4 style approach, see README puml files and pngs
 1. See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
 1. Backup: see _Project-Tracking.xlsx file
 
-## C2 Backend Overview
+## C2 Backend
+
+### Local Scripts: Pnl Review
 
 1. Update raw data `data` with account statement with `U1060261` in file name and `pcm-tracking` details
 1. Run standalone scripts a to e (just before building model)
 1. Pull in `data\_pnl_review.xlsx`
 1. Paste in results tab, making sure lookups at right are not broken
 
-### C3 Backend Outline
+### Local Scripts: Model Update
 
 1. enter virtual environment for P-1...
     1. if in vs-code can select environment from jupyter/python dropdown
@@ -52,6 +54,8 @@ C4 style approach, see README puml files and pngs
 1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
 ## C2 Frontend Overview
+
+see README_C2...png
 
 ### Build App Basic (Flask)
 
