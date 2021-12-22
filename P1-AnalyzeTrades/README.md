@@ -20,10 +20,11 @@ C4 style approach, see README puml files and pngs
 
 ### Local Scripts: Pnl Review
 
-1. Update raw data `data` with account statement with `U1060261` in file name and `pcm-tracking` details
+1. Go to Interactive Brokers -> activity statements -> pull standard .csv statement
+1. Update raw `data` folder with account statement (`U1060261` in file name) and `pcm-tracking` loghist tab
 1. Run standalone scripts a to e (just before building model)
-1. Pull in `data\_pnl_review.xlsx`
-1. Paste in results tab, making sure lookups at right are not broken
+1. Open `output\_pnl_review.xlsx`. This is the main file file for analysis
+1. Paste `e_resultcleaned.csv` in `input_e_result` tab, making sure lookups at right are not broken
 
 ### Local Scripts: Model Update
 

@@ -1,5 +1,5 @@
 # %% [markdown]
-#  ## E: Feature Engineering
+##  ## E: Feature Engineering
 
 # %%
 ## imports
@@ -182,7 +182,7 @@ except:
     print('NAs remain in numerical')
 
 # %%
-## test against spec
+## test against api spec
 
 import yaml
 from yaml import Loader
