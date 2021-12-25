@@ -13,7 +13,7 @@ hyperopt ="*"
 ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
-h2o = "==3.32.1.6"
+h2o = "==3.32.1.6" # to ensure models work 
 lightgbm = "*"
 matplotlib = "*"
 mlflow = "*"
@@ -23,8 +23,8 @@ pandas_datareader = "*"
 patsy = "*"
 ## pydotplus = "*"
 pytest = "*"
-shap = "*"
-scikit-learn = "==0.24.2"
+shap = "==0.39.0" # to ensure explainers work
+scikit-learn = "==0.24.2" # to ensure models work 
 statsmodels = "*"
 yfinance = "*"
 

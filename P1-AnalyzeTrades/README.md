@@ -46,9 +46,9 @@ C4 style approach, see README puml files and pngs
     1. Copying run to repo
     1. and then use Anaconda -> JupyterLab -> save as HTML
 
-### MLFlow
+### MLFlow & Virtual Env Update
 
-1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or update and install environment
+1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or delete `piplock` first to update and install environment
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
