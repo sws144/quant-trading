@@ -11,7 +11,7 @@ import json
 analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
 ### SELECTED MODEL ###
-runid = '993aac766d164995bad3e1225fa78ef7'
+runid = 'c5415cb2c7d1475eac140803f5e6c857'
 
 ### load model
 mdl = analyze_pred.preload_model(
@@ -27,6 +27,9 @@ col_type_dict = pd.DataFrame(
     json.loads(json.loads(tags['mlflow.log-model.history'])[0]['signature']['inputs'])
 ).set_index('name').to_dict(orient='index')
 
+version = ''
+if 'version' in tags.keys():
+    version = tags['version']    
 
 ## app start
 app = Flask(__name__, template_folder='templates', static_url_path='', 
@@ -36,7 +39,10 @@ app = Flask(__name__, template_folder='templates', static_url_path='',
 @app.route('/',methods=['GET','POST'])
 def main():
     if request.method == 'GET':
-        return(render_template('main.html',col_type_dict=col_type_dict))
+        return(render_template(
+            'main.html',
+            col_type_dict=col_type_dict,
+            version=version,))
     if request.method == 'POST':
         # should match main.html form
         
@@ -67,6 +73,7 @@ def main():
         
         return render_template('main.html',
                 col_type_dict=col_type_dict,
+                version=version,
                 original_input=request.form,
                 result=str(np.round(prediction,3)),
         )
