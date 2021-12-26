@@ -11,6 +11,7 @@ form {
     margin: auto;
     width: 35%;
     border: 1px solid #ccc;
+    font-size: 85%;
 }
 </style><head>
     <title>Analyze Trades App</title>
@@ -22,16 +23,17 @@ This is a sample model to to predict the return of an individual trade given sta
 Version 0.02 - Stanley W
 <br>
 Uses gradient boosting from sklearn
-<br>
-<a href="https://github.com/sws144/quant-trading/tree/master/P1-AnalyzeTrades">GitHub Link</a>  
-<br>
-<a href="https://analyze-trades-prod.herokuapp.com/doc">Documentation Link</a>  
-<br>
 </center>
 <form action="{{ url_for('main') }}" method="POST">
     <fieldset>
         <legend>Input values:</legend>
-        <br> CLOSE_VIX:
+        {% for variable, value in col_type_dict.items() %}
+            {{ variable }} :
+            <input name={{ variable }} type={{ value }}  required>
+            <br>  
+        {% endfor %}        
+
+        <!-- <br> CLOSE_VIX:
         <input name="Q('CLOSE_^VIX')" type="number" required>
         <br>
         <br> AAII_SENT_BULLBEARSPREAD:
@@ -43,7 +45,7 @@ Uses gradient boosting from sklearn
         <br> IMPLIED_P_E:
         <input name="Q('IMPLIED_P_E')" type="number" required>
         <br>
-        <br>
+        <br> -->
         <input type="submit">
     </fieldset>
 </form>
@@ -63,5 +65,12 @@ Uses gradient boosting from sklearn
             style="max-height: 500px; max-width: 500px;"
         >      
     {% endif %}
-  
-</div></html>
+</div>
+<center>
+<br>
+<a href="https://github.com/sws144/quant-trading/tree/master/P1-AnalyzeTrades">GitHub Link</a>  
+<br>
+<a href="https://analyze-trades-prod.herokuapp.com/doc">Documentation Link</a>  
+<br>
+</center>
+</html>
