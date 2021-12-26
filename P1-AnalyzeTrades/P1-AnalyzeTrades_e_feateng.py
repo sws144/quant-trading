@@ -217,6 +217,7 @@ with open("data-tests/_apispecs.yaml") as f:
 
 import os
 
+# feed yaml file to swagger python, then create api.html
 os.system('python swagger_yaml_to_html.py < data-tests/_apispecs.yaml > templates/api.html')
 
 
