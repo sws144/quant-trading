@@ -61,6 +61,7 @@ df_XY = pd.read_csv('output/e_resultcleaned.csv')
 ## variables
 
 target = 'PCT_RET_FINAL'
+# manually selected from design (exposure) matrix ,  TODO automate
 variables = [
     # 'UNNAMED:_0', 'UNNAMED:_0_X', 'UNNAMED:_0.1', 'QUANTITY', 'PNL',
     # 'OPEN_PRICE', 'CLOSE_PRICE', 'COMM_TOT', 'QTYCHG', 'PRICE',
@@ -81,11 +82,13 @@ variables = [
     # 'IMPLIED_P_E',
     # 'YEARS_TO_NORMALIZATION', 
     # 'OPEN_DATE', 'CLOSE_DATE', 'SYMBOL',
-    # 'OPENACT', 'CLOSEACT', 'DATE', 'ACTION', 'TIME', 'UNNAMED:_6',
+    'OPENACT',
+    # 'CLOSEACT', 'DATE', 'ACTION', 'TIME', 'UNNAMED:_6',
     # 'UNNAMED:_8', 'CASH_CHG_(PNL)', 'COMMENTS', 'PCTRETURN', 'STARTDATE',
     # 'COMPANY_NAME_(IN_ALPHABETICAL_ORDER)', 'TICKER', 'CURRENT_PRICE',
     # 'AT_PRICE', 'TARGET', 'EPS1', 'EPS2', 'FYEND', 'LASTUPDATED',
-    # 'CATEGORY', 'COMMENTS.1', 'FILENAME', 'DATE_', 'AAII_SENT_DATE',
+    'CATEGORY', 
+    # 'COMMENTS.1', 'FILENAME', 'DATE_', 'AAII_SENT_DATE',
     # 'PCT_RET_FINAL'
 ]
 
@@ -96,6 +99,7 @@ varlist = []
 cols_num = df_XY.select_dtypes(include='number').columns
 idx = 0
 
+# create variable string 
 for v in variables:
     if idx != 0:
         varlist.append('+')
@@ -121,6 +125,11 @@ varstring = ''.join(varlist)
 formula =  f""" {target} ~ 1 + {varstring}"""
         
 y , X = dmatrices(formula, df_XY, return_type='dataframe')
+
+# check rows are aligned
+
+assert X.shape[0] == df_XY.shape[0] , 'rows mismatched, probably due to NAs'
+
 
 # %% 
 # train test data
@@ -277,7 +286,7 @@ def score_estimator(
 #     return 
 
 # %%
-## fit model_1 boosting
+## fit model_1 boosting w optional tuning
 
 mlflow.end_run()
 mlflow.start_run(run_name='sklearn_gbm')

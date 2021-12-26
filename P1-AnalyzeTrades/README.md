@@ -16,46 +16,50 @@ C4 style approach, see README puml files and pngs
 1. See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
 1. Backup: see _Project-Tracking.xlsx file
 
-## C2 Backend Overview
+## C2 Backend
 
-1. Update raw data `data` with account statement with `U1060261` in file name and `pcm-tracking` details
+### Local Scripts: Pnl Review
+
+1. Go to Interactive Brokers -> activity statements -> pull standard .csv statement
+1. Update raw `data` folder with account statement (`U1060261` in file name) and `pcm-tracking` loghist tab
 1. Run standalone scripts a to e (just before building model)
-1. Pull in `data\_pnl_review.xlsx`
-1. Paste in results tab, making sure lookups at right are not broken
+1. Open `output\_pnl_review.xlsx`. This is the main file file for analysis
+1. Paste `e_resultcleaned.csv` in `input_e_result` tab, making sure lookups at right are not broken
 
-### C3 Backend Outline
+### Local Scripts: Model Update
 
 1. enter virtual environment for P-1...
     1. if in vs-code can select environment from jupyter/python dropdown
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
 1. append market data
-1. build models
-1. pickle file & show inputs via mlflow
-1. validation exhibits
+1. build models (f_buildmodel), pickle file & show inputs via mlflow
+1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
 1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
-1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > output/requirements.txt` outside virtual env and copying to P1-... folder
-    1. faster, if available: pull requirements.txt directly from mlflow run artifacts
+1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
+    1. backup: pull requirements.txt directly from mlflow run artifacts
 1. **run tests** including `pytest` and `flask run` and `docker build...` below
 1. **save work as ipynb and html** by
     1. Saving jupyter interactive to original mlflow
     1. Copying run to repo
     1. and then use Anaconda -> JupyterLab -> save as HTML
 
-### MLFlow
+### MLFlow & Virtual Env Update
 
-1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or update and install environment
+1. First time build: Terminal `pipenv sync --dev` or `pipenv install --dev` to install env locally or delete `piplock` first to update and install environment
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
 1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
-## C2 Frontend Overview
-
 ### Build App Basic (Flask)
 
 1. In pipenv virtual environment, `flask run`
+
+## C2 Frontend Overview
+
+see README_C2...png
 
 ### Build App Full Version
 

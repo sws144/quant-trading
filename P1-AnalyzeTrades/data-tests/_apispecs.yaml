@@ -1,0 +1,50 @@
+openapi: 3.0.1
+info:
+  title: Analyze Trades
+  description: 'This is a sample api for analyze trades (tested at https://swagger.io/tools/swagger-editor/)'
+  termsOfService: tbd
+  contact:
+    email: s.wang4331@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 0.0.1
+tags:
+- name: trades
+  description: apis to manage trades
+paths:
+  /logtrade:
+    post:
+      tags:
+      - trades
+      summary: Add a new trade to the tradelog data model
+      operationId: logtrade
+      requestBody:
+        description: Tradelog object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tradelog'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Tradelog'
+        required: true
+      responses:
+        405:
+          description: Invalid input
+          content: {}
+components:
+  schemas:
+    Tradelog:
+      required:
+      - date
+      type: object
+      properties:
+        TRANSACTION_ID:
+          type: string
+          description: primary key
+        OPEN_DATE:
+          type: string
+          pattern: /([0-9]{4})-(?:[0-9]{2})-([0-9]{2})/
+          example: "2019-05-17"
+
