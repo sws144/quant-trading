@@ -15,7 +15,7 @@ joblib = "*"
 gunicorn ="*"
 h2o = "==3.32.1.6" # to ensure models work 
 lightgbm = "*"
-matplotlib = "*"
+matplotlib = "==3.2.2" # to make sure shap dependence plots work
 mlflow = "*"
 numpy = "*"
 pandas = "*"

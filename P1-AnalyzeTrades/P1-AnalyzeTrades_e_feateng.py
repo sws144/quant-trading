@@ -106,6 +106,19 @@ class Numerizer(TransformerMixin):
     def transform(self, X):
         Y = X.apply(pd.to_numeric, errors='coerce')
         return Y
+    
+class StringTransformer(TransformerMixin):
+    import pandas as pd
+    
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        Y = pd.DataFrame(X).astype('string')
+        return Y
 
 # %%
 ## create na pipeline
@@ -131,7 +144,13 @@ numeric_features = list(set(numeric_features))
 numeric_transformer = Pipeline(
     steps=[
         ('numerizer', Numerizer()),          
-        ('imputer', SimpleImputer(strategy='constant', fill_value = 0)),
+        ('imputer', SimpleImputer(strategy='constant', fill_value = -1)),
+    ]
+)
+categorical_transformer = Pipeline(
+    steps=[          
+        ('imputer', SimpleImputer(strategy='constant', fill_value = '_NA_')),
+        ('stringtransformer', StringTransformer()),    
     ]
 )
 
@@ -142,18 +161,21 @@ numeric_transformer = Pipeline(
 #     ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
 #     ('onehot', OneHotEncoder(handle_unknown='ignore'))])
 
+categorical_features = list(set(df_XY.columns).difference(set(numeric_features)))
+
 preprocessor_na = ColumnTransformer(
     transformers=[
-        ('num', numeric_transformer, numeric_features)  
+        ('num', numeric_transformer, numeric_features) ,
+        ('cat', categorical_transformer, categorical_features)          
     ], 
-    remainder = 'passthrough'
+    # remainder = 'passthrough' # not needed anymore
 )
 
 XY_imputed = preprocessor_na.fit_transform(df_XY)
 
 columns =get_feature_names(preprocessor_na)
 
-df_XY_imputed = pd.DataFrame(XY_imputed,columns=columns)
+df_XY_imputed = pd.DataFrame(XY_imputed,columns=columns).convert_dtypes()
 
 
 # %% 

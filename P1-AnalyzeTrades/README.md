@@ -33,9 +33,8 @@ C4 style approach, see README puml files and pngs
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
 1. append market data
-1. build models
-1. pickle file & show inputs via mlflow
-1. validation exhibits
+1. build models (f_buildmodel), pickle file & show inputs via mlflow
+1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
 1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
