@@ -1,8 +1,8 @@
 # %% [markdown]
-#  ## E: Feature Engineering
+##  ## E: Feature Engineering
 
 # %%
-# imports
+## imports
 
 import pandas as pd
 import numpy as np
@@ -19,12 +19,12 @@ from sklearn.base import TransformerMixin # for custom transformers
 from joblib import dump, load
 
 # %%
-# read in data
+## read in data
 
 df_XY = pd.read_csv('output/c_resulttradewattr.csv')
 
 # %%
-#  get_feature_names function 
+##  get_feature_names function 
 # https://johaupt.github.io/scikit-learn/tutorial/python/data%20processing/ml%20pipeline/model%20interpretation/columnTransformer_feature_names.html
 def get_feature_names(column_transformer):
     """Get feature names from all transformers.
@@ -93,7 +93,7 @@ def get_feature_names(column_transformer):
     return feature_names
 
 # %%
-# custom transformers
+## custom transformers
 class Numerizer(TransformerMixin):
     import pandas as pd
     
@@ -106,9 +106,22 @@ class Numerizer(TransformerMixin):
     def transform(self, X):
         Y = X.apply(pd.to_numeric, errors='coerce')
         return Y
+    
+class StringTransformer(TransformerMixin):
+    import pandas as pd
+    
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        Y = pd.DataFrame(X).astype('string')
+        return Y
 
 # %%
-# create na pipeline
+## create na pipeline
 
 # update columns headers to clean up
 df_XY.columns = list(
@@ -131,7 +144,13 @@ numeric_features = list(set(numeric_features))
 numeric_transformer = Pipeline(
     steps=[
         ('numerizer', Numerizer()),          
-        ('imputer', SimpleImputer(strategy='constant', fill_value = 0)),
+        ('imputer', SimpleImputer(strategy='constant', fill_value = -1)),
+    ]
+)
+categorical_transformer = Pipeline(
+    steps=[          
+        ('imputer', SimpleImputer(strategy='constant', fill_value = '_NA_')),
+        ('stringtransformer', StringTransformer()),    
     ]
 )
 
@@ -142,18 +161,21 @@ numeric_transformer = Pipeline(
 #     ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
 #     ('onehot', OneHotEncoder(handle_unknown='ignore'))])
 
+categorical_features = list(set(df_XY.columns).difference(set(numeric_features)))
+
 preprocessor_na = ColumnTransformer(
     transformers=[
-        ('num', numeric_transformer, numeric_features)  
+        ('num', numeric_transformer, numeric_features) ,
+        ('cat', categorical_transformer, categorical_features)          
     ], 
-    remainder = 'passthrough'
+    # remainder = 'passthrough' # not needed anymore
 )
 
 XY_imputed = preprocessor_na.fit_transform(df_XY)
 
 columns =get_feature_names(preprocessor_na)
 
-df_XY_imputed = pd.DataFrame(XY_imputed,columns=columns)
+df_XY_imputed = pd.DataFrame(XY_imputed,columns=columns).convert_dtypes()
 
 
 # %% 
@@ -174,7 +196,7 @@ df_XY_imputed['PCT_RET_FINAL'] = (
 print(df_XY_imputed.columns)
 
 # %%
-# check no na's left in numerical
+## check no na's left in numerical
 
 try: 
     assert df_XY_imputed[numeric_features].isna().sum().sum() == 0 , 'NAs remain in numerical'
@@ -182,13 +204,30 @@ except:
     print('NAs remain in numerical')
 
 # %%
-# save results
+## test against api spec
+
+import yaml
+from yaml import Loader
+
+with open("data-tests/_apispecs.yaml") as f:
+    data = yaml.load(f, Loader=Loader)
+
+# %%
+## save api spec to html
+
+import os
+
+os.system('python swagger_yaml_to_html.py < data-tests/_apispecs.yaml > templates/api.html')
+
+
+# %%
+## save results
 
 df_XY_imputed.to_csv('output/e_resultcleaned.csv')
 
 
 # %%
-# save imputer
+## save imputer
 
 dump(preprocessor_na,'output/e_preprocessor_na.joblib')
 
