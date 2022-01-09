@@ -148,6 +148,7 @@ def predict_return(
         json.loads(json.loads(tags['mlflow.log-model.history'])[0]['signature']['inputs'])
     ).set_index('name').to_dict(orient='index')
     
+    # ensure categorical splits contained necessary columns
     add_cols = list(set(cols_required) - set(list(inputs.columns)))
     inputs_copy = inputs.copy()
     inputs_copy[add_cols] = 0
@@ -155,7 +156,8 @@ def predict_return(
     # extra columns in dataset
     # print('extra columns in expanded dataset: '+  str(list(set(list(inputs_copy.columns)) - set(cols_required))))
 
-    inputs_copy = inputs_copy[cols_required] # ensure X is in correct order and complete for model
+    # ensure X is in correct order and complete for model
+    inputs_copy = inputs_copy[cols_required]  
 
     for c in inputs_copy.columns:
         if col_type_dict[c]['type'] == 'double':
