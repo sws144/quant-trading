@@ -27,6 +27,8 @@ shap = "==0.39.0" # to ensure explainers work
 scikit-learn = "==0.24.2" # to ensure models work 
 statsmodels = "*"
 yfinance = "*"
+black = "*"
+openapi-schema-validator = "*"
 
 [requires]
 python_version = "3.8.10"
