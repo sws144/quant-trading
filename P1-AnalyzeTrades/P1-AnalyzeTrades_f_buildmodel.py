@@ -61,7 +61,8 @@ df_XY = pd.read_csv('output/e_resultcleaned.csv')
 ## variables
 
 target = 'PCT_RET_FINAL'
-# manually selected from design (exposure) matrix ,  TODO automate
+# manually selected from design (exposure) matrix ,  TODO automate 
+# and build into pipeline
 variables = [
     # 'UNNAMED:_0', 'UNNAMED:_0_X', 'UNNAMED:_0.1', 'QUANTITY', 'PNL',
     # 'OPEN_PRICE', 'CLOSE_PRICE', 'COMM_TOT', 'QTYCHG', 'PRICE',
