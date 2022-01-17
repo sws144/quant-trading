@@ -19,6 +19,7 @@ import mlflow # model tracking
 from sklearn.model_selection import train_test_split
 
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import make_scorer
@@ -42,7 +43,7 @@ import matplotlib.pyplot as plt;
 # start logging
 
 # set location for mlruns
-mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
+mlflow.set_tracking_uri('file:D:/Stuff/OneDrive/MLflow')
 
 # set experiment
 try:
@@ -141,7 +142,7 @@ X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 # y..to_numpy().ravel()
 
 # %%
-## tune & run model using hyperopt
+## sample tune & run model using hyperopt
 
 
 # from sklearn.model_selection import train_test_split
@@ -171,7 +172,7 @@ X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 
     
 # %%
-## validate & log function
+## support functions
 
 # looks reasonable
 # https://www.kaggle.com/jpopham91/gini-scoring-simple-and-efficient
@@ -287,7 +288,7 @@ def score_estimator(
 #     return 
 
 # %%
-## fit model_1 boosting w optional tuning
+## Model 1 boosting w optional tuning
 
 mlflow.end_run()
 mlflow.start_run(run_name='sklearn_gbm')
@@ -369,7 +370,7 @@ mlflow.log_artifact('output/requirements.txt')
 mlflow.end_run()
 
 # %%
-## fit model_2 statsmodel TODO not working at moment
+## Model 2 statsmodel TODO not working at moment
 
 from sklearn.base import BaseEstimator, RegressorMixin
 class SMWrapper(BaseEstimator, RegressorMixin):
@@ -542,6 +543,91 @@ os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
 mlflow.log_artifact('output/requirements.txt')
 
 mlflow.end_run()
+
+# %%
+## Model 5 hist boosting w optional tuning
+
+# mlflow.end_run()
+# mlflow.start_run(run_name='sklearn_gbm')
+
+# # tuning 
+# if retune:
+                                                      
+#     func_f = importlib.import_module( "P1-AnalyzeTrades_f_buildmodel_func")
+
+#     gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
+
+#     # use hyperopt package with to better search 
+#     # https://github.com/hyperopt/hyperopt/wiki/FMin
+#     # use userdefined Gini, as it measures differentiation more
+#     def objective_gbr(params):
+#         "objective_gbr function for hyper opt, params is dict of params for mdl"
+#         mlflow.start_run(nested=True)
+#         parameters = {}
+#         for k in params:
+#             parameters[k] = int(params[k])
+#         mdl = HistGradientBoostingRegressor(random_state=0, **parameters)
+#         score = cross_val_score(mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5).mean()
+#         print("Gini {:.3f} params {}".format(score, parameters))
+#         mlflow.end_run()
+#         return score
+
+#     # need to match estimator
+#     space = {
+#         # low # high # number of choices
+#         'learning_rate': hp.uniform('learning_rate', 0.1, 1),
+#         'max_depth': hp.quniform('max_depth', 2, 4, 2) 
+#     }
+
+#     best_params = fmin(fn=objective_gbr,
+#                 space=space,
+#                 algo=tpe.suggest,
+#                 max_evals=5)
+    
+#     for key in best_params.keys():
+#         if int(best_params[key]) == best_params[key]:
+#            best_params[key] = int(best_params[key])
+
+#     print("Hyperopt estimated optimum {}".format(best_params))
+        
+# else:
+#     best_params = {
+#         'n_estimators': 25, 
+#         'max_depth': 2
+#     }
+
+# reg = HistGradientBoostingRegressor(random_state=0, **best_params)
+# # reg = GradientBoostingRegressor(random_state=0)
+# reg.fit(X_train,y_train.to_numpy().ravel())
+
+# # log with validation
+# # log_w_validate(y_test, y_pred, formula)
+# res = score_estimator(reg,X_train, X_test, XY_train, XY_test, target, formula)
+
+# mlflow.log_metrics(res)
+
+# # addition artifacts 
+# # visualize a single tree
+# # Get a tree 
+# sub_tree_1 = reg.estimators_[0, 0]  # pull first 1 estimator, actual regressor vs array
+
+# tree.plot_tree(sub_tree_1,
+#            feature_names = list(X_train.columns),
+#            filled = True,
+#             fontsize=7)
+
+# plt.tight_layout()
+# plt.savefig('tree_plot1.png',bbox_inches = "tight")
+# plt.show()
+
+# mlflow.log_artifact('tree_plot1.png')
+
+# os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+# mlflow.log_artifact('output/requirements.txt')
+
+# mlflow.end_run()
+
+
 
 # %%
 ## other validation functions

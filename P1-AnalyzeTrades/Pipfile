@@ -7,15 +7,15 @@ name = "pypi"
 pywin32 = ">=301" # for security
 
 [packages]
-dill = "==0.3.4"
+dill = "*"
 ## dtreeviz = "*"
 hyperopt ="*"
 ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
-h2o = "==3.32.1.6" # to ensure models work 
+h2o = "*" # to ensure models work 
 lightgbm = "*"
-matplotlib = "==3.2.2" # to make sure shap dependence plots work
+matplotlib = "*" # to make sure shap dependence plots work
 mlflow = "*"
 numpy = "*"
 pandas = "*"
@@ -23,8 +23,8 @@ pandas_datareader = "*"
 patsy = "*"
 ## pydotplus = "*"
 pytest = "*"
-shap = "==0.39.0" # to ensure explainers work
-scikit-learn = "==0.24.2" # to ensure models work 
+shap = "*" # to ensure explainers work
+scikit-learn = "*" # to ensure models work 
 statsmodels = "*"
 yfinance = "*"
 black = "*"

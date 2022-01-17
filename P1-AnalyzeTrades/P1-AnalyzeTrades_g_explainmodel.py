@@ -40,8 +40,8 @@ import dill
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = 'c5415cb2c7d1475eac140803f5e6c857'
-mlflow.set_tracking_uri('file:C:/Stuff/OneDrive/MLflow')
+runid = 'f6ed2576ff1d446b9672bdea16c55028'
+mlflow.set_tracking_uri('file:D:/Stuff/OneDrive/MLflow')
 
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
