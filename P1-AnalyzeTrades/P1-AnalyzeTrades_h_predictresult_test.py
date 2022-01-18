@@ -8,7 +8,7 @@ import numpy as np
 main_file = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
 # current file
-mlflow_tracking_uri = 'file:' + os.path.dirname(os.path.abspath(__file__)) + r'\\mlruns'
+mlflow_tracking_uri =  '' # backup file:' + os.path.dirname(os.path.abspath(__file__))
 # if os.path.isdir('D:/Stuff/OneDrive/MLflow'):
 #     mlflow_tracking_uri = 'file:D:/Stuff/OneDrive/MLflow'
 
