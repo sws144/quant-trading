@@ -30,6 +30,8 @@ import shap
 from datetime import datetime 
 import os 
 
+import importlib
+import re
 import pickle
 import dill
 
@@ -40,8 +42,9 @@ import dill
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = 'f6ed2576ff1d446b9672bdea16c55028'
-mlflow.set_tracking_uri('file:D:/Stuff/OneDrive/MLflow')
+runid = 'f1d3ba19eb3646aa81eb67e5a75dab43'
+mlflow_tracking_uri = 'file:D:/Stuff/OneDrive/MLflow'
+mlflow.set_tracking_uri(mlflow_tracking_uri)
 
 experiment_name = 'P1-AnalyzeTrades_f_core'
 
@@ -54,26 +57,9 @@ experiment_details = mlflow.get_experiment_by_name(experiment_name)
 XY_df = pd.read_csv('output/e_resultcleaned.csv')
 XY_df['weight'] = 1
 
-# %%
-## pull model from tracking uri
-
-# tracking_uri = mlflow.get_tracking_uri()
-
-artifact_loc = str(experiment_details.artifact_location).replace('file:','')\
-        .replace('file:','')\
-        .replace('///','')
-
-# try pickle first, otherwise try H2O
-try:
-    mdl = pickle.load(open(f'{artifact_loc}/{runid}/artifacts/model/model.pkl','rb'))
-except:
-    # for h2o models
-    h2o.init()
-    mdl = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
-# 
 
 # %%
-## pull information from mlflow
+## pull information from mlflow and decide model type
 
 # TODO H2O signature missing
 
@@ -91,6 +77,33 @@ metrics , params, tags = parse_mlflow_info(mlflow.get_run(runid))
 mlflow.end_run()
 
 formula_clean = params['formula'].replace('\n','')
+
+model_type = 'general'
+if 'h2o' in str(json.loads(tags['mlflow.log-model.history'])[0]['flavors']).lower():
+    model_type = 'h2o'
+    print(f'model type is {model_type}')
+
+
+# %%
+## pull model from tracking uri
+
+# tracking_uri = mlflow.get_tracking_uri()
+
+artifact_loc = str(experiment_details.artifact_location).replace('file:','')\
+        .replace('file:','')\
+        .replace('///','')
+
+# try pickle first, otherwise try H2O
+if model_type == 'h2o':
+    # for h2o models
+    # h2o.init()
+    # mdl = h2o.import_mojo(f'{artifact_loc}/{runid}/artifacts/')
+    logged_model = f'runs:/{runid}/model'
+    mdl = mlflow.pyfunc.load_model(logged_model)
+ 
+else:
+    mdl = pickle.load(open(f'{artifact_loc}/{runid}/artifacts/model/model.pkl','rb'))
+
 
 # %%
 ## parse data 
@@ -125,9 +138,8 @@ mlflow.end_run()
 # %%
 ## predict full dataset
 
-if 'h2o' in str(type(mdl)) :
-    X_hf = h2o.H2OFrame(X)
-    y_pred = mdl.predict(X_hf)
+if model_type == 'h2o' :
+    y_pred = mdl.predict(X)
 else:
     y_pred = mdl.predict(X)
 
@@ -151,15 +163,15 @@ class H2ORegWrapper:
 # %%
 ## lightgbm pipeline
 
-def sub_gbm(X_hf, y_pred):
+def sub_gbm(X, y_pred):
     """creates explainer based on H2O X & y frames
     """
     import lightgbm as lgb
     import shap
     import h2o
 
-    X2_df = X_hf.as_data_frame()
-    y2_pred_df = y_pred.as_data_frame()
+    X2_df = X.rename(columns = lambda x:re.sub('[^A-Za-z0-9_]+', '', x))
+    y2_pred_df = y_pred
     
     # TODO create categorical pipeline
 
@@ -177,21 +189,23 @@ mlflow.end_run()
 mlflow.start_run(run_id = runid )
 
 # Create object that can calculate shap values
-if 'H2O' in str(type(mdl)):
+if model_type == 'h2o':
     # print('h2o explanation')
     # h2o_wrapper = H2ORegWrapper(mdl,X.columns)
     # explainer = shap.SamplingExplainer(h2o_wrapper.predict,h2o.H2OFrame(X[0:100]))
 
     # TODO use lightgbm with astype('category') to create train model
     
-    explainer = sub_gbm(X_hf, y_pred)
+    explainer = sub_gbm(X, y_pred)
 
 else:
     # assume sklearn etc.
     explainer = shap.Explainer(mdl)
 
 # save expected value
-ev = explainer.expected_value[0]
+if len(explainer.expected_value.shape) > 0:
+    ev = explainer.expected_value[0]
+    explainer.expected_value = ev
 
 # calculate shap values. This is what we will plot.
 # Calculate shap_values for all of val_X rather than a single row, to have more data for plot.
@@ -261,8 +275,11 @@ print("date and time =", dt_string)
 
 for var in cols_required:
     fig, ax = plt.subplots()
+
+    shap.plots.scatter(shap_values[:,var], ax=ax, show=False, color=shap_values)
     
-    shap.dependence_plot(var, shap_values.values, X, ax=ax, show=False)
+    # deprecated
+    # shap.dependence_plot(var, shap_values.values, X, ax=ax, show=False)
     
     int_labels , col_bins = pd.cut(X[var],bins=10, retbins=True, labels=False)
     
@@ -287,6 +304,20 @@ for var in cols_required:
     
     os.remove(f'shappdp_{var}_{dt_string}.png')
 mlflow.end_run()
+
+# %%
+## test waterfallplot
+
+main_file = importlib.import_module("P1-AnalyzeTrades_h_predictresult")  
+
+main_file.predict_return(
+    mlflow_tracking_uri= mlflow_tracking_uri,
+    experiment_name= experiment_name, 
+    run_id=runid, 
+    inputs= X.loc[[0],:], 
+    explain = True, 
+    show_plot = True, 
+    preloaded_model = mdl)
 
 # %%
 ## end mlflow and h2o

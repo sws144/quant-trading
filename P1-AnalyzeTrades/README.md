@@ -67,7 +67,8 @@ see README_C2...png
 1. Start docker desktop app (outside any virtual environment)
 1. Let's build our image: `docker build -t analyze:latest .`
 1. and run: `docker run -p 8004:8003 analyze:latest` ,  host port : container port
-1. `curl localhost:8004` -> website (does not match 127.0.0.0 diff from 0.0.0.0)
+1. `curl localhost:8004` -> website (does not match 127.0.0.0 diff from 0.0.0.0).
+1. Test website directly via Docker Desktop links
 1. To turn off, ctrl+c in terminal
 
 ### Single prediction

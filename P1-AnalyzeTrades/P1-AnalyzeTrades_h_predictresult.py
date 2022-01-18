@@ -219,11 +219,16 @@ def predict_return(
         #                     show = False)
         
         try:
-            waterfall_legacy(shap_obj.base_values[0][0], 
-                                shap_values = shap_obj.values.ravel()+specific_adj, 
-                                feature_names = inputs_copy.columns, 
-                                show = False)
+            shap_obj_adj = shap_obj
+            shap_obj_adj.values = shap_obj_adj.values + specific_adj 
+            shap.plots.waterfall(shap_obj_adj[0])
+            # waterfall_legacy(shap_obj.base_values[0][0], 
+            #                     shap_values = shap_obj.values.ravel()+specific_adj, 
+            #                     feature_names = inputs_copy.columns, 
+            #                     show = False)
         except:
+            # backup, probably not working
+            print(f'backup, probably  not working')
             waterfall_legacy(shap_obj.base_values[0], 
                             shap_values = shap_obj.values.ravel()+specific_adj, 
                             feature_names = inputs_copy.columns, 
