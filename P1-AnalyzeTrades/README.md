@@ -90,3 +90,14 @@ see README_C2...png
 1. show force plot
 1. return model to user, if new
 
+### Deployment notes
+
+#### Heroku
+
+1. Procfile
+1. runtime.txt file to specify correct python version
+1. requirements.txt
+
+#### Docker (not used in prod)
+
+1. heroku.yml

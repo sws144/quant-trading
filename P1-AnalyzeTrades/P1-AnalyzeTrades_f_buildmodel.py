@@ -59,6 +59,23 @@ mlflow.sklearn.autolog()
 df_XY = pd.read_csv('output/e_resultcleaned.csv')
 
 # %%
+## clean column names
+
+cols = list(df_XY.columns)
+new_cols = []
+
+for c in cols:
+    new_cols.append(''.join(e.replace('.','pt') for e in c if (e.isalnum()) 
+                            | (e == '_') | (e == '%') | (e == '.')))
+
+print(f'cols {new_cols}')
+
+df_XY.columns = new_cols
+
+df_XY.head()
+
+
+# %%
 ## variables
 
 target = 'PCT_RET_FINAL'
@@ -71,7 +88,7 @@ variables = [
     'IMPLIED_P_E', 
     'YEARS_TO_NORMALIZATION', 
     # 'CLOSE_^GSPC', 
-    'CLOSE_^VIX',
+    'CLOSE_VIX',
     # 'UNNAMED:_0_Y', 'AAII_SENT_BULLISH', 'AAII_SENT_NEUTRAL',
     # 'AAII_SENT_BEARISH', 'AAII_SENT_TOTAL', 'AAII_SENT_BULLISH8WEEKMOVAVG',
     'AAII_SENT_BULLBEARSPREAD', 
@@ -80,7 +97,7 @@ variables = [
     # 'AAII_SENT_S&P500WEEKLYHIGH', 'AAII_SENT_S&P500WEEKLYLOW',
     # 'AAII_SENT_S&P500WEEKLYCLOSE', 
     '%_TO_STOP', '%_TO_TARGET',
-    'GROWTH_0.5TO0.75', 'ROIC_(BW_ROA_ROE)', 
+    'GROWTH_0pt5TO0pt75', 'ROIC_BW_ROA_ROE', 
     # 'IMPLIED_P_E',
     # 'YEARS_TO_NORMALIZATION', 
     # 'OPEN_DATE', 'CLOSE_DATE', 'SYMBOL',
@@ -104,17 +121,17 @@ idx = 0
 # create variable string 
 for v in variables:
     if idx != 0:
-        varlist.append('+')
+        varlist.append(' + ')
 
-    if v not in cols_num:
-        varlist.append('C(')
+    # if v not in cols_num:
+    #     varlist.append('C(')
     
-    varlist.append("Q('")
+    # varlist.append("Q('")
     varlist.append(v)
-    varlist.append("')")    
+    # varlist.append("')")    
     
-    if v not in cols_num:
-        varlist.append(')')
+    # if v not in cols_num:
+    #     varlist.append(')')
     
     idx = idx + 1
 
@@ -122,11 +139,14 @@ varstring = ''.join(varlist)
 
 
 # %%
-## Create formula for model
+## Variables for columns
 
-formula =  f""" {target} ~ 1 + {varstring}"""
+y = df_XY[[target]]
+X = df_XY[variables]
+
+# formula =  f""" {target} ~ 1 + {varstring}"""
         
-y , X = dmatrices(formula, df_XY, return_type='dataframe')
+# y , X = dmatrices(formula, df_XY, return_type='dataframe')
 
 # check rows are aligned
 
@@ -288,264 +308,7 @@ def score_estimator(
 #     return 
 
 # %%
-## Model 1 boosting w optional tuning
-
-mlflow.end_run()
-mlflow.start_run(run_name='sklearn_gbm')
-
-# tuning 
-if retune:
-                                                      
-    func_f = importlib.import_module( "P1-AnalyzeTrades_f_buildmodel_func")
-
-    gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
-
-    # use hyperopt package with to better search 
-    # https://github.com/hyperopt/hyperopt/wiki/FMin
-    # use userdefined Gini, as it measures differentiation more
-    def objective_gbr(params):
-        "objective_gbr function for hyper opt, params is dict of params for mdl"
-        mlflow.start_run(nested=True)
-        parameters = {}
-        for k in params:
-            parameters[k] = int(params[k])
-        mdl = GradientBoostingRegressor(random_state=0, **parameters)
-        score = cross_val_score(mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5).mean()
-        print("Gini {:.3f} params {}".format(score, parameters))
-        mlflow.end_run()
-        return score
-
-    # need to match estimator
-    space = {
-        'n_estimators': hp.quniform('n_estimators', 10, 100, 5),  # low # high # number of choices
-        'max_depth': hp.quniform('max_depth', 2, 4, 2) 
-    }
-
-    best_params = fmin(fn=objective_gbr,
-                space=space,
-                algo=tpe.suggest,
-                max_evals=5)
-    
-    for key in best_params.keys():
-        if int(best_params[key]) == best_params[key]:
-           best_params[key] = int(best_params[key])
-
-    print("Hyperopt estimated optimum {}".format(best_params))
-        
-else:
-    best_params = {
-        'n_estimators': 25, 
-        'max_depth': 2
-    }
-
-reg = GradientBoostingRegressor(random_state=0, **best_params)
-# reg = GradientBoostingRegressor(random_state=0)
-reg.fit(X_train,y_train.to_numpy().ravel())
-
-# log with validation
-# log_w_validate(y_test, y_pred, formula)
-res = score_estimator(reg,X_train, X_test, XY_train, XY_test, target, formula)
-
-mlflow.log_metrics(res)
-
-# addition artifacts 
-# visualize a single tree
-# Get a tree 
-sub_tree_1 = reg.estimators_[0, 0]  # pull first 1 estimator, actual regressor vs array
-
-tree.plot_tree(sub_tree_1,
-           feature_names = list(X_train.columns),
-           filled = True,
-            fontsize=7)
-
-plt.tight_layout()
-plt.savefig('tree_plot1.png',bbox_inches = "tight")
-plt.show()
-
-mlflow.log_artifact('tree_plot1.png')
-
-os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
-mlflow.log_artifact('output/requirements.txt')
-
-mlflow.end_run()
-
-# %%
-## Model 2 statsmodel TODO not working at moment
-
-from sklearn.base import BaseEstimator, RegressorMixin
-class SMWrapper(BaseEstimator, RegressorMixin):
-    import numpy as np
-    import statsmodels.api as sm
-
-    """ A universal sklearn-style wrapper for statsmodels regressors """
-    def __init__(self, model_class, fit_intercept=True):
-        self.model_class = model_class
-        self.fit_intercept = fit_intercept
-    def fit(self, X, y):
-        if self.fit_intercept:
-            X = sm.add_constant(X)
-        self.model_ = self.model_class(y, X)
-        self.results_ = self.model_.fit()
-    def predict(self, X):
-        if self.fit_intercept:
-            X = sm.add_constant(X)
-        return np.array(self.results_.predict(X)) # to ensure SHAP works
-
-# from sklearn.datasets import make_regression
-# from sklearn.model_selection import cross_val_score
-# from sklearn.linear_model import LinearRegression
-
-# X, y = make_regression(random_state=1, n_samples=300, noise=100)
-
-# print(cross_val_score(SMWrapper(sm.OLS), X, y, scoring='r2'))
-
-# %%
-## Model 3 H2O GLM
-
-mlflow.end_run()
-mlflow.start_run(run_name='H2O_glm')
-
-h2o.init()
-#  h2o server default http://localhost:54321
-
-# full_df = h2o.import_file(
-#     "output/e_resultcleaned.csv"
-# )
-
-glm = H2OGeneralizedLinearEstimator(family ='tweedie', seed = 42, model_id = 'H2O_model')
-train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
-test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
-%time glm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
-
-glm.summary()
-
-default_gbm_perf = glm.model_performance(test_hf)
-
-res = score_estimator(glm,X_train, X_test, XY_train, XY_test, target, formula)
-
-mlflow.log_metrics(res)
-
-# QA
-# complete = h2o.H2OFrame(df_XY[variables+[target]])
-# gbm.explain(complete)
-
-path = "output/"
-mojo_destination = glm.save_mojo(path = path, force=True)
-imported_model = h2o.import_mojo(mojo_destination)
-
-mlflow.log_artifact(mojo_destination)
-
-model_sig = infer_signature(X_train, y_train)
-
-mlflow.h2o.log_model(glm,'model',signature=model_sig)
-
-h2o.cluster().shutdown(prompt=False) 
-
-os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
-mlflow.log_artifact('output/requirements.txt')
-
-mlflow.end_run()
-
-# test= h2o.H2OFrame(XY_test)
-
-# default_glm_perf=glm.model_performance(test)
-
-# QA
-# complete = h2o.H2OFrame(df_XY)
-# glm.explain(complete)
-
-# TODO SHAP not working
-
-# import shap
-
-# explainer = shap.SamplingExplainer(glm.predict,complete)
-# ev = explainer.expected_value[0]
-
-# def h2opredict(df): #df is pandas array with target
-#     hf = h2o.H2OFrame(df) #pandas to h2o frame
-#     predictions = glm.predict(test_data = hf) #predictions in h2o frame type
-#     return predictions.as_data_frame().values
-
-# df = complete.as_data_frame()
-# explainer = shap.Explainer(h2opredict, df[list(glm.coef().keys())[1:]])
-# shap_values = explainer(explainer(df[list(glm.coef().keys())[1:]][:100]))
-
-# # explainer = shap.Explainer(reg)
-# # shap_values = explainer.shap_values(df)
-# shap.initjs()
-
-# sample = 17 #explain 17th instance in the data set
- 
-# labels_pd = labels.as_data_frame()
-# actual = labels_pd.iloc[sample].values[0]
-# prediction = predictions_pd.iloc[sample]['predict']
-# print("Prediction for ",sample,"th instance is ",prediction," whereas its actual value is ",actual)
- 
-# shap.force_plot(explainer.expected_value[prediction], shap_values[prediction][sample,:], df.iloc[sample])
-
-# path <- "/path/to/model/directory"
-# mojo_destination <- h2o.save_mojo(original_model, path = path)
-# imported_model <- h2o.import_mojo(mojo_destination)
-
-# new_observations <- h2o.importFile(path = 'new_observations.csv')
-# h2o.predict(imported_model, new_observations)
-
-# https://sefiks.com/2019/10/10/interpretable-machine-learning-with-h2o-and-shap/
-# predictions = model.predict(test_data = hf)
-# predictions.tail(5)
-# predictions_pd = predictions['predict'].as_data_frame() #h2o frame to pandas
-
-# %%
-## Model 4 H2O GBM , tree-based
-
-mlflow.end_run()
-mlflow.start_run(run_name='H2O_gbm')
-
-h2o.init()
-#  h2o server default http://localhost:54321
-
-# full_df = h2o.import_file(
-#     "output/e_resultcleaned.csv"
-# )
-
-gbm = H2OGradientBoostingEstimator(seed = 42, model_id = 'H2O_model')
-train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
-test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
-%time gbm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
-
-
-gbm.summary() 
-# gbm._model_json['output']['names'] # coefs
-
-default_gbm_perf = gbm.model_performance(test_hf)
-
-res = score_estimator(gbm,X_train, X_test, XY_train, XY_test, target, formula)
-
-mlflow.log_metrics(res)
-
-# QA
-# complete = h2o.H2OFrame(df_XY[variables+[target]])
-# gbm.explain(complete)
-
-path = "output/"
-mojo_destination = gbm.save_mojo(path = path, force=True)
-imported_model = h2o.import_mojo(mojo_destination)
-
-mlflow.log_artifact(mojo_destination)
-
-model_sig = infer_signature(X_train, y_train)
-
-mlflow.h2o.log_model(gbm,'model',signature=model_sig)
-
-h2o.cluster().shutdown(prompt=False) 
-
-os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
-mlflow.log_artifact('output/requirements.txt')
-
-mlflow.end_run()
-
-# %%
-## Model 5 hist boosting w optional tuning
+## Model 1 boosting w optional tuning TODO deprecate
 
 # mlflow.end_run()
 # mlflow.start_run(run_name='sklearn_gbm')
@@ -566,7 +329,7 @@ mlflow.end_run()
 #         parameters = {}
 #         for k in params:
 #             parameters[k] = int(params[k])
-#         mdl = HistGradientBoostingRegressor(random_state=0, **parameters)
+#         mdl = GradientBoostingRegressor(random_state=0, **parameters)
 #         score = cross_val_score(mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5).mean()
 #         print("Gini {:.3f} params {}".format(score, parameters))
 #         mlflow.end_run()
@@ -574,8 +337,7 @@ mlflow.end_run()
 
 #     # need to match estimator
 #     space = {
-#         # low # high # number of choices
-#         'learning_rate': hp.uniform('learning_rate', 0.1, 1),
+#         'n_estimators': hp.quniform('n_estimators', 10, 100, 5),  # low # high # number of choices
 #         'max_depth': hp.quniform('max_depth', 2, 4, 2) 
 #     }
 
@@ -596,7 +358,7 @@ mlflow.end_run()
 #         'max_depth': 2
 #     }
 
-# reg = HistGradientBoostingRegressor(random_state=0, **best_params)
+# reg = GradientBoostingRegressor(random_state=0, **best_params)
 # # reg = GradientBoostingRegressor(random_state=0)
 # reg.fit(X_train,y_train.to_numpy().ravel())
 
@@ -626,6 +388,264 @@ mlflow.end_run()
 # mlflow.log_artifact('output/requirements.txt')
 
 # mlflow.end_run()
+
+# %%
+## Model 2 statsmodel TODO not working at moment
+
+# from sklearn.base import BaseEstimator, RegressorMixin
+# class SMWrapper(BaseEstimator, RegressorMixin):
+#     import numpy as np
+#     import statsmodels.api as sm
+
+#     """ A universal sklearn-style wrapper for statsmodels regressors """
+#     def __init__(self, model_class, fit_intercept=True):
+#         self.model_class = model_class
+#         self.fit_intercept = fit_intercept
+#     def fit(self, X, y):
+#         if self.fit_intercept:
+#             X = sm.add_constant(X)
+#         self.model_ = self.model_class(y, X)
+#         self.results_ = self.model_.fit()
+#     def predict(self, X):
+#         if self.fit_intercept:
+#             X = sm.add_constant(X)
+#         return np.array(self.results_.predict(X)) # to ensure SHAP works
+
+# from sklearn.datasets import make_regression
+# from sklearn.model_selection import cross_val_score
+# from sklearn.linear_model import LinearRegression
+
+# X, y = make_regression(random_state=1, n_samples=300, noise=100)
+
+# print(cross_val_score(SMWrapper(sm.OLS), X, y, scoring='r2'))
+
+# %%
+## Model 3 H2O GLM
+
+# mlflow.end_run()
+# mlflow.start_run(run_name='H2O_glm')
+
+# h2o.init()
+# #  h2o server default http://localhost:54321
+
+# # full_df = h2o.import_file(
+# #     "output/e_resultcleaned.csv"
+# # )
+
+# glm = H2OGeneralizedLinearEstimator(family ='tweedie', seed = 42, model_id = 'H2O_model')
+# train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
+# test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
+# %time glm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
+
+# glm.summary()
+
+# default_gbm_perf = glm.model_performance(test_hf)
+
+# res = score_estimator(glm,X_train, X_test, XY_train, XY_test, target, formula)
+
+# mlflow.log_metrics(res)
+
+# # QA
+# # complete = h2o.H2OFrame(df_XY[variables+[target]])
+# # gbm.explain(complete)
+
+# path = "output/"
+# mojo_destination = glm.save_mojo(path = path, force=True)
+# imported_model = h2o.import_mojo(mojo_destination)
+
+# mlflow.log_artifact(mojo_destination)
+
+# model_sig = infer_signature(X_train, y_train)
+
+# mlflow.h2o.log_model(glm,'model',signature=model_sig)
+
+# h2o.cluster().shutdown(prompt=False) 
+
+# os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+# mlflow.log_artifact('output/requirements.txt')
+
+# mlflow.end_run()
+
+# # test= h2o.H2OFrame(XY_test)
+
+# # default_glm_perf=glm.model_performance(test)
+
+# # QA
+# # complete = h2o.H2OFrame(df_XY)
+# # glm.explain(complete)
+
+# # TODO SHAP not working
+
+# # import shap
+
+# # explainer = shap.SamplingExplainer(glm.predict,complete)
+# # ev = explainer.expected_value[0]
+
+# # def h2opredict(df): #df is pandas array with target
+# #     hf = h2o.H2OFrame(df) #pandas to h2o frame
+# #     predictions = glm.predict(test_data = hf) #predictions in h2o frame type
+# #     return predictions.as_data_frame().values
+
+# # df = complete.as_data_frame()
+# # explainer = shap.Explainer(h2opredict, df[list(glm.coef().keys())[1:]])
+# # shap_values = explainer(explainer(df[list(glm.coef().keys())[1:]][:100]))
+
+# # # explainer = shap.Explainer(reg)
+# # # shap_values = explainer.shap_values(df)
+# # shap.initjs()
+
+# # sample = 17 #explain 17th instance in the data set
+ 
+# # labels_pd = labels.as_data_frame()
+# # actual = labels_pd.iloc[sample].values[0]
+# # prediction = predictions_pd.iloc[sample]['predict']
+# # print("Prediction for ",sample,"th instance is ",prediction," whereas its actual value is ",actual)
+ 
+# # shap.force_plot(explainer.expected_value[prediction], shap_values[prediction][sample,:], df.iloc[sample])
+
+# # path <- "/path/to/model/directory"
+# # mojo_destination <- h2o.save_mojo(original_model, path = path)
+# # imported_model <- h2o.import_mojo(mojo_destination)
+
+# # new_observations <- h2o.importFile(path = 'new_observations.csv')
+# # h2o.predict(imported_model, new_observations)
+
+# # https://sefiks.com/2019/10/10/interpretable-machine-learning-with-h2o-and-shap/
+# # predictions = model.predict(test_data = hf)
+# # predictions.tail(5)
+# # predictions_pd = predictions['predict'].as_data_frame() #h2o frame to pandas
+
+# %%
+## Model 4 H2O GBM , tree-based
+
+# mlflow.end_run()
+# mlflow.start_run(run_name='H2O_gbm')
+
+# h2o.init()
+# #  h2o server default http://localhost:54321
+
+# # full_df = h2o.import_file(
+# #     "output/e_resultcleaned.csv"
+# # )
+
+# gbm = H2OGradientBoostingEstimator(seed = 42, model_id = 'H2O_model')
+# train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
+# test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
+# %time gbm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
+
+
+# gbm.summary() 
+# # gbm._model_json['output']['names'] # coefs
+
+# default_gbm_perf = gbm.model_performance(test_hf)
+
+# res = score_estimator(gbm,X_train, X_test, XY_train, XY_test, target, formula)
+
+# mlflow.log_metrics(res)
+
+# # QA
+# # complete = h2o.H2OFrame(df_XY[variables+[target]])
+# # gbm.explain(complete)
+
+# path = "output/"
+# mojo_destination = gbm.save_mojo(path = path, force=True)
+# imported_model = h2o.import_mojo(mojo_destination)
+
+# mlflow.log_artifact(mojo_destination)
+
+# model_sig = infer_signature(X_train, y_train)
+
+# mlflow.h2o.log_model(gbm,'model',signature=model_sig)
+
+# h2o.cluster().shutdown(prompt=False) 
+
+# os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+# mlflow.log_artifact('output/requirements.txt')
+
+# mlflow.end_run()
+
+# %%
+## Model 5 hist boosting w optional tuning
+
+mlflow.end_run()
+mlflow.start_run(run_name='sklearn_hgbm')
+
+# tuning 
+if retune:
+                                                      
+    func_f = importlib.import_module( "P1-AnalyzeTrades_f_buildmodel_func")
+
+    gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
+
+    # use hyperopt package with to better search 
+    # https://github.com/hyperopt/hyperopt/wiki/FMin
+    # use userdefined Gini, as it measures differentiation more
+    def objective_gbr(params):
+        "objective_gbr function for hyper opt, params is dict of params for mdl"
+        mlflow.start_run(nested=True)
+        parameters = {}
+        for k in params:
+            parameters[k] = int(params[k])
+        mdl = HistGradientBoostingRegressor(random_state=0, **parameters)
+        score = cross_val_score(mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5).mean()
+        print("Gini {:.3f} params {}".format(score, parameters))
+        mlflow.end_run()
+        return score
+
+    # need to match estimator
+    space = {
+        # low # high # number of choices
+        'learning_rate': hp.uniform('learning_rate', 0.1, 1),
+        'max_depth': hp.quniform('max_depth', 2, 4, 2) 
+    }
+
+    best_params = fmin(fn=objective_gbr,
+                space=space,
+                algo=tpe.suggest,
+                max_evals=5)
+    
+    for key in best_params.keys():
+        if int(best_params[key]) == best_params[key]:
+           best_params[key] = int(best_params[key])
+
+    print("Hyperopt estimated optimum {}".format(best_params))
+        
+else:
+    best_params = {
+        'n_estimators': 25, 
+        'max_depth': 2
+    }
+
+reg = HistGradientBoostingRegressor(random_state=0, **best_params)
+# reg = GradientBoostingRegressor(random_state=0)
+reg.fit(X_train,y_train.to_numpy().ravel())
+
+# log with validation
+# log_w_validate(y_test, y_pred, formula)
+res = score_estimator(reg,X_train, X_test, XY_train, XY_test, target, formula)
+
+mlflow.log_metrics(res)
+
+# addition artifacts 
+# visualize a single tree
+# Get a tree 
+sub_tree_1 = reg.estimators_[0, 0]  # pull first 1 estimator, actual regressor vs array
+
+tree.plot_tree(sub_tree_1,
+           feature_names = list(X_train.columns),
+           filled = True,
+            fontsize=7)
+
+plt.tight_layout()
+plt.savefig('tree_plot1.png',bbox_inches = "tight")
+plt.show()
+
+mlflow.log_artifact('tree_plot1.png')
+
+os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+mlflow.log_artifact('output/requirements.txt')
+
+mlflow.end_run()
 
 
 
