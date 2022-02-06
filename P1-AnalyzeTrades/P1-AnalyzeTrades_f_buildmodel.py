@@ -9,6 +9,7 @@ retune = True  # hyperparameter tuning
 ## imports
 
 import importlib  # for importing other packages
+import copy
 import os
 import pandas as pd
 import numpy as np
@@ -711,8 +712,99 @@ mlflow.log_artifact("output/requirements.txt")
 mlflow.end_run()
 
 # %%
+## SHAP test TODO try native category?
+
+explainer = shap.Explainer(mdl[-1])
+
+# fix save expected value
+if len(explainer.expected_value.shape) > 0:
+    ev = explainer.expected_value[0]
+    explainer.expected_value = ev
+
+shap_obj = explainer(mdl[0].transform(X_train))
+
+
+var = "CATEGORY"
+
+## fix shap_obj, requires column transformer in step position 0 ,
+## categorical in position 1
+
+
+# def update_shap_obj(shap_obj, X_train, encoder):
+
+shap_obj.feature_names = list(X_train.columns)
+categorical_names = list(X_train.select_dtypes(include=["object"]).columns)
+col_idx = list(np.where(np.isin(shap_obj.feature_names, categorical_names))[0])
+
+shap_cat = copy.deepcopy(shap_obj)
+shap_cat.data = np.array(shap_obj.data, dtype="object")
+res_arr = (
+    mdl[0]
+    .transformers_[1][1][1]
+    .inverse_transform(
+        pd.DataFrame(shap_cat.data[:, col_idx], columns=[categorical_names])
+    )
+)
+for i, loc in enumerate(col_idx):
+    shap_cat.data[:, loc] = res_arr[:, i]
+
+# new_dtype = "object"
+# res_arr.astype(
+#     [(col, new_dtype) if d[0] in categorical_names else d for d in res_arr.dtype.descr]
+# )
+
+# col_idx = shap_obj.feature_names.index(var)
+# ord_encode_idx = mdl[0].transformers_[1][2].index(var)
+
+shap.plots.beeswarm(shap_cat)
+fig, ax = plt.subplots()
+
+shap.plots.scatter(shap_obj[:, var], ax=ax, show=False, color=shap_obj)
+if var in categorical_names:
+    orig_list = ax.get_xticks()
+    new_list =  np.insert(
+            mdl[0].transformers_[1][1][1].categories_[categorical_names.index(var)],
+            0,
+            "Unknown",
+    )
+    
+    for i in range(len(orig_list)-len(new_list)):
+        new_list = np.append(new_list, orig_list[i + len(new_list)])
+    
+    ax.set_xticks(orig_list)
+    ax.set_xticklabels(
+        new_list
+    )
+
+plt.show()
+
+shap.plots.waterfall(shap_cat[0])
+
+
+# %%
 ## SHAP test TODO
 
+shap_obj = shap.KernelExplainer(mdl.predict, X_train)
+# save expected value
+# if len(explainer.expected_value.shape) > 0:
+#     ev = explainer.expected_value[0]
+#     explainer.expected_value = ev
+
+shap_obj = explainer(X_train)
+# shap_obj.feature_names = list(X_train.columns)
+
+
+shap.plots.beeswarm(shap_obj)
+fig, ax = plt.subplots()
+shap.plots.scatter(shap_obj[:, "CATEGORY"], ax=ax, show=False, color=shap_obj)
+# find index of mdl[0].transformers_[1][2]
+ax.set_xticklabels(
+    np.insert(mdl[0].transformers_[1][1][1].categories_[1], 0, "Unknown")
+)
+shap.plots.waterfall(shap_obj[0])
+
+
+plt.show()
 
 # %%
 ## other validation functions
