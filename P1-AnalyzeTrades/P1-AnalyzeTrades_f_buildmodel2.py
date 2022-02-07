@@ -1,0 +1,940 @@
+# %% [markdown]
+##  ## E: Build & Tune Models
+
+# %%
+## ### INPUTS ###
+retune = True  # hyperparameter tuning
+
+# %%
+## imports
+
+import importlib  # for importing other packages
+import copy
+import os
+import pandas as pd
+import numpy as np
+from patsy import dmatrices
+
+import mlflow  # model tracking
+
+from sklearn.model_selection import train_test_split
+
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import FunctionTransformer, OrdinalEncoder
+from sklearn.pipeline import Pipeline
+
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import make_scorer
+
+from hyperopt import hp, tpe
+from hyperopt.fmin import fmin
+
+# H2O , needs java installed & on path / environment variable (java --version to test)
+import h2o
+from h2o.estimators import *
+from h2o.grid import *
+from mlflow.models.signature import infer_signature
+
+# evaluation
+from sklearn import tree
+import shap  # package used to calculate Shap values
+import matplotlib.pyplot as plt
+
+
+# %%
+# start logging
+
+# set location for mlruns
+mlflow.set_tracking_uri("file:D:/Stuff/OneDrive/MLflow")
+
+# set experiment
+try:
+    mlflow.set_experiment("P1-AnalyzeTrades_f_core")
+except:
+    mlflow.create_experiment("P1-AnalyzeTrades_f_core")
+
+mlflow.sklearn.autolog()
+
+# %%
+## read in data
+
+df_XY = pd.read_csv("output/e_resultcleaned.csv")
+
+# %%
+## clean column names deprecated
+
+# cols = list(df_XY.columns)
+# new_cols = []
+
+# for c in cols:
+#     new_cols.append(
+#         "".join(
+#             e.replace(".", "pt")
+#             for e in c
+#             if (e.isalnum()) | (e == "_") | (e == "%") | (e == ".")
+#         )
+#     )
+
+# print(f"cols {new_cols}")
+
+# df_XY.columns = new_cols~~
+
+# df_XY.head()
+
+# %%
+## variable selection
+
+print(df_XY.columns)
+
+target = "PCT_RET_FINAL"
+
+numeric_features = [
+    "IMPLIED_P_E",
+    "YEARS_TO_NORMALIZATION",
+    "CLOSE_^VIX",
+    "AAII_SENT_BULLBEARSPREAD",
+    "%_TO_STOP",
+    "%_TO_TARGET",
+    "GROWTH_0.5TO0.75",
+    "ROIC_(BW_ROA_ROE)",
+]
+
+categorical_features = ["OPENACT", "CATEGORY"]
+
+variables = numeric_features + categorical_features
+
+# dtypes = pd.Series(df_XY.dtypes)
+# selected_vars = dtypes[variables]
+# varlist = []
+
+# cols_num = df_XY.select_dtypes(include="number").columns
+# idx = 0
+
+# # create variable string
+# for v in variables:
+#     if idx != 0:
+#         varlist.append(" + ")
+
+#     # if v not in cols_num:
+#     #     varlist.append('C(')
+
+#     # varlist.append("Q('")
+#     varlist.append(v)
+#     # varlist.append("')")
+
+#     # if v not in cols_num:
+#     #     varlist.append(')')
+
+#     idx = idx + 1
+
+# varstring = "".join(varlist)
+
+
+# %%
+## Variables for columns
+
+y = df_XY[[target]]
+X = df_XY[variables]
+
+# deprecated
+# formula =  f""" {target} ~ 1 + {varstring}"""
+# y , X = dmatrices(formula, df_XY, return_type='dataframe')
+
+assert X.shape[0] == df_XY.shape[0], "rows mismatched, probably due to NAs"
+
+
+# %%
+# train test data
+
+X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
+    X, y, df_XY, test_size=0.33, random_state=42
+)
+
+# y..to_numpy().ravel()
+
+# %%
+## sample tune & run model using hyperopt
+
+
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import mean_absolute_error
+# from hpsklearn import HyperoptEstimator
+# from hpsklearn import any_regressor
+# from hpsklearn import any_preprocessing
+# from hyperopt import tpe
+# # load dataset
+# url = 'https://raw.githubusercontent.com/jbrownlee/Datasets/master/housing.csv'
+# dataframe = read_csv(url, header=None)
+# # split into input and output elements
+# data = dataframe.values
+# data = data.astype('float32')
+# X, y = data[:, :-1], data[:, -1]
+# # split into train and test sets
+# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=1)
+# # define search
+# model = HyperoptEstimator(regressor=any_regressor('reg'), preprocessing=any_preprocessing('pre'), loss_fn=mean_absolute_error, algo=tpe.suggest, max_evals=50, trial_timeout=30)
+# # perform the search
+# model.fit(X_train, y_train)
+# # summarize performance
+# mae = model.score(X_test, y_test)
+# print("MAE: %.3f" % mae)
+# # summarize the best model
+# print(model.best_model())
+
+
+# %%
+## support functions
+
+# looks reasonable
+# https://www.kaggle.com/jpopham91/gini-scoring-simple-and-efficient
+def gini_normalized(y_true, y_pred, sample_weight=None):
+    # check and get number of samples
+    assert (
+        np.array(y_true).shape == np.array(y_pred).shape
+    ), "y_true and y_pred need to have same shape"
+    n_samples = np.array(y_true).shape[0]
+
+    # sort rows on prediction column
+    # (from largest to smallest)
+    if sample_weight == None:
+        sample_weight = np.ones(n_samples)
+
+    arr = np.array([y_true, y_pred, sample_weight]).transpose()
+    true_order = arr[arr[:, 0].argsort()][::-1, 0]  # true col sorted by true
+    pred_order = arr[arr[:, 1].argsort()][::-1, 0]  # true col sorted by pred
+
+    true_order_wgts = arr[arr[:, 0].argsort()][::-1, 2]
+    pred_order_wgts = arr[arr[:, 0].argsort()][::-1, 2]
+
+    # get Lorenz curves
+    L_true = np.cumsum(np.multiply(true_order, true_order_wgts)) / np.sum(
+        np.dot(true_order, true_order_wgts)
+    )
+    L_pred = np.cumsum(np.multiply(pred_order, pred_order_wgts)) / np.sum(
+        np.multiply(pred_order, pred_order_wgts)
+    )
+    L_ones = np.multiply(np.linspace(1 / n_samples, 1, n_samples), pred_order_wgts)
+
+    # get Gini coefficients (area between curves)
+    G_true = np.sum(L_ones - L_true)
+    G_pred = np.sum(L_ones - L_pred)
+
+    # normalize to true Gini coefficient
+    return G_pred / G_true
+
+
+def score_estimator(
+    estimator,
+    X_train,
+    X_test,
+    df_train,
+    df_test,
+    target,
+    formula,
+    weights=None,
+    tweedie_powers=None,
+):
+    """
+    Evaluate an estimator on train and test sets with different metrics
+    Requires active run on mlflow and estimator with .predict method
+    """
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, auc
+    from functools import partial
+    from sklearn.metrics import mean_tweedie_deviance
+
+    mlflow.set_tag("run_id", mlflow.active_run().info.run_id)
+    mlflow.log_params({"formula": formula})
+
+    metrics = [
+        # ("default score", None),   # Use default scorer if it exists
+        ("mean abs. error", mean_absolute_error),
+        ("mean squared error", mean_squared_error),
+        ("gini", gini_normalized),
+    ]
+    if tweedie_powers:
+        metrics += [
+            (
+                "mean Tweedie dev p={:.4f}".format(power),
+                partial(mean_tweedie_deviance, power=power),
+            )
+            for power in tweedie_powers
+        ]
+
+    res = {}
+    for subset_label, X, df in [
+        ("train", X_train, df_train),
+        ("test", X_test, df_test),
+    ]:
+        if weights != None:
+            y, _weights = df[target], df[weights]
+        else:
+            y, _weights = df[target], None
+
+        if isinstance(estimator, tuple) and len(estimator) == 2:
+            # Score the model consisting of the product of frequency and
+            # severity models.
+            est_freq, est_sev = estimator
+            y_pred = est_freq.predict(X) * est_sev.predict(X)
+        elif "h2o" in str(type(estimator)):
+            y_pred = (
+                estimator.predict(h2o.H2OFrame(X)).as_data_frame().to_numpy().ravel()
+            )  # ensure 1D array
+        else:
+            y_pred = estimator.predict(X)
+
+        for score_label, metric in metrics:
+
+            if metric is None:
+                if not hasattr(estimator, "score"):
+                    continue
+                score = estimator.score(X, y, sample_weight=_weights)
+            else:
+                score = metric(y, y_pred, sample_weight=_weights)
+
+            res[score_label + "_" + subset_label] = score
+
+    return res
+
+
+def to_categorical(x):
+    return x.astype("category")
+
+
+def to_float(x):
+    return x.astype(float)
+
+
+# def log_w_validate(y_true, y_pred, formula:str = ''):
+#     """validates reg model and log metrics to active mlflow run.
+#     Requires active mlflow run to wrun
+
+#     Args: \n
+#         y_true (array): [actual results] \n
+#         y_pred (array): [predicted results] \n
+#     """
+
+#     from sklearn import metrics
+
+#     mlflow.set_tag('run_id', mlflow.active_run().info.run_id)
+#     mlflow.log_params({"formula":formula})
+
+#     test_score_r2 = metrics.r2_score(y_true, y_pred)
+
+#     mlflow.log_metric("test_r2", test_score_r2)
+#     print(f'r2 score {test_score_r2}')
+
+#     return
+
+# %%
+## Model 1 boosting w optional tuning TODO deprecate
+
+# mlflow.end_run()
+# mlflow.start_run(run_name='sklearn_gbm')
+
+# # tuning
+# if retune:
+
+#     func_f = importlib.import_module( "P1-AnalyzeTrades_f_buildmodel_func")
+
+#     gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
+
+#     # use hyperopt package with to better search
+#     # https://github.com/hyperopt/hyperopt/wiki/FMin
+#     # use userdefined Gini, as it measures differentiation more
+#     def objective_gbr(params):
+#         "objective_gbr function for hyper opt, params is dict of params for mdl"
+#         mlflow.start_run(nested=True)
+#         parameters = {}
+#         for k in params:
+#             parameters[k] = int(params[k])
+#         mdl = GradientBoostingRegressor(random_state=0, **parameters)
+#         score = cross_val_score(mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5).mean()
+#         print("Gini {:.3f} params {}".format(score, parameters))
+#         mlflow.end_run()
+#         return score
+
+#     # need to match estimator
+#     space = {
+#         'n_estimators': hp.quniform('n_estimators', 10, 100, 5),  # low # high # number of choices
+#         'max_depth': hp.quniform('max_depth', 2, 4, 2)
+#     }
+
+#     best_params = fmin(fn=objective_gbr,
+#                 space=space,
+#                 algo=tpe.suggest,
+#                 max_evals=5)
+
+#     for key in best_params.keys():
+#         if int(best_params[key]) == best_params[key]:
+#            best_params[key] = int(best_params[key])
+
+#     print("Hyperopt estimated optimum {}".format(best_params))
+
+# else:
+#     best_params = {
+#         'n_estimators': 25,
+#         'max_depth': 2
+#     }
+
+# reg = GradientBoostingRegressor(random_state=0, **best_params)
+# # reg = GradientBoostingRegressor(random_state=0)
+# reg.fit(X_train,y_train.to_numpy().ravel())
+
+# # log with validation
+# # log_w_validate(y_test, y_pred, formula)
+# res = score_estimator(reg,X_train, X_test, XY_train, XY_test, target, formula)
+
+# mlflow.log_metrics(res)
+
+# # addition artifacts
+# # visualize a single tree
+# # Get a tree
+# sub_tree_1 = reg.estimators_[0, 0]  # pull first 1 estimator, actual regressor vs array
+
+# tree.plot_tree(sub_tree_1,
+#            feature_names = list(X_train.columns),
+#            filled = True,
+#             fontsize=7)
+
+# plt.tight_layout()
+# plt.savefig('tree_plot1.png',bbox_inches = "tight")
+# plt.show()
+
+# mlflow.log_artifact('tree_plot1.png')
+
+# os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+# mlflow.log_artifact('output/requirements.txt')
+
+# mlflow.end_run()
+
+# %%
+## Model 2 statsmodel TODO not working at moment
+
+# from sklearn.base import BaseEstimator, RegressorMixin
+# class SMWrapper(BaseEstimator, RegressorMixin):
+#     import numpy as np
+#     import statsmodels.api as sm
+
+#     """ A universal sklearn-style wrapper for statsmodels regressors """
+#     def __init__(self, model_class, fit_intercept=True):
+#         self.model_class = model_class
+#         self.fit_intercept = fit_intercept
+#     def fit(self, X, y):
+#         if self.fit_intercept:
+#             X = sm.add_constant(X)
+#         self.model_ = self.model_class(y, X)
+#         self.results_ = self.model_.fit()
+#     def predict(self, X):
+#         if self.fit_intercept:
+#             X = sm.add_constant(X)
+#         return np.array(self.results_.predict(X)) # to ensure SHAP works
+
+# from sklearn.datasets import make_regression
+# from sklearn.model_selection import cross_val_score
+# from sklearn.linear_model import LinearRegression
+
+# X, y = make_regression(random_state=1, n_samples=300, noise=100)
+
+# print(cross_val_score(SMWrapper(sm.OLS), X, y, scoring='r2'))
+
+# %%
+## Model 3 H2O GLM
+
+# mlflow.end_run()
+# mlflow.start_run(run_name='H2O_glm')
+
+# h2o.init()
+# #  h2o server default http://localhost:54321
+
+# # full_df = h2o.import_file(
+# #     "output/e_resultcleaned.csv"
+# # )
+
+# glm = H2OGeneralizedLinearEstimator(family ='tweedie', seed = 42, model_id = 'H2O_model')
+# train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
+# test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
+# %time glm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
+
+# glm.summary()
+
+# default_gbm_perf = glm.model_performance(test_hf)
+
+# res = score_estimator(glm,X_train, X_test, XY_train, XY_test, target, formula)
+
+# mlflow.log_metrics(res)
+
+# # QA
+# # complete = h2o.H2OFrame(df_XY[variables+[target]])
+# # gbm.explain(complete)
+
+# path = "output/"
+# mojo_destination = glm.save_mojo(path = path, force=True)
+# imported_model = h2o.import_mojo(mojo_destination)
+
+# mlflow.log_artifact(mojo_destination)
+
+# model_sig = infer_signature(X_train, y_train)
+
+# mlflow.h2o.log_model(glm,'model',signature=model_sig)
+
+# h2o.cluster().shutdown(prompt=False)
+
+# os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+# mlflow.log_artifact('output/requirements.txt')
+
+# mlflow.end_run()
+
+# # test= h2o.H2OFrame(XY_test)
+
+# # default_glm_perf=glm.model_performance(test)
+
+# # QA
+# # complete = h2o.H2OFrame(df_XY)
+# # glm.explain(complete)
+
+# # TODO SHAP not working
+
+# # import shap
+
+# # explainer = shap.SamplingExplainer(glm.predict,complete)
+# # ev = explainer.expected_value[0]
+
+# # def h2opredict(df): #df is pandas array with target
+# #     hf = h2o.H2OFrame(df) #pandas to h2o frame
+# #     predictions = glm.predict(test_data = hf) #predictions in h2o frame type
+# #     return predictions.as_data_frame().values
+
+# # df = complete.as_data_frame()
+# # explainer = shap.Explainer(h2opredict, df[list(glm.coef().keys())[1:]])
+# # shap_values = explainer(explainer(df[list(glm.coef().keys())[1:]][:100]))
+
+# # # explainer = shap.Explainer(reg)
+# # # shap_values = explainer.shap_values(df)
+# # shap.initjs()
+
+# # sample = 17 #explain 17th instance in the data set
+
+# # labels_pd = labels.as_data_frame()
+# # actual = labels_pd.iloc[sample].values[0]
+# # prediction = predictions_pd.iloc[sample]['predict']
+# # print("Prediction for ",sample,"th instance is ",prediction," whereas its actual value is ",actual)
+
+# # shap.force_plot(explainer.expected_value[prediction], shap_values[prediction][sample,:], df.iloc[sample])
+
+# # path <- "/path/to/model/directory"
+# # mojo_destination <- h2o.save_mojo(original_model, path = path)
+# # imported_model <- h2o.import_mojo(mojo_destination)
+
+# # new_observations <- h2o.importFile(path = 'new_observations.csv')
+# # h2o.predict(imported_model, new_observations)
+
+# # https://sefiks.com/2019/10/10/interpretable-machine-learning-with-h2o-and-shap/
+# # predictions = model.predict(test_data = hf)
+# # predictions.tail(5)
+# # predictions_pd = predictions['predict'].as_data_frame() #h2o frame to pandas
+
+# %%
+## Model 4 H2O GBM , tree-based
+
+# mlflow.end_run()
+# mlflow.start_run(run_name='H2O_gbm')
+
+# h2o.init()
+# #  h2o server default http://localhost:54321
+
+# # full_df = h2o.import_file(
+# #     "output/e_resultcleaned.csv"
+# # )
+
+# gbm = H2OGradientBoostingEstimator(seed = 42, model_id = 'H2O_model')
+# train = h2o.H2OFrame(pd.concat([X_train,y_train],axis=1)) # use original full dataset
+# test_hf = h2o.H2OFrame(pd.concat([X_test,y_test],axis=1))
+# %time gbm.train(x = list(X_train.columns), y = y_train.columns[0], training_frame= train, validation_frame=test_hf ) # column lists , then frame
+
+
+# gbm.summary()
+# # gbm._model_json['output']['names'] # coefs
+
+# default_gbm_perf = gbm.model_performance(test_hf)
+
+# res = score_estimator(gbm,X_train, X_test, XY_train, XY_test, target, formula)
+
+# mlflow.log_metrics(res)
+
+# # QA
+# # complete = h2o.H2OFrame(df_XY[variables+[target]])
+# # gbm.explain(complete)
+
+# path = "output/"
+# mojo_destination = gbm.save_mojo(path = path, force=True)
+# imported_model = h2o.import_mojo(mojo_destination)
+
+# mlflow.log_artifact(mojo_destination)
+
+# model_sig = infer_signature(X_train, y_train)
+
+# mlflow.h2o.log_model(gbm,'model',signature=model_sig)
+
+# h2o.cluster().shutdown(prompt=False)
+
+# os.system('pipenv lock --keep-outdated -d -r > output/requirements.txt')
+# mlflow.log_artifact('output/requirements.txt')
+
+# mlflow.end_run()
+
+# %%
+## Model 5 hist boosting w optional tuning
+
+mlflow.end_run()
+mlflow.start_run(run_name="sklearn_hgbm")
+
+numeric_transformer = Pipeline(
+    steps=[
+        ("to_float", FunctionTransformer(func=to_float)),
+    ]
+)
+
+categorical_transformer = Pipeline(
+    steps=[
+        ("to_categorical", FunctionTransformer(func=to_categorical)),
+        (
+            "ordinal",
+            OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=np.nan),
+        ),
+    ]
+)
+
+# based on variable order
+categorical_mask = [False] * len(numeric_features) + [True] * len(categorical_features)
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features),
+    ],
+    remainder="drop",
+)
+
+
+# tuning
+if retune:
+
+    func_f = importlib.import_module("P1-AnalyzeTrades_f_buildmodel_func")
+
+    gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
+
+    # use hyperopt package with to better search
+    # https://github.com/hyperopt/hyperopt/wiki/FMin
+    # use userdefined Gini, as it measures differentiation more
+    def objective_gbr(params):
+        "objective_gbr function for hyper opt, params is dict of params for mdl"
+        mlflow.start_run(nested=True)
+        parameters = {}
+        for k in params:
+            parameters[k] = params[k]
+        mdl = Pipeline(
+            steps=[
+                ("preprocessor", preprocessor),
+                (
+                    "estimator",
+                    HistGradientBoostingRegressor(
+                        random_state=0,
+                        **parameters,
+                        categorical_features=categorical_mask
+                    ),
+                ),
+            ]
+        )
+        score = cross_val_score(
+            mdl, X_train, y_train.to_numpy().ravel(), scoring=gini_scorer, cv=5
+        ).mean()
+        print("Gini {:.3f} params {}".format(score, parameters))
+        mlflow.end_run()
+        return score
+
+    # need to match estimator
+    space = {
+        # low # high # number of choices
+        "learning_rate": hp.uniform("learning_rate", 0.1, 1),
+        "max_depth": hp.quniform("max_depth", 2, 4, 2),
+    }
+
+    best_params = fmin(fn=objective_gbr, space=space, algo=tpe.suggest, max_evals=5)
+
+    for key in best_params.keys():
+        if int(best_params[key]) == best_params[key]:
+            best_params[key] = int(best_params[key])
+
+    print("Hyperopt estimated optimum {}".format(best_params))
+
+else:
+    best_params = {"max_depth": 2}
+
+mdl = Pipeline(
+    steps=[
+        ("preprocessor", preprocessor),
+        (
+            "estimator",
+            HistGradientBoostingRegressor(
+                random_state=0, **best_params, categorical_features=categorical_mask
+            ),
+        ),
+    ]
+)
+# reg = GradientBoostingRegressor(random_state=0)
+mdl.fit(X_train, y_train.to_numpy().ravel())
+
+# log with validation
+# log_w_validate(y_test, y_pred, formula)
+res = score_estimator(mdl, X_train, X_test, XY_train, XY_test, target, "")
+
+mlflow.log_metrics(res)
+
+# addition artifacts
+# visualize a single tree
+# Get a tree
+# sub_tree_1 = reg.estimators_[0, 0]  # pull first 1 estimator, actual regressor vs array
+
+# tree.plot_tree(sub_tree_1, feature_names=list(X_train.columns), filled=True, fontsize=7)
+
+# plt.tight_layout()
+# plt.savefig("tree_plot1.png", bbox_inches="tight")
+# plt.show()
+
+# mlflow.log_artifact("tree_plot1.png")
+
+os.system("pipenv lock --keep-outdated -d -r > output/requirements.txt")
+mlflow.log_artifact("output/requirements.txt")
+
+mlflow.end_run()
+
+# %%
+## SHAP test TODO try native category?
+
+explainer = shap.Explainer(mdl[-1])
+
+# fix save expected value
+if len(explainer.expected_value.shape) > 0:
+    ev = explainer.expected_value[0]
+    explainer.expected_value = ev
+
+shap_obj = explainer(mdl[0].transform(X_train))
+
+
+var = "CATEGORY"
+
+## fix shap_obj, requires column transformer in step position 0 ,
+## categorical in position 1
+
+
+# def update_shap_obj(shap_obj, X_train, encoder):
+
+shap_obj.feature_names = list(X_train.columns)
+categorical_names = list(X_train.select_dtypes(include=["object"]).columns)
+col_idx = list(np.where(np.isin(shap_obj.feature_names, categorical_names))[0])
+
+shap_cat = copy.deepcopy(shap_obj)
+shap_cat.data = np.array(shap_obj.data, dtype="object")
+res_arr = (
+    mdl[0]
+    .transformers_[1][1][1]
+    .inverse_transform(
+        pd.DataFrame(shap_cat.data[:, col_idx], columns=[categorical_names])
+    )
+)
+for i, loc in enumerate(col_idx):
+    shap_cat.data[:, loc] = res_arr[:, i]
+
+# new_dtype = "object"
+# res_arr.astype(
+#     [(col, new_dtype) if d[0] in categorical_names else d for d in res_arr.dtype.descr]
+# )
+
+# col_idx = shap_obj.feature_names.index(var)
+# ord_encode_idx = mdl[0].transformers_[1][2].index(var)
+
+shap.plots.beeswarm(shap_cat)
+fig, ax = plt.subplots()
+
+shap.plots.scatter(shap_obj[:, var], ax=ax, show=False, color=shap_obj)
+if var in categorical_names:
+    orig_list = ax.get_xticks()
+    new_list =  np.insert(
+            mdl[0].transformers_[1][1][1].categories_[categorical_names.index(var)],
+            0,
+            "Unknown",
+    )
+    
+    for i in range(len(orig_list)-len(new_list)):
+        new_list = np.append(new_list, orig_list[i + len(new_list)])
+    
+    ax.set_xticks(orig_list)
+    ax.set_xticklabels(
+        new_list
+    )
+
+plt.show()
+
+shap.plots.waterfall(shap_cat[0])
+
+
+# %%
+## SHAP test TODO
+
+shap_obj = shap.KernelExplainer(mdl.predict, X_train)
+# save expected value
+# if len(explainer.expected_value.shape) > 0:
+#     ev = explainer.expected_value[0]
+#     explainer.expected_value = ev
+
+shap_obj = explainer(X_train)
+# shap_obj.feature_names = list(X_train.columns)
+
+
+shap.plots.beeswarm(shap_obj)
+fig, ax = plt.subplots()
+shap.plots.scatter(shap_obj[:, "CATEGORY"], ax=ax, show=False, color=shap_obj)
+# find index of mdl[0].transformers_[1][2]
+ax.set_xticklabels(
+    np.insert(mdl[0].transformers_[1][1][1].categories_[1], 0, "Unknown")
+)
+shap.plots.waterfall(shap_obj[0])
+
+
+plt.show()
+
+# %%
+## other validation functions
+
+# https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html
+# https://scikit-learn.org/stable/auto_examples/linear_model/plot_poisson_regression_non_normal_loss.html
+
+# from sklearn.utils import gen_even_slices
+
+
+# def _mean_frequency_by_risk_group(y_true, y_pred, sample_weight=None,
+#                                   n_bins=10):
+#     """Compare predictions and observations for bins ordered by y_pred.
+
+#     We order the samples by ``y_pred`` and split it in bins.
+#     In each bin the observed mean is compared with the predicted mean.
+
+#     Parameters
+#     ----------
+#     y_true: array-like of shape (n_samples,)
+#         Ground truth (correct) target values.
+#     y_pred: array-like of shape (n_samples,)
+#         Estimated target values.
+#     sample_weight : array-like of shape (n_samples,)
+#         Sample weights.
+#     n_bins: int
+#         Number of bins to use.
+
+#     Returns
+#     -------
+#     bin_centers: ndarray of shape (n_bins,)
+#         bin centers
+#     y_true_bin: ndarray of shape (n_bins,)
+#         average y_pred for each bin
+#     y_pred_bin: ndarray of shape (n_bins,)
+#         average y_pred for each bin
+#     """
+#     idx_sort = np.argsort(y_pred)
+#     bin_centers = np.arange(0, 1, 1/n_bins) + 0.5/n_bins
+#     y_pred_bin = np.zeros(n_bins)
+#     y_true_bin = np.zeros(n_bins)
+
+#     for n, sl in enumerate(gen_even_slices(len(y_true), n_bins)):
+#         weights = sample_weight[idx_sort][sl]
+#         y_pred_bin[n] = np.average(
+#             y_pred[idx_sort][sl], weights=weights
+#         )
+#         y_true_bin[n] = np.average(
+#             y_true[idx_sort][sl],
+#             weights=weights
+#         )
+#     return bin_centers, y_true_bin, y_pred_bin
+
+
+# print(f"Actual number of claims: {df_test['ClaimNb'].sum()}")
+# fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
+# plt.subplots_adjust(wspace=0.3)
+
+# for axi, model in zip(ax.ravel(), [ridge_glm, poisson_glm, poisson_gbrt,
+#                                    dummy]):
+#     y_pred = model.predict(df_test)
+#     y_true = df_test["Frequency"].values
+#     exposure = df_test["Exposure"].values
+#     q, y_true_seg, y_pred_seg = _mean_frequency_by_risk_group(
+#         y_true, y_pred, sample_weight=exposure, n_bins=10)
+
+#     # Name of the model after the estimator used in the last step of the
+#     # pipeline.
+#     print(f"Predicted number of claims by {model[-1]}: "
+#           f"{np.sum(y_pred * exposure):.1f}")
+
+#     axi.plot(q, y_pred_seg, marker='x', linestyle="--", label="predictions")
+#     axi.plot(q, y_true_seg, marker='o', linestyle="--", label="observations")
+#     axi.set_xlim(0, 1.0)
+#     axi.set_ylim(0, 0.5)
+#     axi.set(
+#         title=model[-1],
+#         xlabel='Fraction of samples sorted by y_pred',
+#         ylabel='Mean Frequency (y_pred)'
+#     )
+#     axi.legend()
+# plt.tight_layout()
+
+# def lorenz_curve(y_true, y_pred, exposure):
+#     y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+#     exposure = np.asarray(exposure)
+
+#     # order samples by increasing predicted risk:
+#     ranking = np.argsort(y_pred)
+#     ranked_exposure = exposure[ranking]
+#     ranked_pure_premium = y_true[ranking]
+#     cumulated_claim_amount = np.cumsum(ranked_pure_premium * ranked_exposure)
+#     cumulated_claim_amount /= cumulated_claim_amount[-1]
+#     cumulated_samples = np.linspace(0, 1, len(cumulated_claim_amount))
+#     return cumulated_samples, cumulated_claim_amount
+
+
+# fig, ax = plt.subplots(figsize=(8, 8))
+
+# y_pred_product = glm_freq.predict(X_test) * glm_sev.predict(X_test)
+# y_pred_total = glm_pure_premium.predict(X_test)
+
+# for label, y_pred in [("Frequency * Severity model", y_pred_product),
+#                       ("Compound Poisson Gamma", y_pred_total)]:
+#     ordered_samples, cum_claims = lorenz_curve(
+#         df_test["PurePremium"], y_pred, df_test["Exposure"])
+#     gini = 1 - 2 * auc(ordered_samples, cum_claims)
+#     label += " (Gini index: {:.3f})".format(gini)
+#     ax.plot(ordered_samples, cum_claims, linestyle="-", label=label)
+
+# # Oracle model: y_pred == y_test
+# ordered_samples, cum_claims = lorenz_curve(
+#     df_test["PurePremium"], df_test["PurePremium"], df_test["Exposure"])
+# gini = 1 - 2 * auc(ordered_samples, cum_claims)
+# label = "Oracle (Gini index: {:.3f})".format(gini)
+# ax.plot(ordered_samples, cum_claims, linestyle="-.", color="gray",
+#         label=label)
+
+# # Random baseline
+# ax.plot([0, 1], [0, 1], linestyle="--", color="black",
+#         label="Random baseline")
+# ax.set(
+#     title="Lorenz Curves",
+#     xlabel=('Fraction of policyholders\n'
+#             '(ordered by model from safest to riskiest)'),
+#     ylabel='Fraction of total claim amount'
+# )
+# ax.legend(loc="upper left")
+# plt.plot()
+
+
+# %%
+## placeholder
