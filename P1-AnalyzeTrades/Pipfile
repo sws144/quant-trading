@@ -15,9 +15,9 @@ joblib = "*"
 gunicorn ="*"
 h2o = "==3.34.0.7" # to ensure models work 
 lightgbm = "*"
-matplotlib = "*" # to make sure shap dependence plots work
+matplotlib = "==3.2.2" # 3.5.1 has errors w heroku
 mlflow = "*"
-numpy = "*"
+numpy = "==1.20.3" #  1.21.5 has errors w heroku
 pandas = "*"
 pandas_datareader = "*"
 patsy = "*"
