@@ -31,4 +31,4 @@ black = "*"
 openapi-schema-validator = "*"
 
 [requires]
-python_version = "3.8.10"
+python_version = "3.9.10"
