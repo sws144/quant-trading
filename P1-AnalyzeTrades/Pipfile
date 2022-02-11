@@ -13,7 +13,7 @@ hyperopt ="*"
 ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
-h2o = "*" # to ensure models work 
+h2o = "==3.34.0.7" # to ensure models work 
 lightgbm = "*"
 matplotlib = "*" # to make sure shap dependence plots work
 mlflow = "*"
