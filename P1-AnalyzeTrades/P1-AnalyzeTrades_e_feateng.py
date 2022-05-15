@@ -147,7 +147,7 @@ numeric_features = numeric_features + [
     "%_TO_TARGET",
     "GROWTH_0.5TO0.75",
     "ROIC_(BW_ROA_ROE)",
-    "IMPLIED_P_E",
+    "TGT_FWD_P_E",
     "YEARS_TO_NORMALIZATION",
 ]
 numeric_features = list(set(numeric_features))
