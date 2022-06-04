@@ -45,9 +45,12 @@ C4 style approach, see README puml files and pngs
     1. if updating python, need to manually remove virtual environment first
 1. **run tests** including `pytest` and `flask run` and `docker build...` below
 1. **save work as ipynb and html** by
-    1. Saving jupyter interactive to original mlflow
-    1. Copying run to repo
-    1. and then use Anaconda -> JupyterLab -> save as HTML
+    1. Run key .py files and export to jupyter notebooks
+    1. Optionally:
+        1. Saving jupyter interactive to original mlflow
+        1. Copying run to repo
+        1. and then use Anaconda -> JupyterLab -> save as HTML
+1. **For releases per Azure Boards** in GitHub, create a new release
 
 ### MLFlow & Virtual Env Update
 
