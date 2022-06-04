@@ -29,8 +29,8 @@ statsmodels = "*"
 yfinance = "*"
 black = "*"
 openapi-schema-validator = "*"
-jupyterlab = "*"
-jupytext = "*"
+#jupyterlab = "*"
+#jupytext = "*"
 
 [requires]
 python_version = "3.9.10"
