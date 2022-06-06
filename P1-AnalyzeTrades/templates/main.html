@@ -28,8 +28,17 @@ Uses gradient boosting from sklearn
     <fieldset>
         <legend>Input values:</legend>
         {% for variable, value in col_type_dict.items() %}
-            {{ variable }} :
-            <input name={{ variable }} type={{ value }}  required>
+            {% if variable in cat_dict.keys() %}
+                {{ variable }} :
+                <select name={{ variable }}>
+                    {% for possible_option in cat_dict[variable] %}
+                        <option value={{ possible_option }}>{{possible_option}}</option>
+                    {% endfor %}  
+                </select>
+            {% else %}
+                {{ variable }} :
+                <input name={{ variable }} type={{ value }}  required>
+            {% endif %}
             <br>  
         {% endfor %}        
 
@@ -52,10 +61,11 @@ Uses gradient boosting from sklearn
 <br>
 <div class="result" align="center">
     {% if result %}
-        {% for variable, value in original_input.items() %}
+    <!-- deprecated reshow results -->
+        <!-- {% for variable, value in original_input.items() %}
             {{ variable }} : {{ value }} 
             <br>
-        {% endfor %}
+        {% endfor %} -->
         <br> Predicted Return (e.g. 0.01 = 1%): <b>{{ result }}</b>
         <br> 
            <!-- <p style="font-size:50px"></p> -->

@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pickle
+import copy
 import dill
 import json
 import shap
@@ -92,7 +93,17 @@ def preload_model(
             mdl = mlflow.pyfunc.load_model(logged_model)
 
         mlflow.end_run()
-    return mdl
+
+    # load cat dict, if available
+    cat_dict = {}
+    try:  # first try local path]
+        cat_dict = pickle.load(
+            open(f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl", "rb")
+        )
+    except:  # then try repo specific path for finalized cases
+        cat_dict = pickle.load(open(f"mlruns/0/{run_id}/artifacts/cat_dict.pkl", "rb"))
+
+    return mdl, cat_dict
 
 
 def predict_return(
@@ -103,6 +114,7 @@ def predict_return(
     explain: bool = False,
     show_plot: bool = False,
     preloaded_model=None,
+    categorical_colname_list=None,
 ):
     """Predict the return of model in decimal form
 
@@ -120,6 +132,9 @@ def predict_return(
         show_plot (bool = False): show plot when running interactively. MAY NOT BE WORKING
 
         preloaded_model (obj = None): can send preloaded model for speed
+
+        categorical_colname_list (list = None): can send list of strings for columns
+            to force to categorical
 
     Returns:
         pct_return: dataframe of results
@@ -219,7 +234,12 @@ def predict_return(
             )
 
         # create explained object
-        shap_obj = explainer(inputs_copy)
+        if "pipeline" in str(type(mdl)):
+            ## fix shap_obj, requires column transformer in step position 0 ,
+            ## categorical in position 1
+            shap_obj = explainer(mdl[0].transform(inputs_copy))
+        else:
+            shap_obj = explainer(inputs_copy)
 
         # correct for error
         shap_obj.base_values = shap_obj.base_values
@@ -248,7 +268,38 @@ def predict_return(
         try:
             shap_obj_adj = shap_obj
             shap_obj_adj.values = shap_obj_adj.values + specific_adj
-            shap.plots.waterfall(shap_obj_adj[0])
+
+            if "pipeline" in str(type(mdl)):
+                # def update_shap_obj(shap_obj, X_train, encoder):
+                shap_obj_adj.feature_names = list(inputs_copy.columns)
+
+                if categorical_colname_list is None:
+                    categorical_names = list(
+                        inputs_copy.select_dtypes(include=["object"]).columns
+                    )
+                else:
+                    categorical_names = categorical_colname_list
+                col_idx = list(
+                    np.where(np.isin(shap_obj_adj.feature_names, categorical_names))[0]
+                )
+
+                shap_cat = copy.deepcopy(shap_obj_adj)
+                shap_cat.data = np.array(shap_obj_adj.data, dtype="object")
+                res_arr = (
+                    mdl[0]
+                    .transformers_[1][1][1]
+                    .inverse_transform(
+                        pd.DataFrame(
+                            shap_cat.data[:, col_idx], columns=[categorical_names]
+                        )
+                    )
+                )
+                for i, loc in enumerate(col_idx):
+                    shap_cat.data[:, loc] = res_arr[:, i]
+
+                shap.plots.waterfall(shap_cat[0])
+            else:
+                shap.plots.waterfall(shap_obj_adj[0])
             # waterfall_legacy(shap_obj.base_values[0][0],
             #                     shap_values = shap_obj.values.ravel()+specific_adj,
             #                     feature_names = inputs_copy.columns,
