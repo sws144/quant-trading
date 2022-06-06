@@ -51,6 +51,16 @@ def preload_model(
     experiment_name: str,
     run_id: str,
 ):
+    """pulls model and cat_dict if available from mlflow
+
+    Args:
+        mlflow_tracking_uri (str):
+        experiment_name (str):
+        run_id (str):
+
+    Returns:
+        model , cat_dict:
+    """
 
     mlflow.set_tracking_uri(mlflow_tracking_uri)
     mlflow.set_experiment(experiment_name)
@@ -208,7 +218,7 @@ def predict_return(
             run_id,
         )
     else:
-        mdl, _ = preloaded_model
+        mdl = preloaded_model
 
     mlflow.end_run()
 
