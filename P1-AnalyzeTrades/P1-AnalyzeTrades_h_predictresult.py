@@ -11,6 +11,7 @@ import pickle
 import copy
 import dill
 import json
+from os.path import exists
 import shap
 from shap.plots._waterfall import waterfall_legacy
 
@@ -96,12 +97,14 @@ def preload_model(
 
     # load cat dict, if available
     cat_dict = {}
-    try:  # first try local path]
-        cat_dict = pickle.load(
-            open(f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl", "rb")
-        )
+    try:  # first try local path
+        cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
+        if exists(cat_dict_loc):
+            cat_dict = pickle.load(open(cat_dict_loc, "rb"))
     except:  # then try repo specific path for finalized cases
-        cat_dict = pickle.load(open(f"mlruns/0/{run_id}/artifacts/cat_dict.pkl", "rb"))
+        cat_dict_loc = f"mlruns/0/{run_id}/artifacts/cat_dict.pkl"
+        if exists(cat_dict_loc):
+            cat_dict = pickle.load(open(cat_dict_loc, "rb"))
 
     return mdl, cat_dict
 
@@ -199,13 +202,13 @@ def predict_return(
             inputs_copy[c] = inputs_copy[c].astype(float)
 
     if preloaded_model == None:
-        mdl = preload_model(
+        mdl, _ = preload_model(
             mlflow_tracking_uri,
             experiment_name,
             run_id,
         )
     else:
-        mdl = preloaded_model
+        mdl, _ = preloaded_model
 
     mlflow.end_run()
 
