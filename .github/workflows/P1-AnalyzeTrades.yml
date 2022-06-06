@@ -3,40 +3,39 @@
 
 name: P1 Analyze Trades Test
 
-on: 
-  push: 
-    paths: 
-      - './P1-AnalyzeTrades/*'
+on:
+  push:
+    paths:
+      - "./P1-AnalyzeTrades/*"
   pull_request:
 
 jobs:
   build-and-test:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      working-directory: ./P1-AnalyzeTrades/
-      run: |
-        python -m pip install --upgrade pip
-        pip install pipenv
-    - name: Test with pytest
-      working-directory: ./P1-AnalyzeTrades/
-      run: |
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9.10
+      - name: Install dependencies
+        working-directory: ./P1-AnalyzeTrades/
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv
+      - name: Test with pytest
+        working-directory: ./P1-AnalyzeTrades/
+        run: |
           pipenv install --dev
           pipenv run pip install "colorama>=0.3.8" ipython # needed for h2o regardless of env
           pipenv run pytest --junit-xml pytest.xml
-    - name: Upload Unit Test Results
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: Unit Test Results
-        path: ./P1-AnalyzeTrades/pytest.xml
+      - name: Upload Unit Test Results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Unit Test Results
+          path: ./P1-AnalyzeTrades/pytest.xml
 
   publish-test-results:
     name: "Publish Unit Tests Results"
