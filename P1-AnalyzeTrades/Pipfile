@@ -7,28 +7,30 @@ name = "pypi"
 pywin32 = ">=301" # for security
 
 [packages]
-dill = "==0.3.4"
+dill = "*"
 ## dtreeviz = "*"
 hyperopt ="*"
 ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
-h2o = "==3.32.1.6" # to ensure models work 
+h2o = "==3.34.0.7" # to ensure models work 
 lightgbm = "*"
-matplotlib = "==3.2.2" # to make sure shap dependence plots work
+matplotlib = "*" # 3.5.1 has errors w heroku
 mlflow = "*"
-numpy = "*"
+numpy = "*" #  1.21.5 has errors w heroku
 pandas = "*"
 pandas_datareader = "*"
 patsy = "*"
 ## pydotplus = "*"
 pytest = "*"
-shap = "==0.39.0" # to ensure explainers work
-scikit-learn = "==0.24.2" # to ensure models work 
+shap = "*" # to ensure explainers work
+scikit-learn = "==1.0.2" # to ensure models work 
 statsmodels = "*"
 yfinance = "*"
 black = "*"
 openapi-schema-validator = "*"
+#jupyterlab = "*"
+#jupytext = "*"
 
 [requires]
-python_version = "3.8.10"
+python_version = "3.9.10"

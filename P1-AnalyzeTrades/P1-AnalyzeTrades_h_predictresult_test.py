@@ -1,3 +1,4 @@
+import os
 import pytest
 import importlib  
 import pandas as pd
@@ -6,20 +7,26 @@ import numpy as np
 # also loads model one time
 main_file = importlib.import_module("P1-AnalyzeTrades_h_predictresult") 
 
+# current file
+mlflow_tracking_uri =  '' # backup file:' + os.path.dirname(os.path.abspath(__file__))
+# if os.path.isdir('D:/Stuff/OneDrive/MLflow'):
+#     mlflow_tracking_uri = 'file:D:/Stuff/OneDrive/MLflow'
+
 def test_predict_1_basic():
     inputs = pd.DataFrame({
         "Q('CLOSE_^VIX')": [20],
     })
     
     res_df = main_file.predict_return(
-        mlflow_tracking_uri = '', 
+        mlflow_tracking_uri = mlflow_tracking_uri, 
         experiment_name =  'P1-AnalyzeTrades_f_core', 
-        run_id =  '1b6b96ef3cb14b93b60af5f2a84eeb94', 
+        run_id =  '5011fe3fca374334a349d0eff25ab317', 
         inputs = inputs)
     
     assert type(res_df) == pd.DataFrame  , 'result not dataframe' 
     
-    assert type(res_df['predicted_ret'][0]) == np.float64   , 'first cell of predicted_ret not 0' 
+    assert (type(res_df['predicted_ret'][0]) == np.float64   , 
+            'first cell of predicted_ret not 0') 
     
 def test_explain_1_basic():
     """sklearn test
@@ -29,9 +36,9 @@ def test_explain_1_basic():
     })
     
     res_df, shap_obj, shap_df, f = main_file.predict_return(
-        mlflow_tracking_uri = '', 
+        mlflow_tracking_uri = mlflow_tracking_uri, 
         experiment_name =  'P1-AnalyzeTrades_f_core', 
-        run_id =  '1140c5a2c378445ba06b77647d969345', 
+        run_id =  '5011fe3fca374334a349d0eff25ab317', 
         inputs = inputs, 
         explain = True)
     
@@ -48,9 +55,9 @@ def test_explain_2_h2omodel():
     })
     
     res_df, shap_obj, shap_df, f = main_file.predict_return(
-        mlflow_tracking_uri = '', 
+        mlflow_tracking_uri = mlflow_tracking_uri, 
         experiment_name =  'P1-AnalyzeTrades_f_core', 
-        run_id =  '0928f3d8912f4a49b71eb62795cb9e0b', 
+        run_id =  'f1d3ba19eb3646aa81eb67e5a75dab43', 
         inputs = inputs, 
         explain = True)
     

@@ -3,8 +3,8 @@
 ## Purpose
 
 Apply data science and analytics to a user's trading history to help user make better decisions
-https://analyze-trades-staging.herokuapp.com/
-https://analyze-trades-prod.herokuapp.com/
+<https://analyze-trades-staging.herokuapp.com/>
+<https://analyze-trades-prod.herokuapp.com/>
 See ...Important\Startup\P1-AnalyzeTrades
 
 ## Architecture
@@ -39,20 +39,26 @@ C4 style approach, see README puml files and pngs
 1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts
-    1. ensure python version correct path `py -0p`, updating PATH variable order for system/user if want different default python version
+    1. ensure python version correct path `py -0p`, updating PATH variable order for system/user if want different default python version. System
+    variables go first.
+    1. can test full version name using `py -#.# --version`
+    1. if updating python, need to manually remove virtual environment first
 1. **run tests** including `pytest` and `flask run` and `docker build...` below
 1. **save work as ipynb and html** by
-    1. Saving jupyter interactive to original mlflow
-    1. Copying run to repo
-    1. and then use Anaconda -> JupyterLab -> save as HTML
+    1. Run key .py files and export to jupyter notebooks
+    1. Optionally:
+        1. Saving jupyter interactive to original mlflow
+        1. Copying run to repo
+        1. and then use Anaconda -> JupyterLab -> save as HTML
+1. **For releases per Azure Boards** in GitHub, create a new release
 
 ### MLFlow & Virtual Env Update
 
 1. First time build: Terminal `pipenv sync --dev` to install env locally with piplock or `pipenv update --dev` to update and install environment
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
-1. `mlflow ui --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
+1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
-1. Optional: `mlflow gc --backend-store-uri file:C:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
+1. Optional: `mlflow gc --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
 ### Build App Basic (Flask)
 
@@ -67,7 +73,8 @@ see README_C2...png
 1. Start docker desktop app (outside any virtual environment)
 1. Let's build our image: `docker build -t analyze:latest .`
 1. and run: `docker run -p 8004:8003 analyze:latest` ,  host port : container port
-1. `curl localhost:8004` -> website (does not match 127.0.0.0 diff from 0.0.0.0)
+1. `curl localhost:8004` -> website (does not match 127.0.0.0 diff from 0.0.0.0).
+1. Test website directly via Docker Desktop links
 1. To turn off, ctrl+c in terminal
 
 ### Single prediction
@@ -89,3 +96,14 @@ see README_C2...png
 1. show force plot
 1. return model to user, if new
 
+### Deployment notes
+
+#### Heroku
+
+1. Procfile
+1. runtime.txt file to specify correct python version
+1. requirements.txt
+
+#### Docker (not used in prod)
+
+1. heroku.yml
