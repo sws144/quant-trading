@@ -228,12 +228,12 @@ with open("data-tests/_apispecs.yaml") as f:
 # %%
 ## validate based on api spec
 
-from openapi_schema_validator import validate 
+from openapi_schema_validator import validate
 import json
 
-schema = api_specs['components']['schemas']['Tradelog']
+schema = api_specs["components"]["schemas"]["Tradelog"]
 
-json_str = df_XY_imputed.to_json(orient='records')
+json_str = df_XY_imputed.to_json(orient="records")
 json_test = json.loads(json_str)
 
 i = 0
@@ -241,11 +241,11 @@ for row in json_test:
     try:
         validate(row, schema)
     except:
-        print(f'failed on {i}th row ')
+        print(f"failed on {i}th row ")
         break
     i = i + 1
 
-print('validation completed')
+print("validation completed")
 
 # %%
 ## save api spec to html
