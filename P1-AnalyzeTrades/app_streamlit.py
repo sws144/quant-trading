@@ -39,6 +39,7 @@ if "mdl" not in st.session_state:
     )
 
     # QA
+    st.write(st.session_state.cat_dict)
     st.write(mlflow.get_tracking_uri())
 
     (
