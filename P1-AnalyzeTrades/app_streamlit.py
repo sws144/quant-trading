@@ -29,7 +29,7 @@ if "mdl" not in st.session_state:
         st.session_state.metrics,
         st.session_state.params,
         st.session_state.tags,
-    ) = analyze_pred.parse_mlflow_info(mlflow.get_run(runid))
+    ) = analyze_pred.parse_mlflow_info(mlflow.get_run(st.session_state.runid))
 
     # pull information
     st.session_state.col_type_dict = (
@@ -74,16 +74,28 @@ with st.sidebar:
 if submitted:
     input_df = pd.DataFrame(input_dict, index=[0])
 
-    res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
-        mlflow_tracking_uri="",
-        experiment_name="P1-AnalyzeTrades_f_core",
-        run_id=st.session_state.runid,
-        inputs=input_df,
-        explain=True,
-        show_plot=False,
-        preloaded_model=st.session_state.mdl,
-        categorical_colname_list=list(st.session_state.cat_dict.keys()),
-    )
+    try:
+        res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
+            mlflow_tracking_uri="",
+            experiment_name="P1-AnalyzeTrades_f_core",
+            run_id=st.session_state.runid,
+            inputs=input_df,
+            explain=True,
+            show_plot=False,
+            preloaded_model=st.session_state.mdl,
+            categorical_colname_list=list(st.session_state.cat_dict.keys()),
+        )
+    except:
+        res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
+            mlflow_tracking_uri="P1-AnalyzeTrades",
+            experiment_name="P1-AnalyzeTrades_f_core",
+            run_id=st.session_state.runid,
+            inputs=input_df,
+            explain=True,
+            show_plot=False,
+            preloaded_model=st.session_state.mdl,
+            categorical_colname_list=list(st.session_state.cat_dict.keys()),
+        )
 
     prediction = np.round(res_df.iloc[0, 0], 3)
 
