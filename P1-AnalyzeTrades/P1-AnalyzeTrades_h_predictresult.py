@@ -84,7 +84,7 @@ def preload_model(
     if model_type == "sklearn":
         try:  # first try local path
             download_artifacts(
-                run_id=runid, dst_path="temp/", artifact_path="model/model.pkl"
+                run_id=run_id, dst_path="temp/", artifact_path="model/model.pkl"
             )
             mdl = pickle.load("temp/model/model.pkl")
             os.remove("temp/model/model.pkl")
@@ -115,7 +115,9 @@ def preload_model(
     # load cat dict, if available
     cat_dict = {}
     try:  # first try local path
-        download_artifacts(run_id=runid, dst_path="temp/", artifact_path="cat_dict.pkl")
+        download_artifacts(
+            run_id=run_id, dst_path="temp/", artifact_path="cat_dict.pkl"
+        )
         cat_dict_loc = "temp/cat_dict.pkl"
         if exists(cat_dict_loc):
             cat_dict = pickle.load(open(cat_dict_loc, "rb"))
@@ -250,7 +252,7 @@ def predict_return(
     if explain == True:
         try:
             download_artifacts(
-                run_id=runid, dst_path="temp/", artifact_path="explainer.pkl"
+                run_id=run_id, dst_path="temp/", artifact_path="explainer.pkl"
             )
             explainer_loc = "temp/explainer.pkl"
             if exists(explainer_loc):
