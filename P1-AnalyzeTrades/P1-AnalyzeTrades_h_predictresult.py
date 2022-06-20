@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 import mlflow
+from mlflow.artifacts import download_artifacts
 import h2o
 import matplotlib
 
@@ -81,10 +82,16 @@ def preload_model(
     model_type = get_model_type(tags)
 
     if model_type == "sklearn":
-        try:  # first try local path]
-            mdl = pickle.load(
-                open(f"{artifact_loc}/{run_id}/artifacts/model/model.pkl", "rb")
+        try:  # first try local path
+            download_artifacts(
+                run_id=runid, dst_path="temp/", artifact_path="model/model.pkl"
             )
+            mdl = pickle.load("temp/model/model.pkl")
+            os.remove("temp/model/model.pkl")
+
+            # mdl = pickle.load(
+            #     open(f"{artifact_loc}/{run_id}/artifacts/model/model.pkl", "rb")
+            # )
         except:  # then try repo specific path for finalized cases
             mdl = pickle.load(
                 open(f"mlruns/0/{run_id}/artifacts/model/model.pkl", "rb")
@@ -108,9 +115,13 @@ def preload_model(
     # load cat dict, if available
     cat_dict = {}
     try:  # first try local path
-        cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
+        download_artifacts(run_id=runid, dst_path="temp/", artifact_path="cat_dict.pkl")
+        cat_dict_loc = "temp/cat_dict.pkl"
         if exists(cat_dict_loc):
             cat_dict = pickle.load(open(cat_dict_loc, "rb"))
+        os.remove(cat_dict_loc)
+        # cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
+
     except:  # then try repo specific path for finalized cases
         cat_dict_loc = f"mlruns/0/{run_id}/artifacts/cat_dict.pkl"
         if exists(cat_dict_loc):
@@ -238,9 +249,17 @@ def predict_return(
     # Explain Return for first
     if explain == True:
         try:
-            explainer = dill.load(
-                open(f"{artifact_loc}/{run_id}/artifacts/explainer.pkl", "rb")
+            download_artifacts(
+                run_id=runid, dst_path="temp/", artifact_path="explainer.pkl"
             )
+            explainer_loc = "temp/explainer.pkl"
+            if exists(explainer_loc):
+                explainer = dill.load(open(explainer_loc, "rb"))
+            os.remove(explainer_loc)
+
+            # explainer = dill.load(
+            #     open(f"{artifact_loc}/{run_id}/artifacts/explainer.pkl", "rb")
+            # )
         except:  # for testing
             explainer = dill.load(
                 open(f"mlruns/0/{run_id}/artifacts/explainer.pkl", "rb")

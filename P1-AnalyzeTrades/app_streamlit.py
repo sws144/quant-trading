@@ -103,7 +103,7 @@ if submitted:
 
     prediction = np.round(res_df.iloc[0, 0], 3)
 
-    st.image(f"output/current_force.png")
+    st.image(f"output/current_force.png")  # based on predict_return function output
 
 
 githublink = "[GitHub link](https://github.com/sws144/quant-trading/tree/master/P1-AnalyzeTrades)"
