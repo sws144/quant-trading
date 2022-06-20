@@ -17,18 +17,14 @@ analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult")
 st.session_state.runid = "76186ad6e3c543d481ce7508751d91f7"
 
 # QA for tracking_uri
-current_uri = mlflow.get_tracking_uri()
+current_uri = os.getcwd()
 st.write(current_uri)
 
-
-# streamlit uses github root dir, so need to go into folder if not available
-if "P1-AnalyzeTrades" in current_uri:
-    tracking_uri = ""
-else:
+tracking_uri = ""
+# # streamlit uses github root dir, so need to go into folder if not available
+if "P1-AnalyzeTrades" not in current_uri:
     insertloc = current_uri.rfind(r"/")
-    tracking_uri = (
-        current_uri[0:insertloc] + "/P1-AnalyzeTrades" + current_uri[insertloc:]
-    )
+    tracking_uri = current_uri[0:insertloc] + "/P1-AnalyzeTrades"
     # QA
     st.write(tracking_uri)
 
