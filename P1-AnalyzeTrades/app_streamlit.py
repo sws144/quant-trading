@@ -7,6 +7,7 @@ import json
 import mlflow
 import numpy as np
 import pandas as pd
+import os
 import pickle
 import streamlit as st
 
@@ -15,15 +16,18 @@ analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult")
 ### SELECTED MODEL ###
 st.session_state.runid = "76186ad6e3c543d481ce7508751d91f7"
 
-st.write("current uri is:")
-st.write(mlflow.get_tracking_uri())
+# streamlit uses github root dir, so need to go into folder if not available
+if "P1-AnalyzeTrades" in os.getcwd():
+    tracking_uri = ""
+else:
+    tracking_uri = "P1-AnalyzeTrades"
 
 # load model if not already loaded
 if "mdl" not in st.session_state:
 
     ### load model, cat_dict
     st.session_state.mdl, st.session_state.cat_dict = analyze_pred.preload_model(
-        mlflow_tracking_uri="",
+        mlflow_tracking_uri=tracking_uri,
         experiment_name="P1-AnalyzeTrades_f_core",
         run_id=st.session_state.runid,
     )
@@ -77,28 +81,16 @@ with st.sidebar:
 if submitted:
     input_df = pd.DataFrame(input_dict, index=[0])
 
-    try:
-        res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
-            mlflow_tracking_uri="",
-            experiment_name="P1-AnalyzeTrades_f_core",
-            run_id=st.session_state.runid,
-            inputs=input_df,
-            explain=True,
-            show_plot=False,
-            preloaded_model=st.session_state.mdl,
-            categorical_colname_list=list(st.session_state.cat_dict.keys()),
-        )
-    except:
-        res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
-            mlflow_tracking_uri="P1-AnalyzeTrades",
-            experiment_name="P1-AnalyzeTrades_f_core",
-            run_id=st.session_state.runid,
-            inputs=input_df,
-            explain=True,
-            show_plot=False,
-            preloaded_model=st.session_state.mdl,
-            categorical_colname_list=list(st.session_state.cat_dict.keys()),
-        )
+    res_df, shap_obj, shap_df, f = analyze_pred.predict_return(
+        mlflow_tracking_uri=tracking_uri,
+        experiment_name="P1-AnalyzeTrades_f_core",
+        run_id=st.session_state.runid,
+        inputs=input_df,
+        explain=True,
+        show_plot=False,
+        preloaded_model=st.session_state.mdl,
+        categorical_colname_list=list(st.session_state.cat_dict.keys()),
+    )
 
     prediction = np.round(res_df.iloc[0, 0], 3)
 

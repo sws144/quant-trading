@@ -111,5 +111,5 @@ see README_C2...png
 
 #### Streamlit Version
 
-1. activate virtual env using `pipenv shell`  
+1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
 1. `streamlit run app_streamlit.py`
