@@ -111,12 +111,13 @@ def preload_model(
 
     # load cat dict, if available
     cat_dict = {}
-    try:  # first try local path
-        cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
+    cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
+    if os.path.exists(cat_dict_loc):
         cat_dict = pickle.load(open(cat_dict_loc, "rb"))
-    except:  # then try repo specific path for finalized cases
+    else:  # then try repo specific path for finalized cases
         cat_dict_loc = f"{loc_prefix}mlruns/0/{run_id}/artifacts/cat_dict.pkl"
-        cat_dict = pickle.load(open(cat_dict_loc, "rb"))
+        if os.path.exists(cat_dict_loc):
+            cat_dict = pickle.load(open(cat_dict_loc, "rb"))
 
     return mdl, cat_dict
 
