@@ -77,7 +77,7 @@ def preload_model(
         .replace("///", "")
     )
     loc_prefix = ""
-    if "P1-AnalyzeTrades" not in os.get_cwd():
+    if "P1-AnalyzeTrades" not in os.getcwd():
         loc_prefix = r"P1-AnalyzeTrades/"
 
     metrics, params, tags = parse_mlflow_info(mlflow.get_run(run_id))
@@ -178,7 +178,7 @@ def predict_return(
         .replace("///", "")
     )
     loc_prefix = ""
-    if "P1-AnalyzeTrades" not in os.get_cwd():
+    if "P1-AnalyzeTrades" not in os.getcwd():
         loc_prefix = r"P1-AnalyzeTrades/"
 
     metrics, params, tags = parse_mlflow_info(mlflow.get_run(run_id))
