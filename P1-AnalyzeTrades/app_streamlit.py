@@ -20,7 +20,7 @@ st.session_state.runid = "76186ad6e3c543d481ce7508751d91f7"
 if "P1-AnalyzeTrades" in os.getcwd():
     tracking_uri = ""
 else:
-    tracking_uri = "P1-AnalyzeTrades"
+    tracking_uri = "P1-AnalyzeTrades\mlruns"
 
 # load model if not already loaded
 if "mdl" not in st.session_state:
