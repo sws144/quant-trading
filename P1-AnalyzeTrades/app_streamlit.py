@@ -23,8 +23,8 @@ st.write(current_uri)
 tracking_uri = ""
 # # streamlit uses github root dir, so need to go into folder if not available
 if "P1-AnalyzeTrades" not in current_uri:
-    insertloc = current_uri.rfind(r"/")
-    tracking_uri = current_uri[0:insertloc] + "/P1-AnalyzeTrades"
+    # insertloc = current_uri.rfind(r"/")
+    tracking_uri = current_uri + "/P1-AnalyzeTrades"
     # QA
     st.write(tracking_uri)
 
