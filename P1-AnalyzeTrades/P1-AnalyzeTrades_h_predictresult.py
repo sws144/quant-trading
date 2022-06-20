@@ -11,6 +11,7 @@ import pickle
 import copy
 import dill
 import json
+import os
 from os.path import exists
 import shap
 from shap.plots._waterfall import waterfall_legacy
