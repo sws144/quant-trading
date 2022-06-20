@@ -334,6 +334,8 @@ def predict_return(
 
         f = plt.gcf()
         f.tight_layout()
+        if not os.path.exists("output/"):
+            os.mkdir("output/")
         f.savefig("output/current_force.png")
         if show_plot:
             # matplotlib.use('svg')
