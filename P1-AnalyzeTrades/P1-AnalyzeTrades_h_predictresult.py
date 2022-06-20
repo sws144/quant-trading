@@ -11,11 +11,12 @@ import pickle
 import copy
 import dill
 import json
+import os
 from os.path import exists
 import shap
 from shap.plots._waterfall import waterfall_legacy
 
-shap.initjs()  # for plots
+# shap.initjs()  # for plots
 
 
 def parse_mlflow_info(run_info):
@@ -75,6 +76,9 @@ def preload_model(
         .replace("file:", "")
         .replace("///", "")
     )
+    loc_prefix = ""
+    if "P1-AnalyzeTrades" not in os.getcwd():
+        loc_prefix = r"P1-AnalyzeTrades/"
 
     metrics, params, tags = parse_mlflow_info(mlflow.get_run(run_id))
 
@@ -87,7 +91,7 @@ def preload_model(
             )
         except:  # then try repo specific path for finalized cases
             mdl = pickle.load(
-                open(f"mlruns/0/{run_id}/artifacts/model/model.pkl", "rb")
+                open(f"{loc_prefix}mlruns/0/{run_id}/artifacts/model/model.pkl", "rb")
             )
     else:
         # for h2o models
@@ -100,20 +104,19 @@ def preload_model(
             # mojo deprecated
             # mdl = h2o.import_mojo(f'{artifact_loc}/{run_id}/artifacts/')
         except:
-            logged_model = f"mlruns/0/{run_id}/artifacts/model"
+            logged_model = f"{loc_prefix}mlruns/0/{run_id}/artifacts/model"
             mdl = mlflow.pyfunc.load_model(logged_model)
 
         mlflow.end_run()
 
     # load cat dict, if available
     cat_dict = {}
-    try:  # first try local path
-        cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
-        if exists(cat_dict_loc):
-            cat_dict = pickle.load(open(cat_dict_loc, "rb"))
-    except:  # then try repo specific path for finalized cases
-        cat_dict_loc = f"mlruns/0/{run_id}/artifacts/cat_dict.pkl"
-        if exists(cat_dict_loc):
+    cat_dict_loc = f"{artifact_loc}/{run_id}/artifacts/cat_dict.pkl"
+    if os.path.exists(cat_dict_loc):
+        cat_dict = pickle.load(open(cat_dict_loc, "rb"))
+    else:  # then try repo specific path for finalized cases
+        cat_dict_loc = f"{loc_prefix}mlruns/0/{run_id}/artifacts/cat_dict.pkl"
+        if os.path.exists(cat_dict_loc):
             cat_dict = pickle.load(open(cat_dict_loc, "rb"))
 
     return mdl, cat_dict
@@ -173,6 +176,9 @@ def predict_return(
         .replace("file:", "")
         .replace("///", "")
     )
+    loc_prefix = ""
+    if "P1-AnalyzeTrades" not in os.getcwd():
+        loc_prefix = r"P1-AnalyzeTrades/"
 
     metrics, params, tags = parse_mlflow_info(mlflow.get_run(run_id))
 
@@ -243,7 +249,7 @@ def predict_return(
             )
         except:  # for testing
             explainer = dill.load(
-                open(f"mlruns/0/{run_id}/artifacts/explainer.pkl", "rb")
+                open(f"{loc_prefix}mlruns/0/{run_id}/artifacts/explainer.pkl", "rb")
             )
 
         # create explained object
@@ -329,6 +335,8 @@ def predict_return(
 
         f = plt.gcf()
         f.tight_layout()
+        if not os.path.exists("output/"):
+            os.mkdir("output/")
         f.savefig("output/current_force.png")
         if show_plot:
             # matplotlib.use('svg')

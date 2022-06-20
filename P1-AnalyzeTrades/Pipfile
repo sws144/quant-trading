@@ -10,6 +10,7 @@ pywin32 = ">=301" # for security
 dill = "*"
 ## dtreeviz = "*"
 hyperopt ="*"
+ipython = "*"
 ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
@@ -26,6 +27,7 @@ pytest = "*"
 shap = "*" # to ensure explainers work
 scikit-learn = "==1.0.2" # to ensure models work 
 statsmodels = "*"
+streamlit = "*"
 yfinance = "*"
 black = "*"
 openapi-schema-validator = "*"
