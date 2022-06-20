@@ -10,6 +10,7 @@ pywin32 = ">=301" # for security
 dill = "*"
 ## dtreeviz = "*"
 hyperopt ="*"
+ipython = "*"
 ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
