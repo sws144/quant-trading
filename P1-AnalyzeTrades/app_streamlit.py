@@ -22,7 +22,7 @@ if "mdl" not in st.session_state:
     st.session_state.mdl, st.session_state.cat_dict = analyze_pred.preload_model(
         mlflow_tracking_uri="",
         experiment_name="P1-AnalyzeTrades_f_core",
-        run_id=runid,
+        run_id=st.session_state.runid,
     )
 
     (
