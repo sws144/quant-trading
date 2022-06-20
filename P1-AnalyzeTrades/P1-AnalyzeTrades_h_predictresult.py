@@ -15,7 +15,7 @@ from os.path import exists
 import shap
 from shap.plots._waterfall import waterfall_legacy
 
-shap.initjs()  # for plots
+# shap.initjs()  # for plots
 
 
 def parse_mlflow_info(run_info):
