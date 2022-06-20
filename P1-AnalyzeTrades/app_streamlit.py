@@ -24,7 +24,7 @@ tracking_uri = ""
 # # streamlit uses github root dir, so need to go into folder if not available
 if "P1-AnalyzeTrades" not in current_uri:
     # insertloc = current_uri.rfind(r"/")
-    tracking_uri = current_uri + "/P1-AnalyzeTrades"
+    tracking_uri = current_uri + "/P1-AnalyzeTrades/mlruns"
     # QA
     st.write(tracking_uri)
 
@@ -37,6 +37,9 @@ if "mdl" not in st.session_state:
         experiment_name="P1-AnalyzeTrades_f_core",
         run_id=st.session_state.runid,
     )
+
+    # QA
+    st.write(mlflow.get_tracking_uri())
 
     (
         st.session_state.metrics,
