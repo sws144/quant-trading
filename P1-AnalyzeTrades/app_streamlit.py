@@ -16,9 +16,9 @@ analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult")
 ### SELECTED MODEL ###
 st.session_state.runid = "76186ad6e3c543d481ce7508751d91f7"
 
-# QA for tracking_uri
 current_uri = os.getcwd()
-st.write(current_uri)
+# QA for tracking_uri
+# st.write(current_uri)
 
 tracking_uri = ""
 # # streamlit uses github root dir, so need to go into folder if not available
@@ -26,7 +26,7 @@ if "P1-AnalyzeTrades" not in current_uri:
     # insertloc = current_uri.rfind(r"/")
     tracking_uri = current_uri + "/P1-AnalyzeTrades/mlruns"
     # QA
-    st.write(tracking_uri)
+    # st.write(tracking_uri)
 
 # load model if not already loaded
 if "mdl" not in st.session_state:
@@ -39,8 +39,8 @@ if "mdl" not in st.session_state:
     )
 
     # QA
-    st.write(st.session_state.cat_dict)
-    st.write(mlflow.get_tracking_uri())
+    # st.write(st.session_state.cat_dict)
+    # st.write(mlflow.get_tracking_uri())
 
     (
         st.session_state.metrics,
