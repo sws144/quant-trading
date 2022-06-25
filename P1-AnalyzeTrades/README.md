@@ -113,3 +113,15 @@ see README_C2...png
 
 1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
 1. `streamlit run app_streamlit.py`
+
+#### Sphinx doc
+
+1. requirements:
+    1. `sphinx` python library
+    1. https://www.tug.org/texlive/ or unix equiv
+    1. need to ensure `latemk` command works 
+1. to run (while in P1-AnalyzeTrades folder):
+    1. `pipenv shell`
+    1. `make html` 
+    1, `make latexpdf` or pdflatex
+    1. for individual pdfs, `pdflatex filename`
