@@ -5,6 +5,7 @@
 Apply data science and analytics to a user's trading history to help user make better decisions
 <https://analyze-trades-staging.herokuapp.com/>
 <https://analyze-trades-prod.herokuapp.com/>
+<https://sws144-quant-trading-p1-analyzetradesapp-streamlit-p1-an-q656h3.streamlitapp.com/>
 See ...Important\Startup\P1-AnalyzeTrades
 
 ## Architecture
@@ -114,16 +115,18 @@ see README_C2...png
 #### Streamlit Version
 
 1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
-1. `streamlit run app_streamlit.py`
+1. locally: `streamlit run app_streamlit.py`
+1. on web (see top)
 
 #### Sphinx doc
 
 1. requirements:
     1. `sphinx` python library
     1. https://www.tug.org/texlive/ or unix equiv
-    1. need to ensure `latemk` command works 
+    1. need to ensure `latemk` command works
 1. to run (while in P1-AnalyzeTrades folder):
     1. `pipenv shell`
     1. `make html` 
     1, `make latexpdf` or pdflatex
     1. for individual pdfs, `pdflatex filename`
+    

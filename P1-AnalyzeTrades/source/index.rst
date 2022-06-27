@@ -10,7 +10,7 @@ Welcome to AnalyzeTrades's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   usage/installation
+   usage/architecture
 
 Indices and tables
 ==================
