@@ -4,14 +4,17 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-pywin32 = ">=301" # for security
+ipython = "*"
+ipykernel = "*"
+jupyter_contrib_nbextensions = "*"
+jupyter_nbextensions_configurator = "*"
+jupytext = "*"
+# pywin32 = ">=301" # for security
 
 [packages]
 dill = "*"
 ## dtreeviz = "*"
 hyperopt ="*"
-ipython = "*"
-ipykernel = "*"
 joblib = "*"
 gunicorn ="*"
 h2o = "==3.34.0.7" # to ensure models work 
@@ -33,8 +36,6 @@ streamlit = "*"
 yfinance = "*"
 black = "*"
 openapi-schema-validator = "*"
-#jupyterlab = "*"
-#jupytext = "*"
 
 [requires]
 python_version = "3.9.10"
