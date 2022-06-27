@@ -24,6 +24,7 @@ mlflow = "*"
 numpy = "*" #  1.21.5 has errors w heroku
 pandas = "*"
 pandas_datareader = "*"
+papermill = "*"
 patsy = "*"
 ## pydotplus = "*"
 pytest = "*"

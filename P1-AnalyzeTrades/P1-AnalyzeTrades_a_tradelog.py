@@ -14,7 +14,7 @@
 # ---
 
 # %% [markdown]
-# # Convert trade log 
+# # Convert trade log
 # 1. into basic pnl design matrix for modeling
 # 1. Design matrix is one record per row
 #
