@@ -1,0 +1,8 @@
+.ipynb_checkpoints/
+backtrader-backtester/
+SP500_Index_Research/
+testing/
+P1-AnalyzeTrades/.ipynb_checkpoints/
+P1-AnalyzeTrades/source/
+P1-AnalyzeTrades/build/
+*.png

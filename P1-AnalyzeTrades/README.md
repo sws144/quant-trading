@@ -5,11 +5,13 @@
 Apply data science and analytics to a user's trading history to help user make better decisions
 <https://analyze-trades-staging.herokuapp.com/>
 <https://analyze-trades-prod.herokuapp.com/>
+<https://sws144-quant-trading-p1-analyzetradesapp-streamlit-p1-an-q656h3.streamlitapp.com/>
 See ...Important\Startup\P1-AnalyzeTrades
 
 ## Architecture
 
 C4 style approach, see README puml files and pngs
+Also - See Sphinx Documentation
 
 ## Project Tracking
 
@@ -54,7 +56,11 @@ C4 style approach, see README puml files and pngs
 
 ### MLFlow & Virtual Env Update
 
-1. First time build: Terminal `pipenv sync --dev` to install env locally with piplock or `pipenv update --dev` to update and install environment
+1. Install pipenv in desired environment ` pip install pipenv ` (`py -0p` to see which one is default) 
+1. First time build/update:
+    1. `pipenv shell`, then `update_env.bat`
+    1. Backup: Terminal `pipenv sync --dev` to install env locally with piplock or `pipenv update --dev` to update and install environment
+1. add specific package without updating rest if not necessary `pipenv install packagename --keep-outdated`
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
@@ -107,3 +113,21 @@ see README_C2...png
 #### Docker (not used in prod)
 
 1. heroku.yml
+
+#### Streamlit Version
+
+1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
+1. locally: `streamlit run app_streamlit.py`
+1. on web (see top)
+
+#### Sphinx doc
+
+1. requirements:
+    1. `sphinx` python library
+    1. https://www.tug.org/texlive/ or unix equiv
+    1. need to ensure `latemk` command works
+1. to run (while in P1-AnalyzeTrades folder):
+    1. `pipenv shell`
+    1. `make html` 
+    1, `make latexpdf` or pdflatex
+    1. for individual pdfs, `pdflatex filename`

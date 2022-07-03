@@ -1,6 +1,6 @@
 # %% [markdown]
 #  ## d explore data
-# 
+#
 
 # %%
 # imports
