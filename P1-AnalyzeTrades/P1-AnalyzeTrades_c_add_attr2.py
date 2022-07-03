@@ -23,7 +23,7 @@ from pandas_datareader.quandl import QuandlReader #data side
 trades_filename = 'output/b_completewattr.csv'
 df_raw = pd.read_csv(trades_filename)
 
-# %% 
+# %%
 # pull data from yahoo finance
 
 reload_data = False
@@ -56,7 +56,7 @@ df_data_pivot.head()
 
 
 
-# %% 
+# %%
 # merge
 
 df_source = df_raw.copy(deep=True)

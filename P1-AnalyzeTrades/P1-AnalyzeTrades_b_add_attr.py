@@ -88,7 +88,7 @@ for col in numeric_cols:
 # QA
 df_clean_attr.dtypes   
 
-# %% 
+# %%
 # merge attr to completed trades
 
 df_complete_trades = df_complete_trades.sort_values(['Open_Date']) 
