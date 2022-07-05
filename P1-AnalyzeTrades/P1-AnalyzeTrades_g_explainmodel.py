@@ -1,8 +1,11 @@
 # %% [markdown]
-## ## G: Explain Models
+# # G: Explain Models
+
+# %% [markdown]
+# ## imports
 
 # %%
-## imports
+
 
 import copy
 import pandas as pd
@@ -38,14 +41,15 @@ import re
 import pickle
 import dill
 
-# %%
-# ### INPUT ###
+# %% [markdown]
+# ## INPUT 
 
+# %%
 # runid = '1b6b96ef3cb14b93b60af5f2a84eeb94'
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = "76186ad6e3c543d481ce7508751d91f7"
+runid = "072bc1fb2d3e4569b64f372991d68e5f"
 mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 
@@ -205,9 +209,10 @@ def sub_gbm(X, y_pred):
     return explainer
 
 
-# %%
-## summarize overall results
+# %% [markdown]
+# ## summarize overall results
 
+# %%
 mlflow.end_run()
 mlflow.start_run(run_id=runid)
 
@@ -308,9 +313,10 @@ top_trades = XY_df[XY_df["PCT_RET_FINAL"] > 1]
 top_trades.head()
 
 
-# %%
-## plot partial dependence for vars
+# %% [markdown]
+# ## plot partial dependence for vars
 
+# %%
 # make plots
 
 mlflow.end_run()
