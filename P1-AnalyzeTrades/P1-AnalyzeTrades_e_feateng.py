@@ -1,8 +1,11 @@
 # %% [markdown]
-# #  ## E: Feature Engineering
+# # E: Feature Engineering
+
+# %% [markdown]
+# ## imports
 
 # %%
-## imports
+
 
 import pandas as pd
 import numpy as np
@@ -18,9 +21,10 @@ from sklearn.base import TransformerMixin  # for custom transformers
 
 from joblib import dump, load
 
-# %%
-## read in data
+# %% [markdown]
+# ## read in data
 
+# %%
 df_XY = pd.read_csv("output/c_resulttradewattr.csv")
 
 # %%
@@ -125,9 +129,11 @@ class StringTransformer(TransformerMixin):
         Y = pd.DataFrame(X).astype("string")
         return Y
 
+# %% [markdown]
+# ## create na pipeline
 
 # %%
-## create na pipeline
+
 
 # update columns headers to clean up
 df_XY.columns = list(
@@ -215,6 +221,9 @@ try:
 except:
     print("NAs remain in numerical")
 
+# %% [markdown]
+# ## API Spec
+
 # %%
 ## import api spec
 
@@ -257,6 +266,12 @@ os.system(
     "python swagger_yaml_to_html.py < data-tests/_apispecs.yaml > templates/api.html"
 )
 
+
+# %% [markdown]
+# ## Resort & Save Results
+
+# %%
+df_XY_imputed = df_XY_imputed.reindex(sorted(df_XY_imputed.columns), axis=1)
 
 # %%
 ## save results
