@@ -1,1 +1,0 @@
-[('to_categorical', FunctionTransformer(func=<function to_categorical at 0x000001D3FF346DC0>)), ('ordinal', OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=nan))]

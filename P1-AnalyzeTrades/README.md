@@ -38,7 +38,9 @@ Also - See Sphinx Documentation
 1. build models (f_buildmodel), pickle file & show inputs via mlflow
 1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
-1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
+1. **decide best model**
+    1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow`
+    1. Copy run from local mlflow to repo mlflow and update `app.py`
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts
     1. ensure python version correct path `py -0p`, updating PATH variable order for system/user if want different default python version. System
