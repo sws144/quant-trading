@@ -37,6 +37,7 @@ streamlit = "*"
 yfinance = "*"
 black = "*"
 openapi-schema-validator = "*"
+jupyter-black = "*"
 
 [requires]
 python_version = "3.9.10"

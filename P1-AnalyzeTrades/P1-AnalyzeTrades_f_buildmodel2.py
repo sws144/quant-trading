@@ -97,6 +97,7 @@ df_XY = pd.read_csv("output/e_resultcleaned.csv")
 # %%
 print(df_XY.columns)
 
+# %%
 target = "PCT_RET_FINAL"
 
 numeric_features = [
@@ -108,6 +109,7 @@ numeric_features = [
     "%_TO_TARGET",
     "GROWTH_0.5TO0.75",
     "ROIC_(BW_ROA_ROE)",
+    "DAYOFWEEK0MON"
 ]
 
 categorical_features = ["OPENACT", "CATEGORY"]

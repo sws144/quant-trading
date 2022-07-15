@@ -12,7 +12,7 @@ import json
 analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult")
 
 ### SELECTED MODEL ###
-runid = "072bc1fb2d3e4569b64f372991d68e5f"
+runid = "65ceba6003b945b68aa278fb0390c13f"
 
 ### load model, cat_dict
 mdl, cat_dict = analyze_pred.preload_model(
