@@ -23,6 +23,16 @@ df_datawattr.describe(include='all')
 
 
 # %%
+for c in df_datawattr.columns:
+    print(f'trying {c}')  
+    try:
+        temp_df = pd.pivot_table(df_datawattr, index=["Open_Year"], values= c, aggfunc="mean")
+        temp_df.plot()
+    except:
+        print(f'{c} didnt work')
+
+
+# %%
 # columns
 
 df_datawattr.dtypes

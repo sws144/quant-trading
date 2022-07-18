@@ -5,10 +5,6 @@
 # ## imports
 
 # %%
-# %load_ext nb_black
-#for formatting
-
-# %%
 
 
 import copy
@@ -53,7 +49,7 @@ import dill
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = "65ceba6003b945b68aa278fb0390c13f"
+runid = "efe6aaa6bbaa4fc9ab3d3a36e3a0dacb"
 mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 

@@ -441,7 +441,7 @@ mdl = Pipeline(
     ]
 )
 # reg = GradientBoostingRegressor(random_state=0)
-mdl.fit(X_train, y_train.squeeze())
+mdl.fit(X_train, y_train.squeeze(), estimator__sample_weight = XY_train['WEIGHT'])
 
 # log with validation
 # log_w_validate(y_test, y_pred, formula)
@@ -478,6 +478,9 @@ with open(f"cat_dict.pkl", "wb") as handle:
 mlflow.log_artifact(f"cat_dict.pkl")
 
 os.remove(f"cat_dict.pkl")
+
+
+print(f'runid = {mlflow.active_run().info.run_id}')
 
 mlflow.end_run()
 

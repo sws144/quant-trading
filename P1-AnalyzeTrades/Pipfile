@@ -38,6 +38,7 @@ yfinance = "*"
 black = "*"
 openapi-schema-validator = "*"
 jupyter-black = "*"
+nasdaq-data-link = "*"
 
 [requires]
 python_version = "3.9.10"

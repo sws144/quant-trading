@@ -100,10 +100,14 @@ def get_feature_names(column_transformer):
     return feature_names
 
 
+# %% [markdown]
+# ## custom transformers
+
 # %%
-## custom transformers
+
 class Numerizer(TransformerMixin):
     import pandas as pd
+    import numpy as np
 
     def __init__(self):
         pass
@@ -112,7 +116,15 @@ class Numerizer(TransformerMixin):
         return self
 
     def transform(self, X):
-        Y = X.apply(pd.to_numeric, errors="coerce")
+        
+#         Y = X.apply(pd.to_numeric, args=({"errors":"coerce"})).fillna(np.nan)
+
+        Y = X.apply((lambda x: (
+            pd.to_numeric(x.astype(str).str.replace(r'%', r'e-2'),errors='coerce')
+            )
+            )
+        )
+
         return Y
 
 
@@ -129,12 +141,32 @@ class StringTransformer(TransformerMixin):
         Y = pd.DataFrame(X).astype("string")
         return Y
 
+
+# %% [markdown]
+# ## Add Weights
+
+# %%
+df_XY['Age'] = df_XY['Open_Year'] - min(df_XY['Open_Year']-1)
+df_XY['Weight'] = df_XY['Age'] 
+
 # %% [markdown]
 # ## create na pipeline
 
 # %%
+df_XY.loc[0,df_XY.columns.duplicated()]
+
+# %%
+# remove all nan columns
+df_XY = df_XY.dropna(axis=1, how='all')
 
 
+# %%
+df_XY.columns
+
+# %%
+columns
+
+# %%
 # update columns headers to clean up
 df_XY.columns = list(
     pd.Series(df_XY.columns)
@@ -146,8 +178,11 @@ df_XY.columns = list(
     .str.replace("*", "_")
 )
 
+# avoid duplicates
+df_XY = df_XY.loc[:,~df_XY.columns.duplicated()]
+
 # start with numeric, utilizng explore data before
-numeric_features = df_XY.select_dtypes(include=np.number).columns.tolist()
+numeric_features = df_XY.convert_dtypes().select_dtypes(include=np.number).columns.tolist()
 numeric_features = numeric_features + [
     "%_TO_STOP",
     "%_TO_TARGET",
@@ -161,7 +196,7 @@ numeric_features = list(set(numeric_features))
 numeric_transformer = Pipeline(
     steps=[
         ("numerizer", Numerizer()),
-        ("imputer", SimpleImputer(strategy="constant", fill_value=-1)),
+        ("imputer", SimpleImputer(missing_values=np.nan,strategy="median")),
     ]
 )
 categorical_transformer = Pipeline(
@@ -194,6 +229,8 @@ columns = get_feature_names(preprocessor_na)
 
 df_XY_imputed = pd.DataFrame(XY_imputed, columns=columns).convert_dtypes()
 
+
+# %%
 
 # %%
 # create target

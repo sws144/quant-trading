@@ -14,7 +14,7 @@ import streamlit as st
 analyze_pred = importlib.import_module("P1-AnalyzeTrades_h_predictresult")
 
 ### SELECTED MODEL ###
-st.session_state.runid = "65ceba6003b945b68aa278fb0390c13f"
+st.session_state.runid = "efe6aaa6bbaa4fc9ab3d3a36e3a0dacb"
 
 current_uri = os.getcwd()
 # QA for tracking_uri
