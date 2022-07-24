@@ -5,8 +5,14 @@
 # ## imports
 
 # %%
+#for formatting
+import jupyter_black
 
+jupyter_black.load(
+    lab=False,
+)
 
+# %%
 import copy
 import pandas as pd
 
@@ -49,7 +55,7 @@ import dill
 # mlflow.set_tracking_uri('')
 
 # Research tracking
-runid = "efe6aaa6bbaa4fc9ab3d3a36e3a0dacb"
+runid = "9131e13ba6bd4f9686a8a840e7e60052"
 mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 

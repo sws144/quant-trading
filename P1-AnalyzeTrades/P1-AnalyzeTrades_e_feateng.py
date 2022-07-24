@@ -147,7 +147,14 @@ class StringTransformer(TransformerMixin):
 
 # %%
 df_XY['Age'] = df_XY['Open_Year'] - min(df_XY['Open_Year']-1)
-df_XY['Weight'] = df_XY['Age'] 
+df_XY['Weight'] = 0.8 # hyperparam for exponential weighting
+df_XY['Weight'] = df_XY['Weight'].pow(df_XY['Age'],fill_value=0)
+
+# %%
+df_XY['Age'].value_counts()
+
+# %%
+df_XY['Weight'].value_counts()
 
 # %% [markdown]
 # ## create na pipeline

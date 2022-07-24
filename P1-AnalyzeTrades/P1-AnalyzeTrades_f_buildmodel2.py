@@ -11,6 +11,14 @@ retune = True  # hyperparameter tuning
 # ## imports
 
 # %%
+#for formatting
+import jupyter_black
+
+jupyter_black.load(
+    lab=False,
+)
+
+# %%
 import dill
 import importlib  # for importing other packages
 import copy
@@ -109,10 +117,10 @@ numeric_features = [
     "%_TO_TARGET",
     "GROWTH_0.5TO0.75",
     "ROIC_(BW_ROA_ROE)",
-    "DAYOFWEEK0MON"
+    "DAYOFWEEK0MON",
 ]
 
-categorical_features = ["OPENACT", "CATEGORY"]
+categorical_features = ["OPENACT", ] # "CATEGORY" removed categorica as others captured and this is not stable
 
 variables = numeric_features + categorical_features
 
@@ -435,7 +443,12 @@ mdl = Pipeline(
         (
             "estimator",
             HistGradientBoostingRegressor(
-                random_state=0, **best_params, categorical_features=categorical_mask
+                random_state=0, 
+                **best_params, 
+                categorical_features=categorical_mask,
+                early_stopping = True,
+                validation_fraction = 0.25,
+                verbose=True
             ),
         ),
     ]
