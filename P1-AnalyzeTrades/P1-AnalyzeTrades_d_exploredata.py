@@ -38,4 +38,7 @@ for c in df_datawattr.columns:
 df_datawattr.dtypes
 
 # %%
+df_datawattr.columns
+
+# %%
 # placeholder

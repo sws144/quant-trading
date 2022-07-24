@@ -104,8 +104,8 @@ def get_feature_names(column_transformer):
 # ## custom transformers
 
 # %%
-
 class Numerizer(TransformerMixin):
+    "convert numbers and % to numbers as well"
     import pandas as pd
     import numpy as np
 
@@ -169,9 +169,6 @@ df_XY = df_XY.dropna(axis=1, how='all')
 
 # %%
 df_XY.columns
-
-# %%
-columns
 
 # %%
 # update columns headers to clean up
@@ -238,6 +235,13 @@ df_XY_imputed = pd.DataFrame(XY_imputed, columns=columns).convert_dtypes()
 
 
 # %%
+df_XY_imputed.head()
+
+# %%
+df_XY_imputed.columns
+
+# %%
+# df_XY_imputed["%_TO_STOP"].hist()
 
 # %%
 # create target

@@ -120,7 +120,7 @@ numeric_features = [
     "DAYOFWEEK0MON",
 ]
 
-categorical_features = ["OPENACT", ] # "CATEGORY" removed categorica as others captured and this is not stable
+categorical_features = ["OPENACT", "CATEGORY"] #   categorical not stable as others captured and this is not stable
 
 variables = numeric_features + categorical_features
 
