@@ -120,7 +120,10 @@ numeric_features = [
     "DAYOFWEEK0MON",
 ]
 
-categorical_features = ["OPENACT", "CATEGORY"] #   categorical not stable as others captured and this is not stable
+categorical_features = [
+    "OPENACT",
+    "CATEGORY",
+]  #   categorical not stable as others captured and this is not stable
 
 variables = numeric_features + categorical_features
 
@@ -350,8 +353,6 @@ def to_float(x):
 # ## Model 5 hist boosting w optional tuning
 
 # %%
-
-
 mlflow.end_run()
 mlflow.start_run(run_name="sklearn_hgbm")
 
@@ -443,18 +444,18 @@ mdl = Pipeline(
         (
             "estimator",
             HistGradientBoostingRegressor(
-                random_state=0, 
-                **best_params, 
+                random_state=0,
+                **best_params,
                 categorical_features=categorical_mask,
-                early_stopping = True,
-                validation_fraction = 0.25,
-                verbose=True
+                early_stopping=True,
+                validation_fraction=0.25,
+                verbose=True,
             ),
         ),
     ]
 )
 # reg = GradientBoostingRegressor(random_state=0)
-mdl.fit(X_train, y_train.squeeze(), estimator__sample_weight = XY_train['WEIGHT'])
+mdl.fit(X_train, y_train.squeeze(), estimator__sample_weight=XY_train["WEIGHT"])
 
 # log with validation
 # log_w_validate(y_test, y_pred, formula)
@@ -493,7 +494,7 @@ mlflow.log_artifact(f"cat_dict.pkl")
 os.remove(f"cat_dict.pkl")
 
 
-print(f'runid = {mlflow.active_run().info.run_id}')
+print(f"runid = {mlflow.active_run().info.run_id}")
 
 mlflow.end_run()
 
