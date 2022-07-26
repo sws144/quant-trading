@@ -1,0 +1,24 @@
+artifact_path: model
+flavors:
+  python_function:
+    env: conda.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    python_version: 3.9.10
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.0.2
+mlflow_version: 1.26.1
+model_uuid: 0815d0f352e94898a5fea97ebab11e68
+run_id: e025aa4c0e6f4174b6214df1f5f5495b
+signature:
+  inputs: '[{"name": "TGT_FWD_P_E", "type": "double"}, {"name": "YEARS_TO_NORMALIZATION",
+    "type": "long"}, {"name": "CLOSE_^VIX", "type": "double"}, {"name": "AAII_SENT_BULLBEARSPREAD",
+    "type": "double"}, {"name": "%_TO_STOP", "type": "double"}, {"name": "%_TO_TARGET",
+    "type": "double"}, {"name": "GROWTH_0.5TO0.75", "type": "double"}, {"name": "ROIC_(BW_ROA_ROE)",
+    "type": "double"}, {"name": "DAYOFWEEK0MON", "type": "long"}, {"name": "OPENACT",
+    "type": "string"}, {"name": "CATEGORY", "type": "string"}]'
+  outputs: '[{"type": "tensor", "tensor-spec": {"dtype": "float64", "shape": [-1]}}]'
+utc_time_created: '2022-07-25 01:17:36.828268'

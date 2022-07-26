@@ -11,6 +11,14 @@ retune = True  # hyperparameter tuning
 # ## imports
 
 # %%
+#for formatting
+import jupyter_black
+
+jupyter_black.load(
+    lab=False,
+)
+
+# %%
 import dill
 import importlib  # for importing other packages
 import copy
@@ -97,6 +105,7 @@ df_XY = pd.read_csv("output/e_resultcleaned.csv")
 # %%
 print(df_XY.columns)
 
+# %%
 target = "PCT_RET_FINAL"
 
 numeric_features = [
@@ -108,9 +117,13 @@ numeric_features = [
     "%_TO_TARGET",
     "GROWTH_0.5TO0.75",
     "ROIC_(BW_ROA_ROE)",
+    "DAYOFWEEK0MON",
 ]
 
-categorical_features = ["OPENACT", "CATEGORY"]
+categorical_features = [
+    "OPENACT",
+    "CATEGORY",
+]  #   categorical not stable as others captured and this is not stable
 
 variables = numeric_features + categorical_features
 
@@ -340,8 +353,6 @@ def to_float(x):
 # ## Model 5 hist boosting w optional tuning
 
 # %%
-
-
 mlflow.end_run()
 mlflow.start_run(run_name="sklearn_hgbm")
 
@@ -433,13 +444,18 @@ mdl = Pipeline(
         (
             "estimator",
             HistGradientBoostingRegressor(
-                random_state=0, **best_params, categorical_features=categorical_mask
+                random_state=0,
+                **best_params,
+                categorical_features=categorical_mask,
+                early_stopping=True,
+                validation_fraction=0.25,
+                verbose=True,
             ),
         ),
     ]
 )
 # reg = GradientBoostingRegressor(random_state=0)
-mdl.fit(X_train, y_train.squeeze())
+mdl.fit(X_train, y_train.squeeze(), estimator__sample_weight=XY_train["WEIGHT"])
 
 # log with validation
 # log_w_validate(y_test, y_pred, formula)
@@ -476,6 +492,9 @@ with open(f"cat_dict.pkl", "wb") as handle:
 mlflow.log_artifact(f"cat_dict.pkl")
 
 os.remove(f"cat_dict.pkl")
+
+
+print(f"runid = {mlflow.active_run().info.run_id}")
 
 mlflow.end_run()
 
