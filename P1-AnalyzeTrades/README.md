@@ -56,10 +56,11 @@ Also - See Sphinx Documentation
         1. and then use Anaconda -> JupyterLab -> save as HTML
 1. **For releases per Azure Boards** in GitHub, create a new release
 
-### Remote Development
+### Remote Development in Linux (from Windows base system)
 1. install docker desktop
 1. Use remote devleopment extension pack from vs code
 1. use .devcontainer.json file with python 3.9 version 
+1. volume of data `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes`
 
 ### MLFlow & Virtual Env Update
 
@@ -69,11 +70,12 @@ Also - See Sphinx Documentation
 1. First time build/update:
     1. `pipenv shell`, then `update_env.bat` to install existing specified environment
     1. Backup: Terminal `pipenv sync --dev` to install env locally with piplock or 
-    1. `pipenv update --dev` to **update based Pipfile** and install environment
+    1. `pipenv update --dev` to **update based on Pipfile** and install environment
 1. add specific package without updating rest if not necessary `pipenv install packagename --keep-outdated`
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
+1. To delete virtualenv, `pipenv --rm`
 1. Optional: `mlflow gc --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
 ### Build App Basic (Flask)
