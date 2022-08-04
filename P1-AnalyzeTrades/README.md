@@ -57,10 +57,13 @@ Also - See Sphinx Documentation
 1. **For releases per Azure Boards** in GitHub, create a new release
 
 ### Remote Development in Linux (from Windows base system)
+
+1. use for testing if compatiblity with linux is unclear
 1. install docker desktop
 1. Use remote devleopment extension pack from vs code
 1. use .devcontainer.json file with python 3.9 version 
 1. volume of data `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes`
+    1. can check membory with `docker stats` outside docker container
 
 ### MLFlow & Virtual Env Update
 

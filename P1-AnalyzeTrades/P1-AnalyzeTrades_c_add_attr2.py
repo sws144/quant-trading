@@ -90,8 +90,10 @@ df_data_pivot = df_data_formatted.pivot(
 
 # to deal with multiindex columns
 df_data_pivot.columns = ["_".join(col).strip() for col in df_data_pivot.columns.values]
-df_data_pivot.rename(columns={'Date_':'Date_YahooFinance'}, inplace=True)
-df_data_pivot["Date_YahooFinance"] = pd.to_datetime(df_data_pivot["Date_YahooFinance"], errors="coerce")
+df_data_pivot.rename(columns={"Date_": "Date_YahooFinance"}, inplace=True)
+df_data_pivot["Date_YahooFinance"] = pd.to_datetime(
+    df_data_pivot["Date_YahooFinance"], errors="coerce"
+)
 df_data_pivot.head()
 
 # %%
@@ -143,21 +145,17 @@ for symbol in tickers:
 
 # %%
 externalvar_dict = {
-    "AAII/AAII_SENTIMENT": "AAII_SENT",  ## aaii sentiment
+    "AAII/AAII_SENTIMENT": "AAII_SENT",  ## aaii sentiment looks like it ends 4/2021
+    "UMICH/SOC1": "CONS_SENT",  # consumer sentiment
     #     "FED/RIMLPAAAR_N_B": "FED_AAACORP",  ## daily Fed AAA rates #TODO ned to fix different timeframes
 }
 
 # %%
+# for later
 # import nasdaqdatalink
 
 # NASDAQ_DATA_LINK_API_KEY = var_dict["NASDAQ_DATA_LINK_API_KEY"]
 # data = nasdaqdatalink.get("AAII/AAII_SENTIMENT", start_date="2015-01-01", end_date="2030-12-31")
-
-# %%
-externalvar_dict = {
-    "AAII/AAII_SENTIMENT": "AAII_SENT",  ## aaii sentiment
-    #     "FED/RIMLPAAAR_N_B": "FED_AAACORP",  ## daily Fed AAA rates #TODO ned to fix different timeframes
-}
 
 # %%
 if reload_data:
@@ -183,6 +181,7 @@ if reload_data:
         QR_df_sorted = QR_df.sort_values([f"{value}_Date"])
         QR_df_sorted["Date"] = pd.to_datetime(QR_df[f"{value}_Date"], errors="coerce")
 
+        # add iteratively
         df_result = pd.merge_asof(
             df_result,
             QR_df_sorted,
@@ -214,7 +213,7 @@ else:
 
 
 # %%
-QR_df.head()
+df_result.head()
 
 # %%
 cols_with_errors = []
