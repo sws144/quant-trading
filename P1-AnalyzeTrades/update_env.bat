@@ -1,4 +1,4 @@
-pipenv -rm
+pipenv --rm
 pipenv lock --keep-outdated
 pipenv sync --dev
 jupyter contrib nbextension install --user
