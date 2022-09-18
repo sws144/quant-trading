@@ -39,6 +39,7 @@ black = "*"
 openapi-schema-validator = "*"
 jupyter-black = "*"
 nasdaq-data-link = "*"
+xlrd = "*"
 
 [requires]
 python_version = "3.9"

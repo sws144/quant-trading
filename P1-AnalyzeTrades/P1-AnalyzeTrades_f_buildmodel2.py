@@ -112,7 +112,7 @@ numeric_features = [
     "TGT_FWD_P_E",
     "YEARS_TO_NORMALIZATION",
     "CLOSE_^VIX",
-    "AAII_SENT_BULLBEARSPREAD",
+    "AAII_BULLISH_BULL-BEAR_SPREAD",
     "%_TO_STOP",
     "%_TO_TARGET",
     "GROWTH_0.5TO0.75",

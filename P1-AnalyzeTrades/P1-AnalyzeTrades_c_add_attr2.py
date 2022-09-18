@@ -145,7 +145,7 @@ for symbol in tickers:
 
 # %%
 externalvar_dict = {
-    "AAII/AAII_SENTIMENT": "AAII_SENT",  ## aaii sentiment looks like it ends 4/2021
+    #     "AAII/AAII_SENTIMENT": "AAII_SENT",  ## aaii sentiment looks like it ends 4/2021
     "UMICH/SOC1": "CONS_SENT",  # consumer sentiment
     #     "FED/RIMLPAAAR_N_B": "FED_AAACORP",  ## daily Fed AAA rates #TODO ned to fix different timeframes
 }
@@ -187,7 +187,7 @@ if reload_data:
             QR_df_sorted,
             left_on=["Open_Date"],
             right_on=[f"{value}_Date"],
-            direction="forward",
+            direction="backward", # can't see forward
         )
 
         #     QR_df = pd.concat(
@@ -208,7 +208,7 @@ else:
             QR_df_sorted,
             left_on=["Open_Date"],
             right_on=[f"{value}_Date"],
-            direction="forward",
+            direction="backward", # can't see forward
         )
 
 
@@ -241,6 +241,54 @@ temp_df
 # %%
 # check diff
 assert len(set(cols_with_errors).difference(set(existing_err_cols))) == 0, "new errors"
+
+# %% [markdown]
+# ## Pull AAII Sentiment Data
+# Source: https://www.aaii.com/sentimentsurvey/sent_results
+
+# %%
+df_aaii = pd.read_excel(f"data\sentiment.xls", header=[1, 2, 3])
+
+# %%
+df_aaii.head()
+
+# %%
+df_aaii.tail()
+
+# %%
+# squeeze multilevel columns to one
+col_list = list(df_aaii.columns.map("_".join))
+col_list = [s.replace("Unnamed: ", "") for s in col_list]
+col_list
+
+# %%
+df_aaii.columns = col_list
+df_aaii.columns
+
+# %%
+# save only those with dates
+saved_idx = ~pd.to_datetime(df_aaii["0_level_0_Reported_Date"], errors="coerce").isna()
+
+# %%
+# final usable
+df_aaii = df_aaii.loc[saved_idx]
+df_aaii["Date"] = pd.to_datetime(df_aaii["0_level_0_Reported_Date"])
+df_aaii.head()
+
+# %%
+df_aaii_sorted.head()
+
+# %%
+df_aaii_sorted = df_aaii.sort_values(["0_level_0_Reported_Date"])
+df_aaii_sorted.columns = ["AAII_" + c for c in df_aaii_sorted.columns]
+df_result = pd.merge_asof(
+    df_result,
+    df_aaii_sorted,
+    left_on=["Open_Date"],
+    right_on=[f"AAII_Date"],
+    direction="backward",
+)
+df_result.head()
 
 # %% [markdown]
 # ## Final Checks
