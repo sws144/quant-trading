@@ -97,6 +97,13 @@ df_data_pivot["Date_YahooFinance"] = pd.to_datetime(
 df_data_pivot.head()
 
 # %%
+df_data_pivot["Close_^GSPC_200MA"] = df_data_pivot["Close_^GSPC"].rolling(200).mean()
+df_data_pivot["SP500from200MA"] = (
+    df_data_pivot["Close_^GSPC"] - df_data_pivot["Close_^GSPC_200MA"]
+) / df_data_pivot["Close_^GSPC_200MA"]
+df_data_pivot.tail()
+
+# %%
 # merge
 
 df_source = df_raw.copy(deep=True)
@@ -187,7 +194,7 @@ if reload_data:
             QR_df_sorted,
             left_on=["Open_Date"],
             right_on=[f"{value}_Date"],
-            direction="backward", # can't see forward
+            direction="backward",  # can't see forward
         )
 
         #     QR_df = pd.concat(
@@ -208,7 +215,7 @@ else:
             QR_df_sorted,
             left_on=["Open_Date"],
             right_on=[f"{value}_Date"],
-            direction="backward", # can't see forward
+            direction="backward",  # can't see forward
         )
 
 
@@ -274,9 +281,6 @@ saved_idx = ~pd.to_datetime(df_aaii["0_level_0_Reported_Date"], errors="coerce")
 df_aaii = df_aaii.loc[saved_idx]
 df_aaii["Date"] = pd.to_datetime(df_aaii["0_level_0_Reported_Date"])
 df_aaii.head()
-
-# %%
-df_aaii_sorted.head()
 
 # %%
 df_aaii_sorted = df_aaii.sort_values(["0_level_0_Reported_Date"])

@@ -118,6 +118,7 @@ numeric_features = [
     "GROWTH_0.5TO0.75",
     "ROIC_(BW_ROA_ROE)",
     "DAYOFWEEK0MON",
+    "SP500FROM200MA",
 ]
 
 categorical_features = [
