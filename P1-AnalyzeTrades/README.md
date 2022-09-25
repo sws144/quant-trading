@@ -56,11 +56,14 @@ Also - See Sphinx Documentation
         1. and then use Anaconda -> JupyterLab -> save as HTML
 1. **For releases per Azure Boards** in GitHub, create a new release
 
-### Remote Development in Linux (from Windows base system)
+### Optional Remote Development in Linux (from Windows base system)
+
+1. use for testing if compatiblity with linux is unclear
 1. install docker desktop
 1. Use remote devleopment extension pack from vs code
 1. use .devcontainer.json file with python 3.9 version 
 1. volume of data `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes`
+    1. can check membory with `docker stats` outside docker container
 
 ### MLFlow & Virtual Env Update
 
@@ -78,15 +81,20 @@ Also - See Sphinx Documentation
 1. To delete virtualenv, `pipenv --rm`
 1. Optional: `mlflow gc --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
 
+## C2 Frontend Overview (Single)
+
+see README_C2...png
+
+1. allow individual inputs
+1. use existing model
+1. show force plot
+1. Flask is backup, see above
+
 ### Build App Basic (Flask)
 
 1. In pipenv virtual environment, `flask run`
 
-## C2 Frontend Overview
-
-see README_C2...png
-
-### Build App Full Version
+### Build App Full Version Locally
 
 1. Start docker desktop app (outside any virtual environment)
 1. Let's build our image: `docker build -t analyze:latest .`
@@ -95,15 +103,13 @@ see README_C2...png
 1. Test website directly via Docker Desktop links
 1. To turn off, ctrl+c in terminal
 
-### Single prediction
+### Build app via Streamlit
 
-1. allow individual inputs
-    1. later: append chars
-1. use existing model
-1. run shap summary
-1. show force plot
+1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
+1. locally: `streamlit run app_streamlit.py`
+1. on web (see top link)
 
-### Batch version
+## C2 Frontend Batch version
 
 1. read in csv file w own characteristics
 1. use existing model
@@ -114,25 +120,23 @@ see README_C2...png
 1. show force plot
 1. return model to user, if new
 
-### Deployment notes
+## Deployment notes
 
-#### Heroku
+### Heroku
 
 1. Procfile
 1. runtime.txt file to specify correct python version
 1. requirements.txt
 
-#### Docker (not used in prod)
+### Docker (not used in prod)
 
 1. heroku.yml
 
-#### Streamlit Version
+### Streamlit Version
 
-1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
-1. locally: `streamlit run app_streamlit.py`
-1. on web (see top)
+1. See streamlit website, as it links to GitHub
 
-#### Sphinx doc
+### Sphinx doc
 
 1. requirements:
     1. `sphinx` python library
@@ -140,6 +144,6 @@ see README_C2...png
     1. need to ensure `latemk` command works
 1. to run (while in P1-AnalyzeTrades folder):
     1. `pipenv shell`
-    1. `make html` 
+    1. `make html`
     1, `make latexpdf` or pdflatex
     1. for individual pdfs, `pdflatex filename`
