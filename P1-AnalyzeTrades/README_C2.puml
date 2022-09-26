@@ -5,8 +5,8 @@ Person(admin, "Power User")
 Person(user1, "Regular User")
 
 System_Boundary(c1, "P1_AnalyzeTrades") {
-    Container(backend, "Backend Local Scripts", "Python", "...a-g.py")
-    Container(frontend, "Frontend Online App", "Python", "my-app folder")
+    Container(backend, "Backend Local Scripts", "Python", "...a-g.ipynb")
+    Container(frontend, "Frontend Online App", "Python", "(streamlit) app")
     Container(models, "Model Folder/Database", "MLFlow/Python")
 }
 Rel(admin, backend, "Runs scripts", "using IDE, trade log")
