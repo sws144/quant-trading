@@ -1,8 +1,11 @@
 # %% [markdown]
-# #  ## E: Feature Engineering
+# # E: Feature Engineering
+
+# %% [markdown]
+# ## imports
 
 # %%
-## imports
+
 
 import pandas as pd
 import numpy as np
@@ -18,9 +21,10 @@ from sklearn.base import TransformerMixin  # for custom transformers
 
 from joblib import dump, load
 
-# %%
-## read in data
+# %% [markdown]
+# ## read in data
 
+# %%
 df_XY = pd.read_csv("output/c_resulttradewattr.csv")
 
 # %%
@@ -96,10 +100,14 @@ def get_feature_names(column_transformer):
     return feature_names
 
 
+# %% [markdown]
+# ## custom transformers
+
 # %%
-## custom transformers
 class Numerizer(TransformerMixin):
+    "convert numbers and % to numbers as well"
     import pandas as pd
+    import numpy as np
 
     def __init__(self):
         pass
@@ -108,7 +116,15 @@ class Numerizer(TransformerMixin):
         return self
 
     def transform(self, X):
-        Y = X.apply(pd.to_numeric, errors="coerce")
+        
+#         Y = X.apply(pd.to_numeric, args=({"errors":"coerce"})).fillna(np.nan)
+
+        Y = X.apply((lambda x: (
+            pd.to_numeric(x.astype(str).str.replace(r'%', r'e-2'),errors='coerce')
+            )
+            )
+        )
+
         return Y
 
 
@@ -126,9 +142,35 @@ class StringTransformer(TransformerMixin):
         return Y
 
 
-# %%
-## create na pipeline
+# %% [markdown]
+# ## Add Weights
 
+# %%
+df_XY['Age'] = df_XY['Open_Year'] - min(df_XY['Open_Year']-1)
+df_XY['Weight'] = 0.8 # hyperparam for exponential weighting
+df_XY['Weight'] = df_XY['Weight'].pow(df_XY['Age'],fill_value=0)
+
+# %%
+df_XY['Age'].value_counts()
+
+# %%
+df_XY['Weight'].value_counts()
+
+# %% [markdown]
+# ## create na pipeline
+
+# %%
+df_XY.loc[0,df_XY.columns.duplicated()]
+
+# %%
+# remove all nan columns
+df_XY = df_XY.dropna(axis=1, how='all')
+
+
+# %%
+df_XY.columns
+
+# %%
 # update columns headers to clean up
 df_XY.columns = list(
     pd.Series(df_XY.columns)
@@ -140,8 +182,11 @@ df_XY.columns = list(
     .str.replace("*", "_")
 )
 
+# avoid duplicates
+df_XY = df_XY.loc[:,~df_XY.columns.duplicated()]
+
 # start with numeric, utilizng explore data before
-numeric_features = df_XY.select_dtypes(include=np.number).columns.tolist()
+numeric_features = df_XY.convert_dtypes().select_dtypes(include=np.number).columns.tolist()
 numeric_features = numeric_features + [
     "%_TO_STOP",
     "%_TO_TARGET",
@@ -155,7 +200,7 @@ numeric_features = list(set(numeric_features))
 numeric_transformer = Pipeline(
     steps=[
         ("numerizer", Numerizer()),
-        ("imputer", SimpleImputer(strategy="constant", fill_value=-1)),
+        ("imputer", SimpleImputer(missing_values=np.nan,strategy="median")),
     ]
 )
 categorical_transformer = Pipeline(
@@ -190,6 +235,15 @@ df_XY_imputed = pd.DataFrame(XY_imputed, columns=columns).convert_dtypes()
 
 
 # %%
+df_XY_imputed.head()
+
+# %%
+df_XY_imputed.columns
+
+# %%
+# df_XY_imputed["%_TO_STOP"].hist()
+
+# %%
 # create target
 
 df_XY_imputed["PCT_RET_FINAL"] = df_XY_imputed["PNL"] / (
@@ -214,6 +268,9 @@ try:
     ), "NAs remain in numerical"
 except:
     print("NAs remain in numerical")
+
+# %% [markdown]
+# ## API Spec
 
 # %%
 ## import api spec
@@ -257,6 +314,12 @@ os.system(
     "python swagger_yaml_to_html.py < data-tests/_apispecs.yaml > templates/api.html"
 )
 
+
+# %% [markdown]
+# ## Resort & Save Results
+
+# %%
+df_XY_imputed = df_XY_imputed.reindex(sorted(df_XY_imputed.columns), axis=1)
 
 # %%
 ## save results

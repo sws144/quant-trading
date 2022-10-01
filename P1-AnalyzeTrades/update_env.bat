@@ -1,4 +1,6 @@
-pipenv update --dev
+pipenv --rm
+pipenv lock --keep-outdated
+pipenv sync --dev
 jupyter contrib nbextension install --user
 jupyter nbextension enable toc2/main
 jupyter nbextension enable varInspector/main

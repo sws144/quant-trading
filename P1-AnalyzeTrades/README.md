@@ -38,7 +38,9 @@ Also - See Sphinx Documentation
 1. build models (f_buildmodel), pickle file & show inputs via mlflow
 1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
-1. **decide best model** by copying run from local mlflow to repo mlflow and update `app.py`
+1. **decide best model**
+    1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow`
+    1. Copy run from local mlflow to repo mlflow and update `app.py`
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts
     1. ensure python version correct path `py -0p`, updating PATH variable order for system/user if want different default python version. System
@@ -54,27 +56,45 @@ Also - See Sphinx Documentation
         1. and then use Anaconda -> JupyterLab -> save as HTML
 1. **For releases per Azure Boards** in GitHub, create a new release
 
+### Optional Remote Development in Linux (from Windows base system)
+
+1. use for testing if compatiblity with linux is unclear
+1. install docker desktop
+1. Use remote devleopment extension pack from vs code
+1. use .devcontainer.json file with python 3.9 version 
+1. volume of data `\\wsl$\docker-desktop-data\version-pack-data\community\docker\volumes`
+    1. can check membory with `docker stats` outside docker container
+
 ### MLFlow & Virtual Env Update
 
-1. Install pipenv in desired environment ` pip install pipenv ` (`py -0p` to see which one is default) 
+1. Install pipenv in desired environment ` pip install pipenv ` 
+    1. (`py -0p` to see which one is default in windows) 
+    1. in linux/docker, specify specific python version docker container
 1. First time build/update:
-    1. `pipenv shell`, then `update_env.bat`
-    1. Backup: Terminal `pipenv sync --dev` to install env locally with piplock or `pipenv update --dev` to update and install environment
+    1. `pipenv shell`, then `update_env.bat` to install existing specified environment
+    1. Backup: Terminal `pipenv sync --dev` to install env locally with piplock or 
+    1. `pipenv update --dev` to **update based on Pipfile** and install environment
 1. add specific package without updating rest if not necessary `pipenv install packagename --keep-outdated`
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
+1. To delete virtualenv, `pipenv --rm`
 1. Optional: `mlflow gc --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
+
+## C2 Frontend Overview (Single)
+
+see README_C2...png
+
+1. allow individual inputs
+1. use existing model
+1. show force plot
+1. Flask is backup, see above
 
 ### Build App Basic (Flask)
 
 1. In pipenv virtual environment, `flask run`
 
-## C2 Frontend Overview
-
-see README_C2...png
-
-### Build App Full Version
+### Build App Full Version Locally
 
 1. Start docker desktop app (outside any virtual environment)
 1. Let's build our image: `docker build -t analyze:latest .`
@@ -83,15 +103,13 @@ see README_C2...png
 1. Test website directly via Docker Desktop links
 1. To turn off, ctrl+c in terminal
 
-### Single prediction
+### Build app via Streamlit
 
-1. allow individual inputs
-    1. later: append chars
-1. use existing model
-1. run shap summary
-1. show force plot
+1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
+1. locally: `streamlit run app_streamlit.py`
+1. on web (see top link)
 
-### Batch version
+## C2 Frontend Batch version
 
 1. read in csv file w own characteristics
 1. use existing model
@@ -102,25 +120,23 @@ see README_C2...png
 1. show force plot
 1. return model to user, if new
 
-### Deployment notes
+## Deployment notes
 
-#### Heroku
+### Heroku
 
 1. Procfile
 1. runtime.txt file to specify correct python version
 1. requirements.txt
 
-#### Docker (not used in prod)
+### Docker (not used in prod)
 
 1. heroku.yml
 
-#### Streamlit Version
+### Streamlit Version
 
-1. activate virtual env inside P1-AnalyzeTrades folder using `pipenv shell`  
-1. locally: `streamlit run app_streamlit.py`
-1. on web (see top)
+1. See streamlit website, as it links to GitHub
 
-#### Sphinx doc
+### Sphinx doc
 
 1. requirements:
     1. `sphinx` python library
@@ -128,6 +144,6 @@ see README_C2...png
     1. need to ensure `latemk` command works
 1. to run (while in P1-AnalyzeTrades folder):
     1. `pipenv shell`
-    1. `make html` 
+    1. `make html`
     1, `make latexpdf` or pdflatex
     1. for individual pdfs, `pdflatex filename`

@@ -1,17 +1,21 @@
 # %% [markdown]
-#  ## add attributes to trade log
+#  # add attributes to trade log
 #  Design matrix is one record per row
 
-# %%
-# imports
+# %% [markdown]
+# ## imports
 
+# %%
 import pandas as pd
 import numpy as np # for np.nan
 import os # for path
 
+# %% [markdown]
+# ## INPUT ###
+
 # %%
 # read in raw data
-### INPUT ###
+
 
 # formatted tradelog
 trades_filename = 'output/a_completelog.csv'
@@ -27,8 +31,10 @@ df_raw_attr = df_raw_attr.append(df_raw_attr)
 # TODO 
 
 
+# %% [markdown]
+# ## ensure date time for open for complete trades
+
 # %%
-# ensure date time for open for complete trades
 df_complete_trades['Open_Date'] = pd.to_datetime(df_complete_trades['Open_Date'], errors='coerce')
 
 # %%
@@ -37,9 +43,10 @@ df_complete_trades['Open_Date'] = pd.to_datetime(df_complete_trades['Open_Date']
 df_complete_trades.dtypes
 
 
-# %%
-# clean attribute columns 1
+# %% [markdown]
+# ## clean attribute columns
 
+# %%
 col_dict_attr = {
     'DATE' : 'DATE',
     'CONTRACT' : 'CONTRACT',
@@ -88,8 +95,17 @@ for col in numeric_cols:
 # QA
 df_clean_attr.dtypes   
 
+# %% [markdown]
+# ## Create More Features
+
 # %%
-# merge attr to completed trades
+df_clean_attr['DayOfWeek0Mon'] = df_clean_attr['DATE'].dt.dayofweek
+
+# %% [markdown]
+# ## merge attr to completed trades
+
+# %%
+
 
 df_complete_trades = df_complete_trades.sort_values(['Open_Date']) 
 df_clean_attr = df_clean_attr.sort_values(['DATE'])

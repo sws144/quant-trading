@@ -26,6 +26,14 @@
 # ## imports
 
 # %%
+#for formatting
+import jupyter_black
+
+jupyter_black.load(
+    lab=False,
+)
+
+# %%
 import papermill as pm
 
 # %%
@@ -42,8 +50,9 @@ pnl_notebooks = [
 
 # %%
 for nb in pnl_notebooks:
-    output_temp = nb.split('.')[0] + "_output." + nb.split('.')[1]
-    _ = pm.execute_notebook(nb, output_path= output_temp )
+    print(f"running {nb}")
+    output_temp = nb.split(".")[0] + "_output." + nb.split(".")[1]
+    _ = pm.execute_notebook(nb, output_path=output_temp)
 
 
 # %% [markdown]

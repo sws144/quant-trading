@@ -1,13 +1,24 @@
 # %% [markdown]
-##  ## E: Build & Tune Models
+# # E: Build & Tune Models
+
+# %% [markdown]
+# ## INPUTS
 
 # %%
-## ### INPUTS ###
 retune = True  # hyperparameter tuning
 
-# %%
-## imports
+# %% [markdown]
+# ## imports
 
+# %%
+#for formatting
+import jupyter_black
+
+jupyter_black.load(
+    lab=False,
+)
+
+# %%
 import dill
 import importlib  # for importing other packages
 import copy
@@ -44,6 +55,9 @@ from sklearn import tree
 import shap  # package used to calculate Shap values
 import matplotlib.pyplot as plt
 
+
+# %% [markdown]
+# ## Prep work
 
 # %%
 # start logging
@@ -85,25 +99,32 @@ df_XY = pd.read_csv("output/e_resultcleaned.csv")
 
 # df_XY.head()
 
-# %%
-## variable selection
+# %% [markdown]
+# ## variable selection
 
+# %%
 print(df_XY.columns)
 
+# %%
 target = "PCT_RET_FINAL"
 
 numeric_features = [
     "TGT_FWD_P_E",
     "YEARS_TO_NORMALIZATION",
     "CLOSE_^VIX",
-    "AAII_SENT_BULLBEARSPREAD",
+    "AAII_BULLISH_BULL-BEAR_SPREAD",
     "%_TO_STOP",
     "%_TO_TARGET",
     "GROWTH_0.5TO0.75",
     "ROIC_(BW_ROA_ROE)",
+    "DAYOFWEEK0MON",
+    "SP500FROM200MA",
 ]
 
-categorical_features = ["OPENACT", "CATEGORY"]
+categorical_features = [
+    "OPENACT",
+    "CATEGORY",
+]  #   categorical not stable as others captured and this is not stable
 
 variables = numeric_features + categorical_features
 
@@ -159,7 +180,6 @@ X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 # %%
 ## sample tune & run model using hyperopt
 
-
 # from sklearn.model_selection import train_test_split
 # from sklearn.metrics import mean_absolute_error
 # from hpsklearn import HyperoptEstimator
@@ -186,9 +206,10 @@ X_train, X_test, y_train, y_test, XY_train, XY_test = train_test_split(
 # print(model.best_model())
 
 
-# %%
-## support functions
+# %% [markdown]
+# ## support functions
 
+# %%
 # looks reasonable
 # https://www.kaggle.com/jpopham91/gini-scoring-simple-and-efficient
 def gini_normalized(y_true, y_pred, sample_weight=None):
@@ -329,9 +350,10 @@ def to_float(x):
 
 #     return
 
-# %%
-## Model 5 hist boosting w optional tuning
+# %% [markdown]
+# ## Model 5 hist boosting w optional tuning
 
+# %%
 mlflow.end_run()
 mlflow.start_run(run_name="sklearn_hgbm")
 
@@ -423,13 +445,18 @@ mdl = Pipeline(
         (
             "estimator",
             HistGradientBoostingRegressor(
-                random_state=0, **best_params, categorical_features=categorical_mask
+                random_state=0,
+                **best_params,
+                categorical_features=categorical_mask,
+                early_stopping=True,
+                validation_fraction=0.25,
+                verbose=True,
             ),
         ),
     ]
 )
 # reg = GradientBoostingRegressor(random_state=0)
-mdl.fit(X_train, y_train.squeeze())
+mdl.fit(X_train, y_train.squeeze(), estimator__sample_weight=XY_train["WEIGHT"])
 
 # log with validation
 # log_w_validate(y_test, y_pred, formula)
@@ -467,12 +494,15 @@ mlflow.log_artifact(f"cat_dict.pkl")
 
 os.remove(f"cat_dict.pkl")
 
+
+print(f"runid = {mlflow.active_run().info.run_id}")
+
 mlflow.end_run()
 
-# %%
-## SHAP test
-# TODO try native category?
+# %% [markdown]
+# ## SHAP test
 
+# %%
 explainer = shap.Explainer(mdl[-1])
 
 # fix save expected value
