@@ -40,6 +40,7 @@ openapi-schema-validator = "*"
 jupyter-black = "*"
 nasdaq-data-link = "*"
 xlrd = "*"
+pandas-profiling = "*"
 
 [requires]
 python_version = "3.9"
