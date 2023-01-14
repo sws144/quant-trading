@@ -3,5 +3,5 @@ P1-AnalyzeTrades/output/*
 # P1-AnalyzeTrades/mlruns/*
 P1-AnalyzeTrades/.env
 P1-AnalyzeTrades/build
-P1-AnalyzeTrades/.ipynb_checkpoints
+# P1-AnalyzeTrades/.ipynb_checkpoints
 __pycache__
