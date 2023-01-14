@@ -30,7 +30,7 @@ Also - See Sphinx Documentation
 
 ### Local Scripts: Model Update
 
-1. enter virtual environment for P-1...
+1. enter virtual environment for P-1... `pipenv shell` in separate terminal
     1. if in vs-code can select environment from jupyter/python dropdown
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
@@ -67,7 +67,7 @@ Also - See Sphinx Documentation
 
 ### MLFlow & Virtual Env Update
 
-1. Install pipenv in desired environment ` pip install pipenv ` 
+1. Install pipenv in desired environment ` pip install pipenv ` in separate terminal
     1. (`py -0p` to see which one is default in windows) 
     1. in linux/docker, specify specific python version docker container
 1. First time build/update:
