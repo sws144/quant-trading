@@ -41,6 +41,7 @@ jupyter-black = "*"
 nasdaq-data-link = "*"
 xlrd = "*"
 pandas-profiling = "*"
+quantum_ml = {editable = true, ref = "main", git = "https://github.com/sws144/quantum_ml.git"}
 
 [requires]
 python_version = "3.9"
