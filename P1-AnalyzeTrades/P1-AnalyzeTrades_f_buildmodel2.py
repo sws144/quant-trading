@@ -263,9 +263,10 @@ def score_estimator(
     Evaluate an estimator on train and test sets with different metrics
     Requires active run on mlflow and estimator with .predict method
     """
-    from sklearn.metrics import mean_absolute_error, mean_squared_error, auc
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, auc, r2_score
     from functools import partial
     from sklearn.metrics import mean_tweedie_deviance
+    from quantumtools import metrics as qmetrics
 
     mlflow.set_tag("run_id", mlflow.active_run().info.run_id)
     mlflow.log_params({"formula": formula})
@@ -275,6 +276,8 @@ def score_estimator(
         ("mean abs. error", mean_absolute_error),
         ("mean squared error", mean_squared_error),
         ("gini", gini_normalized),
+        ("ginierror", qmetrics.ginierror),
+        ("r2_score", r2_score),
     ]
     if tweedie_powers:
         metrics += [
@@ -498,6 +501,12 @@ os.remove(f"cat_dict.pkl")
 print(f"runid = {mlflow.active_run().info.run_id}")
 
 mlflow.end_run()
+
+# %%
+XY_test[target]
+
+# %%
+res
 
 # %% [markdown]
 # ## SHAP test
