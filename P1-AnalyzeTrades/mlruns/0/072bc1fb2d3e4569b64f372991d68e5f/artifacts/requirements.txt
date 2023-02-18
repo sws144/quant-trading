@@ -109,7 +109,7 @@ parso==0.8.3; python_version >= '3.6'
 pathspec==0.9.0
 patsy==0.5.2
 pickleshare==0.7.5
-pillow==9.1.1; python_version >= '3.7'
+pillow==9.3.0; python_version >= '3.7'
 platformdirs==2.5.2; python_version >= '3.7'
 pluggy==1.0.0; python_version >= '3.6'
 prometheus-client==0.14.1; python_version >= '3.6'
