@@ -51,16 +51,17 @@ import dill
 # ## INPUT 
 
 # %%
-# runid = '1b6b96ef3cb14b93b60af5f2a84eeb94'
-# mlflow.set_tracking_uri('')
-
 # Research tracking
-runid = "9bf192ea185b4e85b2eed76f0251f52e"
-mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
-mlflow.set_tracking_uri(mlflow_tracking_uri)
+runid = "29c8fae222aa4413a11af560c7182b28" # pull from previous file
+# mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
+# mlflow.set_tracking_uri(mlflow_tracking_uri)
 
-experiment_name = "P1-AnalyzeTrades_f_core"
-
+forprod = True
+if forprod:
+    experiment_name = "P1-AnalyzeTrades_f_core"
+else:
+    experiment_name = "Development"
+    
 mlflow.set_experiment(experiment_name)
 experiment_details = mlflow.get_experiment_by_name(experiment_name)
 
@@ -344,7 +345,6 @@ for var in cols_required:
         shap.plots.scatter(shap_slice, ax=ax, show=False)
 
     if var in categorical_names:
-
         # get integer labels
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
@@ -400,8 +400,8 @@ mlflow.end_run()
 
 main_file = importlib.import_module("P1-AnalyzeTrades_h_predictresult")
 
-main_file.predict_return(
-    mlflow_tracking_uri=mlflow_tracking_uri,
+res = main_file.predict_return(
+    mlflow_tracking_uri="mlruns",  # assumes development
     experiment_name=experiment_name,
     run_id=runid,
     inputs=X.loc[[0], :],
@@ -409,6 +409,13 @@ main_file.predict_return(
     show_plot=True,
     preloaded_model=mdl,
 )
+res
+
+# %%
+res
+
+# %%
+res[1]
 
 # %%
 ## end mlflow and h2o
@@ -467,3 +474,5 @@ except:
 #            / gini(y_actual , sample_weight=sample_weight)
 #     )
 #     return ans
+
+# %%

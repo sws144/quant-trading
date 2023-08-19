@@ -1,0 +1,2 @@
+Pipeline(steps=[('to_float',
+                 FunctionTransformer(func=<function to_float at 0x000001C3E1CC5CA0>))])

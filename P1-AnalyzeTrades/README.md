@@ -3,9 +3,9 @@
 ## Purpose
 
 Apply data science and analytics to a user's trading history to help user make better decisions
-<https://analyze-trades-staging.herokuapp.com/>
-<https://analyze-trades-prod.herokuapp.com/>
 <https://sws144-quant-trading-p1-analyzetradesapp-streamlit-p1-an-q656h3.streamlitapp.com/>
+<https://analyze-trades-staging.herokuapp.com/> deprecated
+<https://analyze-trades-prod.herokuapp.com/> deprecated
 See ...Important\Startup\P1-AnalyzeTrades
 
 ## Architecture
@@ -41,7 +41,8 @@ Also - See Sphinx Documentation
 1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
 1. **decide best model**
-    1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow`
+    1. `mlflow ui` but use 2nd experiment ; development
+        1. if moving folder, replace path above and meta.yaml with correct path
     1. Copy run from local mlflow to repo mlflow and update `app.py`
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts

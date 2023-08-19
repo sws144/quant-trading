@@ -1,10 +1,10 @@
-artifact_uri: file:D:/Stuff/OneDrive/MLflow/0/cfbb106ccf77427fb128663cec2a21fa/artifacts
-end_time: 1664064582080
+artifact_uri: mlruns/0/cfbb106ccf77427fb128663cec2a21fa/artifacts
+end_time: 1692464987528
 entry_point_name: ''
 experiment_id: '0'
 lifecycle_stage: active
-name: ''
 run_id: cfbb106ccf77427fb128663cec2a21fa
+run_name: ''
 run_uuid: cfbb106ccf77427fb128663cec2a21fa
 source_name: ''
 source_type: 4

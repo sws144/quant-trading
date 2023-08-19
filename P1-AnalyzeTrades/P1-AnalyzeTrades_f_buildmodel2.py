@@ -6,6 +6,7 @@
 
 # %%
 retune = True  # hyperparameter tuning
+forprod = True
 
 # %% [markdown]
 # ## imports
@@ -60,16 +61,21 @@ import matplotlib.pyplot as plt
 # ## Prep work
 
 # %%
+# %%
 # start logging
 
 # set location for mlruns
-mlflow.set_tracking_uri("file:D:/Stuff/OneDrive/MLflow")
+# mlflow.set_tracking_uri("file:D:/Stuff/OneDrive/MLflow")
 
 # set experiment
+if forprod:
+    experiment_name = "P1-AnalyzeTrades_f_core"
+else:
+    experiment_name = "Development"
 try:
-    mlflow.set_experiment("P1-AnalyzeTrades_f_core")
+    mlflow.set_experiment(experiment_name)
 except:
-    mlflow.create_experiment("P1-AnalyzeTrades_f_core")
+    mlflow.create_experiment(experiment_name)
 
 mlflow.sklearn.autolog()
 
@@ -266,7 +272,7 @@ def score_estimator(
     from sklearn.metrics import mean_absolute_error, mean_squared_error, auc, r2_score
     from functools import partial
     from sklearn.metrics import mean_tweedie_deviance
-    from quantumtools import metrics as qmetrics
+    from quantumtools import metrics as qmetrics  # for plotting
 
     mlflow.set_tag("run_id", mlflow.active_run().info.run_id)
     mlflow.log_params({"formula": formula})
@@ -311,7 +317,6 @@ def score_estimator(
             y_pred = estimator.predict(X)
 
         for score_label, metric in metrics:
-
             if metric is None:
                 if not hasattr(estimator, "score"):
                     continue
@@ -390,7 +395,6 @@ preprocessor = ColumnTransformer(
 
 # tuning
 if retune:
-
     func_f = importlib.import_module("P1-AnalyzeTrades_f_buildmodel_func")
 
     gini_scorer = make_scorer(func_f.gini_sklearn, greater_is_better=True)
@@ -482,7 +486,7 @@ mlflow.set_tag("target", target)
 # mlflow.log_artifact("tree_plot1.png")
 
 # save requirements
-os.system("pipenv lock --keep-outdated -d -r > output/requirements.txt")
+os.system("pipenv requirements output/requirements.txt")
 mlflow.log_artifact("output/requirements.txt")
 
 # save categorical dict values
@@ -496,7 +500,6 @@ with open(f"cat_dict.pkl", "wb") as handle:
 mlflow.log_artifact(f"cat_dict.pkl")
 
 os.remove(f"cat_dict.pkl")
-
 
 print(f"runid = {mlflow.active_run().info.run_id}")
 
