@@ -40,6 +40,9 @@ openapi-schema-validator = "*"
 jupyter-black = "*"
 nasdaq-data-link = "*"
 xlrd = "*"
+pandas-profiling = "*"
+## quantum_ml = {editable = true, ref = "main", git = "https://github.com/sws144/quantum_ml.git"}
+quantumtools = "*"
 
 [requires]
 python_version = "3.9"

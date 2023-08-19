@@ -1,10 +1,10 @@
-artifact_uri: file:D:/Stuff/OneDrive/MLflow/0/072bc1fb2d3e4569b64f372991d68e5f/artifacts
-end_time: 1663527275501
+artifact_uri: mlruns/0/072bc1fb2d3e4569b64f372991d68e5f/artifacts
+end_time: 1692464905769
 entry_point_name: ''
 experiment_id: '0'
 lifecycle_stage: active
-name: ''
 run_id: 072bc1fb2d3e4569b64f372991d68e5f
+run_name: ''
 run_uuid: 072bc1fb2d3e4569b64f372991d68e5f
 source_name: ''
 source_type: 4

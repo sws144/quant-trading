@@ -3,9 +3,9 @@
 ## Purpose
 
 Apply data science and analytics to a user's trading history to help user make better decisions
-<https://analyze-trades-staging.herokuapp.com/>
-<https://analyze-trades-prod.herokuapp.com/>
 <https://sws144-quant-trading-p1-analyzetradesapp-streamlit-p1-an-q656h3.streamlitapp.com/>
+<https://analyze-trades-staging.herokuapp.com/> deprecated
+<https://analyze-trades-prod.herokuapp.com/> deprecated
 See ...Important\Startup\P1-AnalyzeTrades
 
 ## Architecture
@@ -15,7 +15,8 @@ Also - See Sphinx Documentation
 
 ## Project Tracking
 
-1. See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
+1. [Linear App](https://linear.app/sws144/team/SWS/projects/active)
+1. Backup: See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
 1. Backup: see _Project-Tracking.xlsx file
 
 ## C2 Backend
@@ -30,8 +31,9 @@ Also - See Sphinx Documentation
 
 ### Local Scripts: Model Update
 
-1. enter virtual environment for P-1...
+1. enter virtual environment for P-1... `pipenv shell` in separate terminal
     1. if in vs-code can select environment from jupyter/python dropdown
+1. run `jupyter notebook` to run environment
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
 1. append market data
@@ -39,7 +41,8 @@ Also - See Sphinx Documentation
 1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
 1. **decide best model**
-    1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow`
+    1. `mlflow ui` but use 2nd experiment ; development
+        1. if moving folder, replace path above and meta.yaml with correct path
     1. Copy run from local mlflow to repo mlflow and update `app.py`
 1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts
@@ -67,14 +70,16 @@ Also - See Sphinx Documentation
 
 ### MLFlow & Virtual Env Update
 
-1. Install pipenv in desired environment ` pip install pipenv ` 
+1. Install pipenv in desired environment `pip install pipenv==2022.12.19` in separate terminal
     1. (`py -0p` to see which one is default in windows) 
+    1. for diff python versions, use, `py -3.9` notation
     1. in linux/docker, specify specific python version docker container
 1. First time build/update:
     1. `pipenv shell`, then `update_env.bat` to install existing specified environment
     1. Backup: Terminal `pipenv sync --dev` to install env locally with piplock or 
     1. `pipenv update --dev` to **update based on Pipfile** and install environment
 1. add specific package without updating rest if not necessary `pipenv install packagename --keep-outdated`
+1. to exit virtual env, `exit()`
 1. Terminal: `pipenv shell` to enter environment or in vs code, right click open terminal in folder with pipfile
 1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
