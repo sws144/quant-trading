@@ -44,7 +44,7 @@ Also - See Sphinx Documentation
     1. `mlflow ui` but use 2nd experiment ; development
         1. if moving folder, replace path above and meta.yaml with correct path
     1. Copy run from local mlflow to repo mlflow and update `app_streamlit.py`
-1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
+1. **update requirements in P1- folder** by running `pipenv requirements > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts
     1. ensure python version correct path `py -0p`, updating PATH variable order for system/user if want different default python version. System
     variables go first.
