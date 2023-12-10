@@ -29,7 +29,7 @@ patsy = "*"
 ## pydotplus = "*"
 pytest = "*"
 rst2pdf = "*"
-shap = "==0.41.0" # to ensure explainers work
+shap = "*"
 scikit-learn = "==1.0.2" # to ensure models work 
 sphinx = "*"
 statsmodels = "*"
@@ -44,6 +44,7 @@ pandas-profiling = "*"
 ## quantum_ml = {editable = true, ref = "main", git = "https://github.com/sws144/quantum_ml.git"}
 quantumtools = "*"
 jinja2 = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.9"

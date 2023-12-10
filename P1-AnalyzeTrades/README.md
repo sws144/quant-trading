@@ -31,7 +31,7 @@ Also - See Sphinx Documentation
 
 ### Local Scripts: Model Update
 
-1. enter virtual environment for P-1... `pipenv shell` in separate terminal
+1. enter virtual environment for P-1... `pipenv shell` in separate terminal (windows cmd or git bash)
     1. if in vs-code can select environment from jupyter/python dropdown
 1. run `jupyter notebook` to run environment
 1. read in portfolio and trades from IB activity statement (tradelog..py)
@@ -43,21 +43,21 @@ Also - See Sphinx Documentation
 1. **decide best model**
     1. `mlflow ui` but use 2nd experiment ; development
         1. if moving folder, replace path above and meta.yaml with correct path
-    1. Copy run from local mlflow to repo mlflow and update `app.py`
-1. **update requirements in P1- folder** by running `pipenv lock --keep-outdated -d -r > ../requirements.txt` outside virtual env and copying to P1-... folder
+    1. Copy `run_id` from local mlflow to repo mlflow and update `app_streamlit.py`
+        1. and tests in ``..h_predictresult..``
+1. **update requirements in P1- folder** by running `pipenv requirements > ../requirements.txt` outside virtual env and copying to P1-... folder
     1. backup: pull requirements.txt directly from mlflow run artifacts
     1. ensure python version correct path `py -0p`, updating PATH variable order for system/user if want different default python version. System
     variables go first.
     1. can test full version name using `py -#.# --version`
     1. if updating python, need to manually remove virtual environment first
-1. **run tests** including `pytest` and `flask run` and `docker build...` below
-1. **save work as ipynb and html** by
+1. **run tests** including `pytest` and `streamlit run app_streamlit.py` and `docker build...` below
+1. **optional: save work as ipynb and html** by
     1. Run key .py files and export to jupyter notebooks
     1. Optionally:
         1. Saving jupyter interactive to original mlflow
         1. Copying run to repo
         1. and then use Anaconda -> JupyterLab -> save as HTML
-1. **For releases per Azure Boards** in GitHub, create a new release
 
 ### Optional Remote Development in Linux (from Windows base system)
 
