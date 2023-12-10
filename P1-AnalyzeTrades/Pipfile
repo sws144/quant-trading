@@ -43,6 +43,7 @@ xlrd = "*"
 pandas-profiling = "*"
 ## quantum_ml = {editable = true, ref = "main", git = "https://github.com/sws144/quantum_ml.git"}
 quantumtools = "*"
+openpyxl = "*"
 
 [requires]
 python_version = "3.9"

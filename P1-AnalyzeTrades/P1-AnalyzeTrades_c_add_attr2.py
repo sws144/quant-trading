@@ -153,7 +153,7 @@ for symbol in tickers:
 # %%
 externalvar_dict = {
     #     "AAII/AAII_SENTIMENT": "AAII_SENT",  ## aaii sentiment looks like it ends 4/2021
-    "UMICH/SOC1": "CONS_SENT",  # consumer sentiment
+    # "UMICH/SOC1": "CONS_SENT",  # consumer sentiment, not used ofr now 
     #     "FED/RIMLPAAAR_N_B": "FED_AAACORP",  ## daily Fed AAA rates #TODO ned to fix different timeframes
 }
 
@@ -254,7 +254,7 @@ assert len(set(cols_with_errors).difference(set(existing_err_cols))) == 0, "new 
 # Source: https://www.aaii.com/sentimentsurvey/sent_results
 
 # %%
-df_aaii = pd.read_excel(f"data\sentiment.xls", header=[1, 2, 3])
+df_aaii = pd.read_excel(f"data\sentiment.xlsx", header=[1, 2, 3])
 
 # %%
 df_aaii.head()

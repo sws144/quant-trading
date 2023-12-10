@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.14.4
+#       jupytext_version: 1.16.0
 #   kernelspec:
 #     display_name: p1analyzetrades
 #     language: python
@@ -44,6 +44,12 @@ pnl_notebooks = [
     "P1-AnalyzeTrades_d_exploredata.ipynb",
     "P1-AnalyzeTrades_e_feateng.ipynb",
 ]
+
+# %% [markdown]
+# ## Add Sentiment data
+
+# %% [markdown] jp-MarkdownHeadingCollapsed=true
+# 1. https://www.aaii.com/sentimentsurvey/sent_results
 
 # %% [markdown]
 # ## run notebooks

@@ -52,7 +52,7 @@ import dill
 
 # %%
 # Research tracking
-runid = "29c8fae222aa4413a11af560c7182b28" # pull from previous file
+runid = "8f46b4f8125245d9a94d68066d2f051d" # pull from previous file
 # mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
 # mlflow.set_tracking_uri(mlflow_tracking_uri)
 

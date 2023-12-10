@@ -31,7 +31,7 @@ Also - See Sphinx Documentation
 
 ### Local Scripts: Model Update
 
-1. enter virtual environment for P-1... `pipenv shell` in separate terminal
+1. enter virtual environment for P-1... `pipenv shell` in separate terminal (windows cmd or git bash)
     1. if in vs-code can select environment from jupyter/python dropdown
 1. run `jupyter notebook` to run environment
 1. read in portfolio and trades from IB activity statement (tradelog..py)
@@ -50,7 +50,7 @@ Also - See Sphinx Documentation
     variables go first.
     1. can test full version name using `py -#.# --version`
     1. if updating python, need to manually remove virtual environment first
-1. **run tests** including `pytest` and `flask run` and `docker build...` below
+1. **run tests** including `pytest` and `streamlit run app_streamlit.py` and `docker build...` below
 1. **optional: save work as ipynb and html** by
     1. Run key .py files and export to jupyter notebooks
     1. Optionally:
