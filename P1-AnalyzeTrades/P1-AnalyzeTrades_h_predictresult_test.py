@@ -16,7 +16,7 @@ mlflow_tracking_uri = ""  # backup file:' + os.path.dirname(os.path.abspath(__fi
 
 def test_predict_1_basic():
 
-    run_id = "072bc1fb2d3e4569b64f372991d68e5f"
+    run_id = "8f46b4f8125245d9a94d68066d2f051d"
 
     # need to add categorical cols here
     inputs = pd.DataFrame(
@@ -44,7 +44,7 @@ def test_predict_1_basic():
 def test_explain_1_basic():
     """sklearn test"""
 
-    run_id = "072bc1fb2d3e4569b64f372991d68e5f"
+    run_id = "8f46b4f8125245d9a94d68066d2f051d"
 
     # need to add categorical cols here
     inputs = pd.DataFrame(
