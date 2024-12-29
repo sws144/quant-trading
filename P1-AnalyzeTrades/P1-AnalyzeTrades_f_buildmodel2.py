@@ -5,8 +5,8 @@
 # ## INPUTS
 
 # %%
-retune = True  # hyperparameter tuning
-forprod = True
+retune = False  # hyperparameter tuning
+forprod = True # typically run this last after setting best params
 
 # %% [markdown]
 # ## imports
@@ -31,6 +31,8 @@ from patsy import dmatrices
 import mlflow  # model tracking
 
 from sklearn.model_selection import train_test_split
+
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import FunctionTransformer, OrdinalEncoder
@@ -121,7 +123,7 @@ numeric_features = [
     "AAII_BULLISH_BULL-BEAR_SPREAD",
     "%_TO_STOP",
     "%_TO_TARGET",
-    "GROWTH_0.5TO0.75",
+   # "GROWTH_0.5TO0.75", VIF is too high
     "ROIC_(BW_ROA_ROE)",
     "DAYOFWEEK0MON",
     "SP500FROM200MA",
@@ -173,6 +175,20 @@ X = df_XY[variables]
 
 assert X.shape[0] == df_XY.shape[0], "rows mismatched, probably due to NAs"
 
+
+# %%
+# VIF dataframe
+vif_data = pd.DataFrame()
+vif_data["feature"] = X[numeric_features].columns
+
+# calculating VIF for each feature
+vif_data["VIF"] = [variance_inflation_factor(X[numeric_features].values, i)
+                          for i in range(len(X[numeric_features].columns))]
+
+print(vif_data)
+
+# %%
+X.dtypes
 
 # %%
 # train test data
@@ -415,6 +431,7 @@ if retune:
                     "estimator",
                     HistGradientBoostingRegressor(
                         random_state=0,
+                        n_iter_no_change=20,
                         **parameters,
                         categorical_features=categorical_mask,
                     ),
@@ -431,8 +448,8 @@ if retune:
     # need to match estimator
     space = {
         # low # high # number of choices
-        "learning_rate": hp.uniform("learning_rate", 0.1, 1),
-        "max_depth": hp.quniform("max_depth", 2, 4, 2),
+        "learning_rate": hp.loguniform("learning_rate", -3, 0),
+        "max_depth": hp.quniform("max_depth", 1, 4,1)
     }
 
     best_params = fmin(fn=objective_gbr, space=space, algo=tpe.suggest, max_evals=5)
@@ -444,7 +461,7 @@ if retune:
     print("Hyperopt estimated optimum {}".format(best_params))
 
 else:
-    best_params = {"max_depth": 2}
+    best_params = {'learning_rate': 0.05749546741097925, 'max_depth': 2}  # done from previous runs
 
 mdl = Pipeline(
     steps=[
@@ -525,7 +542,7 @@ if len(explainer.expected_value.shape) > 0:
 shap_obj = explainer(mdl[0].transform(X_train))
 
 
-var = "CATEGORY"
+var = "OPENACT"
 
 ## fix shap_obj, requires column transformer in step position 0 ,
 ## categorical in position 1
@@ -561,23 +578,33 @@ shap.plots.beeswarm(shap_cat)
 fig, ax = plt.subplots()
 
 shap.plots.scatter(shap_obj[:, var], ax=ax, show=False, color=shap_obj)
+
 if var in categorical_names:
-    orig_list = ax.get_xticks()
-    new_list = np.insert(
-        mdl[0].transformers_[1][1][1].categories_[categorical_names.index(var)],
-        0,
-        "Unknown",
-    )
+    try:
+        orig_list = ax.get_xticks()
+        new_list = np.insert(
+            mdl[0].transformers_[1][1][1].categories_[categorical_names.index(var)],
+            0,
+            "Unknown",
+        )
 
-    for i in range(len(orig_list) - len(new_list)):
-        new_list = np.append(new_list, orig_list[i + len(new_list)])
-
-    ax.set_xticks(orig_list)
-    ax.set_xticklabels(new_list)
+        # this replace can fail bc xticks no not necessarily match choices
+        for i in range(len(orig_list) - len(new_list)):
+            new_list = np.append(new_list, orig_list[i + len(new_list)])#
+    
+        ax.set_xticks(orig_list)
+        ax.set_xticklabels(new_list)
+    except:
+        print("category impute failed")
 
 plt.show()
 
 shap.plots.waterfall(shap_cat[0])
 
 # %%
-## placeholder
+# QA
+df_XY[variables + [target] + ['WEIGHT']].tail(10)
+
+# %%
+
+# %%

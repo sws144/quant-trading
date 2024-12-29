@@ -1,0 +1,15 @@
+artifact_uri: file:mlruns/0/99a3dbe274ac405085e5becc687f711e/artifacts
+end_time: 1735439775152
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 99a3dbe274ac405085e5becc687f711e
+run_name: sklearn_hgbm
+run_uuid: 99a3dbe274ac405085e5becc687f711e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1735439502362
+status: 3
+tags: []
+user_id: Stanley

@@ -146,7 +146,8 @@ class StringTransformer(TransformerMixin):
 # ## Add Weights
 
 # %%
-df_XY['Age'] = df_XY['Open_Year'] - min(df_XY['Open_Year']-1)
+# weight recent years more
+df_XY['Age'] = max(df_XY['Open_Year']) - df_XY['Open_Year']
 df_XY['Weight'] = 0.8 # hyperparam for exponential weighting
 df_XY['Weight'] = df_XY['Weight'].pow(df_XY['Age'],fill_value=0)
 

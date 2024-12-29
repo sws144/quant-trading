@@ -16,6 +16,7 @@ Also - See Sphinx Documentation
 ## Project Tracking
 
 1. [Linear App](https://linear.app/sws144/team/SWS/projects/active)
+1. [Notion (backup)](https://www.notion.so/8988e8d8572d49e890c9d59609c5788d?v=8a38899ef80946ba9cc2c50eabaaf70a)
 1. Backup: See [Azure DevOps, GitHub sign-in](https://dev.azure.com/swang4331/P1-AnalyzeTrades/_backlogs/backlog/P1-AnalyzeTrades%20Team/Features/?showParents=true)
 1. Backup: see _Project-Tracking.xlsx file
 
@@ -25,7 +26,10 @@ Also - See Sphinx Documentation
 
 1. Go to Interactive Brokers -> activity statements -> pull standard .csv statement
 1. Update raw `data` folder with account statement (`U1060261` in file name) and `pcm-tracking` loghist tab
+1. Update raw `data` folder with aaii sentiment data
 1. Run standalone scripts a to e (just before building model)
+    1. from command line `pipenv shell`
+    1. using the the `...0_main.ipynb` from command line
 1. Open `output\_pnl_review.xlsx`. This is the main file file for analysis
 1. Paste `e_resultcleaned.csv` in `input_e_result` tab, making sure lookups at right are not broken
 
@@ -37,7 +41,7 @@ Also - See Sphinx Documentation
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
 1. append market data
-1. build models (f_buildmodel), pickle file & show inputs via mlflow
+1. build models (f_buildmodel2), pickle file & show inputs via mlflow
 1. validation exhibits (g_explainmodel)
 1. test estimated predicted return for single record
 1. **decide best model**
@@ -84,7 +88,7 @@ Also - See Sphinx Documentation
 1. `mlflow ui --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to enter environment (omit --backend if want to see test runs)
 1. To shut down, type "ctrl + c" in terminal
 1. To delete virtualenv, `pipenv --rm`
-1. Optional: `mlflow gc --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui)
+1. Optional: `mlflow gc --backend-store-uri file:D:/Stuff/OneDrive/MLflow` to clean up deleted runs (e.g. deleted from mlflow ui, could ommit backend-store)
 
 ## C2 Frontend Overview (Single)
 

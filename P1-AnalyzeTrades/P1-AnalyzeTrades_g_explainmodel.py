@@ -52,11 +52,11 @@ import dill
 
 # %%
 # Research tracking
-runid = "8f46b4f8125245d9a94d68066d2f051d" # pull from previous file
+runid = "99a3dbe274ac405085e5becc687f711e" # pull from previous file
 # mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
 # mlflow.set_tracking_uri(mlflow_tracking_uri)
 
-forprod = True
+forprod = True #  typically True  after setting best params
 if forprod:
     experiment_name = "P1-AnalyzeTrades_f_core"
 else:
