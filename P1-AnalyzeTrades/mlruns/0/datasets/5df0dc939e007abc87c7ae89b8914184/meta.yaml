@@ -1,0 +1,15 @@
+digest: eb9e8b19
+name: dataset
+profile: '{"num_rows": 886, "num_elements": 9746}'
+schema: '{"mlflow_colspec": [{"type": "double", "name": "TGT_FWD_P_E", "required":
+  true}, {"type": "long", "name": "YEARS_TO_NORMALIZATION", "required": true}, {"type":
+  "double", "name": "CLOSE_^VIX", "required": true}, {"type": "double", "name": "AAII_BULLISH_BULL-BEAR_SPREAD",
+  "required": true}, {"type": "double", "name": "%_TO_STOP", "required": true}, {"type":
+  "double", "name": "%_TO_TARGET", "required": true}, {"type": "double", "name": "ROIC_(BW_ROA_ROE)",
+  "required": true}, {"type": "long", "name": "DAYOFWEEK0MON", "required": true},
+  {"type": "double", "name": "SP500FROM200MA", "required": true}, {"type": "string",
+  "name": "OPENACT", "required": true}, {"type": "string", "name": "CATEGORY", "required":
+  true}]}'
+source: '{"tags": {"mlflow.user": "Stanley", "mlflow.source.name": "C:\\Users\\Stanley\\.virtualenvs\\P1-AnalyzeTrades-FUwO02Mg\\lib\\site-packages\\ipykernel_launcher.py",
+  "mlflow.source.type": "LOCAL"}}'
+source_type: code

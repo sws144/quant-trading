@@ -16,7 +16,6 @@ forprod = True # typically run this last after setting best params
 import jupyter_black
 
 jupyter_black.load(
-    lab=False,
 )
 
 # %%
@@ -123,7 +122,7 @@ numeric_features = [
     "AAII_BULLISH_BULL-BEAR_SPREAD",
     "%_TO_STOP",
     "%_TO_TARGET",
-   # "GROWTH_0.5TO0.75", VIF is too high
+    # "GROWTH_0.5TO0.75", VIF is too high
     "ROIC_(BW_ROA_ROE)",
     "DAYOFWEEK0MON",
     "SP500FROM200MA",
@@ -182,8 +181,10 @@ vif_data = pd.DataFrame()
 vif_data["feature"] = X[numeric_features].columns
 
 # calculating VIF for each feature
-vif_data["VIF"] = [variance_inflation_factor(X[numeric_features].values, i)
-                          for i in range(len(X[numeric_features].columns))]
+vif_data["VIF"] = [
+    variance_inflation_factor(X[numeric_features].values, i)
+    for i in range(len(X[numeric_features].columns))
+]
 
 print(vif_data)
 
@@ -449,7 +450,7 @@ if retune:
     space = {
         # low # high # number of choices
         "learning_rate": hp.loguniform("learning_rate", -3, 0),
-        "max_depth": hp.quniform("max_depth", 1, 4,1)
+        "max_depth": hp.quniform("max_depth", 1, 4, 1),
     }
 
     best_params = fmin(fn=objective_gbr, space=space, algo=tpe.suggest, max_evals=5)
@@ -461,7 +462,11 @@ if retune:
     print("Hyperopt estimated optimum {}".format(best_params))
 
 else:
-    best_params = {'learning_rate': 0.05749546741097925, 'max_depth': 2}  # done from previous runs
+
+    best_params = {
+        "learning_rate": 0.20489775639166868,
+        "max_depth": 2,
+    }  # done from previous run 10/26
 
 mdl = Pipeline(
     steps=[
@@ -522,7 +527,6 @@ print(f"runid = {mlflow.active_run().info.run_id}")
 
 mlflow.end_run()
 
-# %%
 XY_test[target]
 
 # %%
@@ -590,8 +594,8 @@ if var in categorical_names:
 
         # this replace can fail bc xticks no not necessarily match choices
         for i in range(len(orig_list) - len(new_list)):
-            new_list = np.append(new_list, orig_list[i + len(new_list)])#
-    
+            new_list = np.append(new_list, orig_list[i + len(new_list)])  #
+
         ax.set_xticks(orig_list)
         ax.set_xticklabels(new_list)
     except:
@@ -603,7 +607,7 @@ shap.plots.waterfall(shap_cat[0])
 
 # %%
 # QA
-df_XY[variables + [target] + ['WEIGHT']].tail(10)
+df_XY[variables + [target] + ["WEIGHT"]].tail(10)
 
 # %%
 

@@ -8,7 +8,6 @@
 import jupyter_black
 
 jupyter_black.load(
-    lab=False,
 )
 
 # %%
@@ -254,7 +253,7 @@ assert len(set(cols_with_errors).difference(set(existing_err_cols))) == 0, "new 
 # Source: https://www.aaii.com/sentimentsurvey/sent_results
 
 # %%
-df_aaii = pd.read_excel(f"data\sentiment.xlsx", header=[1, 2, 3])
+df_aaii = pd.read_excel(f"data\sentiment.xls", header=[1, 2, 3])
 
 # %%
 df_aaii.head()

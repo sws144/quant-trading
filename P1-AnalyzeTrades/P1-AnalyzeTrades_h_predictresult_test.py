@@ -44,7 +44,7 @@ def test_predict_1_basic():
 def test_explain_1_basic():
     """sklearn test"""
 
-    run_id = "99a3dbe274ac405085e5becc687f711e"
+    run_id = "d43ec62077544139b7e105bb275596d3"
 
     # need to add categorical cols here
     inputs = pd.DataFrame(

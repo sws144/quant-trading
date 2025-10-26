@@ -1,0 +1,5 @@
+Pipeline(steps=[('to_categorical',
+                 FunctionTransformer(func=<function to_categorical at 0x000001B9550791F0>)),
+                ('ordinal',
+                 OrdinalEncoder(handle_unknown='use_encoded_value',
+                                unknown_value=nan))])

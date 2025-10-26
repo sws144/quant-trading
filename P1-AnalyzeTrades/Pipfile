@@ -20,8 +20,8 @@ gunicorn ="*"
 h2o = "==3.34.0.7" # to ensure models work 
 lightgbm = "*"
 matplotlib = "*" # 3.5.1 has errors w heroku
-mlflow = "*"
-numpy = "*" #  1.21.5 has errors w heroku
+mlflow = "==2.9.1"
+numpy = "<2" #  1.21.5 has errors w heroku
 pandas = "*"
 pandas_datareader = "*"
 papermill = "*"
@@ -40,7 +40,7 @@ openapi-schema-validator = "*"
 jupyter-black = "*"
 nasdaq-data-link = "*"
 xlrd = "*"
-pandas-profiling = "*"
+ydata-profiling = "*"
 ## quantum_ml = {editable = true, ref = "main", git = "https://github.com/sws144/quantum_ml.git"}
 quantumtools = "*"
 jinja2 = "*"

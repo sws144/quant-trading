@@ -10,7 +10,6 @@
 import jupyter_black
 
 jupyter_black.load(
-    lab=False,
 )
 
 # %%
@@ -63,10 +62,11 @@ df_datawattr.columns
 # ## Try profile
 
 # %%
-from pandas_profiling import ProfileReport
+# TODO do different profiling
+# from ydata_profiling import ProfileReport
 
 # %%
-profile = ProfileReport(df_datawattr, title="Report")
+# profile = ProfileReport(df_datawattr, title="Report")
 #profile #QA large size
 
 # %%

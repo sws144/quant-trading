@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.16.0
+#       jupytext_version: 1.17.3
 #   kernelspec:
 #     display_name: p1analyzetrades
 #     language: python
@@ -30,7 +30,6 @@
 import jupyter_black
 
 jupyter_black.load(
-    lab=False,
 )
 
 # %%

@@ -9,7 +9,6 @@
 import jupyter_black
 
 jupyter_black.load(
-    lab=False,
 )
 
 # %%
@@ -52,18 +51,21 @@ import dill
 
 # %%
 # Research tracking
-runid = "99a3dbe274ac405085e5becc687f711e" # pull from previous file
+runid = "d43ec62077544139b7e105bb275596d3"  # pull from previous file
 # mlflow_tracking_uri = "file:D:/Stuff/OneDrive/MLflow"
 # mlflow.set_tracking_uri(mlflow_tracking_uri)
 
-forprod = True #  typically True  after setting best params
+forprod = True  #  typically True  after setting best params
 if forprod:
     experiment_name = "P1-AnalyzeTrades_f_core"
 else:
     experiment_name = "Development"
-    
+
 mlflow.set_experiment(experiment_name)
 experiment_details = mlflow.get_experiment_by_name(experiment_name)
+
+# %%
+experiment_name
 
 # %%
 ## pull information
@@ -95,9 +97,12 @@ mlflow.end_run()
 formula_clean = params["formula"].replace("\n", "")
 
 model_type = "general"
-if "h2o" in str(json.loads(tags["mlflow.log-model.history"])[0]["flavors"]).lower():
+if "h2o" in str((tags["estimator_class"])).lower():
     model_type = "h2o"
     print(f"model type is {model_type}")
+
+# %%
+tags
 
 # %%
 ## pull model from tracking uri

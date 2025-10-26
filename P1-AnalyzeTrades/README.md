@@ -26,10 +26,11 @@ Also - See Sphinx Documentation
 
 1. Go to Interactive Brokers -> activity statements -> pull standard .csv statement
 1. Update raw `data` folder with account statement (`U1060261` in file name) and `pcm-tracking` loghist tab
-1. Update raw `data` folder with aaii sentiment data
+1. Update raw `data` folder with aaii sentiment data [AAII Sentiment Data](https://www.aaii.com/sentimentsurvey/sent_results)
 1. Run standalone scripts a to e (just before building model)
     1. from command line `pipenv shell`
-    1. using the the `...0_main.ipynb` from command line
+    1. run `jupyter lab`
+    1. then the `...0_main.ipynb` from command line
 1. Open `output\_pnl_review.xlsx`. This is the main file file for analysis
 1. Paste `e_resultcleaned.csv` in `input_e_result` tab, making sure lookups at right are not broken
 
@@ -37,12 +38,12 @@ Also - See Sphinx Documentation
 
 1. enter virtual environment for P-1... `pipenv shell` in separate terminal (windows cmd or git bash)
     1. if in vs-code can select environment from jupyter/python dropdown
-1. run `jupyter notebook` to run environment
+1. run `jupyter notebook` or `jupyter lab` to run environment
 1. read in portfolio and trades from IB activity statement (tradelog..py)
 1. append own characteristics
 1. append market data
-1. build models (f_buildmodel2), pickle file & show inputs via mlflow
-1. validation exhibits (g_explainmodel)
+1. build models (`f_buildmodel2`), pickle file & show inputs via mlflow
+1. validation exhibits (``g_explainmodel`)
 1. test estimated predicted return for single record
 1. **decide best model**
     1. `mlflow ui` but use 2nd experiment ; development
